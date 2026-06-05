@@ -15,6 +15,8 @@
   --radius: 8px;
   --font: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", system-ui, sans-serif;
   --hand-font: "STXingkai", "华文行楷", "FZShuTi", "方正舒体", "KaiTi", "SimKai", "FangSong", cursive;
+  --signboard-font: "KaiTi", "STKaiti", "华文楷体", "Kaiti SC", "DFKai-SB", "SimKai", "FangSong", serif;
+  --message-hand-font: "STXingkai", "华文行楷", "FZShuTi", "方正舒体", "Xingkai SC", "KaiTi", "SimKai", cursive;
   --buli-font: "华文行楷", "STXingkai", "KaiTi", "SimKai", "Microsoft YaHei", serif;
 }
 
@@ -23,12 +25,15 @@
 }
 
 html {
+  height: 100%;
   min-width: 320px;
   background: #d9d3c9;
 }
 
 body {
+  min-height: 100%;
   margin: 0;
+  overflow: hidden;
   color: var(--ink);
   font-family: var(--font);
   letter-spacing: 0;
@@ -72,10 +77,43 @@ svg {
 
 .app-shell {
   width: min(100%, 430px);
+  height: 100svh;
   min-height: 100svh;
   margin: 0 auto;
+  display: grid;
+  grid-auto-columns: 100%;
+  grid-auto-flow: column;
+  overflow-x: auto;
+  overflow-y: hidden;
+  position: relative;
+  perspective: 1600px;
+  transform-style: preserve-3d;
+  scroll-behavior: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
   background: var(--paper);
   box-shadow: 0 0 0 1px rgba(80, 66, 48, 0.08), 0 22px 70px rgba(33, 25, 14, 0.24);
+}
+
+.app-shell::-webkit-scrollbar {
+  display: none;
+}
+
+.notebook-page {
+  width: 100%;
+  min-width: 100%;
+  height: 100%;
+  max-height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  scrollbar-width: thin;
+  background: var(--paper);
+  box-shadow:
+    inset 14px 0 22px rgba(84, 58, 24, 0.08),
+    inset -1px 0 0 rgba(139, 109, 65, 0.14);
 }
 
 .journey-cover {
@@ -164,17 +202,18 @@ svg {
 }
 
 .app-main {
-  display: grid;
-  gap: 18px;
-  padding: 18px 16px max(28px, env(safe-area-inset-bottom));
+  display: contents;
 }
 
 .front-matter,
+.front-matter > .flyleaf-page,
+.notebook-overview-page,
 .photo-film,
 .portrait-pages,
 .event-pages,
 .academy-gallery,
 .color-pages,
+.notebook-index-page,
 .note-list,
 .editor-card,
 .back-cover {
@@ -182,11 +221,238 @@ svg {
   contain-intrinsic-size: auto 620px;
 }
 
-.front-matter {
-  display: grid;
-  gap: 14px;
-  padding: 16px;
+.journey-cover.notebook-page {
+  padding-bottom: max(86px, env(safe-area-inset-bottom));
+}
+
+.front-matter > .notebook-page,
+.app-main > .notebook-page:not(.editor-card):not(.back-cover) {
+  padding: 18px 16px max(86px, env(safe-area-inset-bottom));
+}
+
+.notebook-overview-page,
+.notebook-index-page {
+  align-content: start;
   background: var(--paper);
+}
+
+.notebook-overview-page,
+.notebook-index-page {
+  display: grid;
+  gap: 18px;
+}
+
+.note-toc.note-toc-feature.notebook-page {
+  align-content: start;
+  margin: 0;
+  padding: 16px 14px max(86px, env(safe-area-inset-bottom));
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.editor-card.notebook-page {
+  height: 100%;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  border-width: 0;
+  border-radius: 0;
+  box-shadow: none;
+  touch-action: pan-y;
+}
+
+.back-cover.notebook-page {
+  border-radius: 0;
+}
+
+.page-turn-ghost {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 35;
+  width: 100%;
+  min-width: 100%;
+  height: 100%;
+  max-height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  will-change: transform, opacity, filter;
+}
+
+.page-turn-ghost::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.34), transparent 18%, rgba(88, 58, 22, 0.18) 76%, rgba(20, 14, 8, 0.34)),
+    linear-gradient(90deg, transparent, rgba(255, 242, 195, 0.18) 45%, transparent 56%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.page-turn-ghost::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 51;
+  width: 42px;
+  background: linear-gradient(90deg, rgba(255, 248, 218, 0.42), rgba(81, 52, 18, 0.22), transparent);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.page-turn-ghost.turn-next {
+  transform-origin: left center;
+}
+
+.page-turn-ghost.turn-prev {
+  transform-origin: right center;
+}
+
+.page-turn-ghost.turn-next::after {
+  right: 0;
+}
+
+.page-turn-ghost.turn-prev::after {
+  left: 0;
+  transform: scaleX(-1);
+}
+
+.page-turn-ghost.turn-next.is-turning {
+  animation: turnPageNext 0.72s cubic-bezier(0.2, 0.72, 0.18, 1) both;
+}
+
+.page-turn-ghost.turn-prev.is-turning {
+  animation: turnPagePrev 0.72s cubic-bezier(0.2, 0.72, 0.18, 1) both;
+}
+
+.page-turn-ghost.is-turning::before,
+.page-turn-ghost.is-turning::after {
+  animation: turnPageSheen 0.72s ease both;
+}
+
+@keyframes turnPageNext {
+  0% {
+    opacity: 1;
+    filter: brightness(1);
+    transform: rotateY(0deg) translateZ(8px);
+  }
+  42% {
+    opacity: 0.98;
+    filter: brightness(0.96);
+    transform: rotateY(-56deg) translateZ(18px) skewY(-1deg);
+  }
+  100% {
+    opacity: 0.08;
+    filter: brightness(0.82);
+    transform: rotateY(-106deg) translateZ(4px) skewY(-1.5deg);
+  }
+}
+
+@keyframes turnPagePrev {
+  0% {
+    opacity: 1;
+    filter: brightness(1);
+    transform: rotateY(0deg) translateZ(8px);
+  }
+  42% {
+    opacity: 0.98;
+    filter: brightness(0.96);
+    transform: rotateY(56deg) translateZ(18px) skewY(1deg);
+  }
+  100% {
+    opacity: 0.08;
+    filter: brightness(0.82);
+    transform: rotateY(106deg) translateZ(4px) skewY(1.5deg);
+  }
+}
+
+@keyframes turnPageSheen {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  36% {
+    opacity: 0.9;
+  }
+  62% {
+    opacity: 0.45;
+  }
+}
+
+.notebook-pager {
+  position: fixed;
+  z-index: 40;
+  left: 50%;
+  bottom: max(12px, env(safe-area-inset-bottom));
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  align-items: center;
+  gap: 10px;
+  width: min(calc(100% - 24px), 398px);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.notebook-page-button,
+.notebook-page-status {
+  border: 1px solid rgba(216, 154, 50, 0.36);
+  background:
+    linear-gradient(145deg, rgba(255, 237, 165, 0.16), transparent 42%),
+    rgba(255, 253, 247, 0.92);
+  color: #7a4c18;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    0 12px 24px rgba(64, 47, 23, 0.18);
+  backdrop-filter: blur(10px);
+}
+
+.notebook-page-button {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  font-size: 24px;
+  font-weight: 950;
+  line-height: 1;
+  pointer-events: auto;
+}
+
+.notebook-page-button:disabled {
+  cursor: default;
+  opacity: 0.38;
+}
+
+.notebook-page-status {
+  min-width: 0;
+  padding: 8px 12px;
+  border-radius: 999px;
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 950;
+  text-align: center;
+  pointer-events: none;
+}
+
+.front-matter {
+  display: contents;
+}
+
+.front-matter > .flyleaf-page.notebook-page {
+  min-height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  border: 0;
+  border-radius: 0;
+  box-shadow:
+    inset 14px 0 22px rgba(84, 58, 24, 0.08),
+    inset -1px 0 0 rgba(139, 109, 65, 0.14);
 }
 
 .flyleaf-page {
@@ -297,28 +563,32 @@ svg {
   justify-content: center;
   gap: 8px 22px;
   margin: 0;
-  color: #f4d57a;
-  font-family: var(--hand-font);
-  font-size: 34px;
-  font-weight: 900;
-  line-height: 1.12;
-  letter-spacing: 0.08em;
+  color: #efd184;
+  font-family: var(--signboard-font);
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: 0.16em;
   text-shadow:
-    0 1px 0 rgba(255, 250, 203, 0.62),
-    0 2px 0 rgba(122, 74, 15, 0.5),
-    0 4px 8px rgba(0, 0, 0, 0.34);
+    0 1px 0 rgba(255, 248, 204, 0.72),
+    0 2px 0 rgba(100, 61, 18, 0.56),
+    0 4px 7px rgba(0, 0, 0, 0.34);
 }
 
 .teaching-page h2 span {
   display: inline-block;
   background:
-    linear-gradient(180deg, #fff8cd 0%, #f7dc83 24%, #b87622 50%, #fff0a7 67%, #d99b32 84%, #7a4c18 100%);
+    linear-gradient(180deg, #fff5bf 0%, #f2d487 28%, #bd7e2f 48%, #fff1ad 62%, #d39a42 82%, #6f481b 100%);
   -webkit-background-clip: text;
   background-clip: text;
-  color: #f4d57a;
+  color: #efd184;
   -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.22)) drop-shadow(0 3px 5px rgba(0, 0, 0, 0.28));
+  filter:
+    drop-shadow(0 1px 0 rgba(255, 255, 255, 0.2))
+    drop-shadow(0 2px 2px rgba(98, 55, 13, 0.32))
+    drop-shadow(0 4px 5px rgba(0, 0, 0, 0.26));
   white-space: nowrap;
+  -webkit-text-stroke: 0.25px rgba(82, 52, 20, 0.42);
 }
 
 .teaching-page p {
@@ -365,8 +635,9 @@ svg {
   border: 1px solid rgba(131, 93, 49, 0.22);
   border-radius: var(--radius);
   color: #202326;
+  font-family: var(--message-hand-font);
   font-size: 21px;
-  font-weight: 650;
+  font-weight: 400;
   line-height: 1.78;
   letter-spacing: 0;
   background:
@@ -395,15 +666,15 @@ svg {
 }
 
 .handwritten-note p {
-  color: #181b1e;
-  font-family: var(--hand-font);
-  font-size: 27px;
-  font-weight: 500;
-  line-height: 1.45;
+  color: #202225;
+  font-family: var(--message-hand-font);
+  font-size: 29px;
+  font-weight: 400;
+  line-height: 1.5;
   font-style: normal;
   text-shadow:
-    0.3px 0 rgba(24, 27, 30, 0.58),
-    -0.2px 0 rgba(24, 27, 30, 0.22);
+    0.18px 0 rgba(32, 34, 37, 0.34),
+    0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .handwriting-line {
@@ -449,8 +720,8 @@ svg {
 .message-page img {
   display: block;
   width: 100%;
-  max-height: 188px;
-  object-fit: cover;
+  max-height: none;
+  object-fit: contain;
   object-position: top center;
   border-radius: 6px;
   filter: saturate(0.92) sepia(0.08);
@@ -1521,7 +1792,7 @@ svg {
 
 .note-toc-actions {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 46px;
   gap: 10px;
 }
 
@@ -1554,6 +1825,7 @@ svg {
 }
 
 .toc-action-button.install-action {
+  padding: 0;
   border-color: rgba(255, 219, 125, 0.5);
   background:
     linear-gradient(145deg, rgba(255, 243, 177, 0.18), transparent 38%),
@@ -1562,17 +1834,22 @@ svg {
   text-shadow: 0 1px 0 rgba(62, 21, 0, 0.55), 0 0 12px rgba(255, 205, 86, 0.22);
 }
 
+.toc-action-button.install-action span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
 .toc-action-button[hidden] {
   display: none;
 }
 
 @media (max-width: 420px) {
   .note-toc-actions {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .toc-action-button.install-action {
-    grid-column: 1 / -1;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 46px;
   }
 }
 
@@ -2777,6 +3054,8 @@ textarea:focus,
 
 @media (min-width: 760px) {
   .app-shell {
+    height: min(900px, calc(100svh - 48px));
+    min-height: 0;
     margin-top: 24px;
     margin-bottom: 24px;
     border-radius: 28px;

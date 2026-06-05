@@ -264,7 +264,22 @@ const state = {
   renderTimer: null
 };
 
+const notebookPager = {
+  pages: [],
+  currentIndex: 0,
+  scrollFrame: null,
+  wheelUntil: 0,
+  touchStart: null,
+  touchHandled: false,
+  turnTimer: null,
+  turnSwapTimer: null,
+  prevButton: null,
+  nextButton: null,
+  status: null
+};
+
 const els = {
+  appShell: document.querySelector(".app-shell"),
   todayLine: document.querySelector("#todayLine"),
   focusPerson: document.querySelector("#focusPerson"),
   focusMeta: document.querySelector("#focusMeta"),
@@ -333,6 +348,7 @@ init();
 function init() {
   prepareStaticImages();
   setupInstallPrompt();
+  setupNotebookPager();
 
   els.todayLine.textContent = new Intl.DateTimeFormat("zh-CN", {
     year: "numeric",
@@ -357,13 +373,13 @@ function bindEvents() {
   els.newNoteButton.addEventListener("click", () => {
     const note = createNote();
     selectNote(note.id);
-    document.querySelector(".editor-card")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    scrollToEditor();
   });
 
   els.exportButton.addEventListener("click", exportNotes);
   els.installButton?.addEventListener("click", installApp);
   els.tocJumpButton?.addEventListener("click", () => {
-    els.noteToc?.scrollIntoView({ behavior: "smooth", block: "start" });
+    scrollToNotebookPage(els.noteToc);
   });
 
   els.pageThemeButtons.forEach((button) => {
@@ -438,6 +454,309 @@ function bindEvents() {
   });
 }
 
+function setupNotebookPager() {
+  if (!els.appShell) return;
+
+  const pageSelectors = [
+    ".journey-cover",
+    ".note-toc-feature",
+    ".front-matter > .teaching-page",
+    ".front-matter > .message-page",
+    ".app-main > .notebook-overview-page",
+    ".app-main > .portrait-pages",
+    ".app-main > .event-pages",
+    ".app-main > .academy-gallery",
+    ".app-main > .color-pages",
+    ".app-main > .notebook-index-page",
+    ".app-main > .editor-card",
+    ".app-main > .back-cover"
+  ];
+
+  notebookPager.pages = pageSelectors
+    .map((selector) => document.querySelector(selector))
+    .filter(Boolean);
+
+  notebookPager.pages.forEach((page, index) => {
+    page.classList.add("notebook-page");
+    page.dataset.notebookPage = String(index + 1);
+  });
+
+  const controls = document.createElement("nav");
+  controls.className = "notebook-pager";
+  controls.setAttribute("aria-label", "Notebook pages");
+
+  const prevButton = document.createElement("button");
+  prevButton.type = "button";
+  prevButton.className = "notebook-page-button";
+  prevButton.textContent = "<";
+  prevButton.title = "Previous page";
+  prevButton.setAttribute("aria-label", "Previous page");
+
+  const status = document.createElement("span");
+  status.className = "notebook-page-status";
+  status.setAttribute("aria-live", "polite");
+
+  const nextButton = document.createElement("button");
+  nextButton.type = "button";
+  nextButton.className = "notebook-page-button";
+  nextButton.textContent = ">";
+  nextButton.title = "Next page";
+  nextButton.setAttribute("aria-label", "Next page");
+
+  controls.append(prevButton, status, nextButton);
+  els.appShell.append(controls);
+
+  notebookPager.prevButton = prevButton;
+  notebookPager.nextButton = nextButton;
+  notebookPager.status = status;
+
+  prevButton.addEventListener("click", () => goToNotebookPage(notebookPager.currentIndex - 1));
+  nextButton.addEventListener("click", () => goToNotebookPage(notebookPager.currentIndex + 1));
+  els.appShell.addEventListener("scroll", scheduleNotebookPagerUpdate, { passive: true });
+  els.appShell.addEventListener("wheel", handleNotebookWheel, { passive: false });
+  els.appShell.addEventListener("touchstart", handleNotebookTouchStart, { passive: true });
+  els.appShell.addEventListener("touchmove", handleNotebookTouchMove, { passive: false });
+  els.appShell.addEventListener("touchend", handleNotebookTouchEnd, { passive: false });
+  document.addEventListener("keydown", handleNotebookKeys);
+
+  updateNotebookPager();
+}
+
+function scheduleNotebookPagerUpdate() {
+  if (notebookPager.scrollFrame) return;
+  notebookPager.scrollFrame = requestAnimationFrame(() => {
+    notebookPager.scrollFrame = null;
+    updateNotebookPager();
+  });
+}
+
+function updateNotebookPager() {
+  if (!els.appShell || !notebookPager.pages.length) return;
+  const width = Math.max(1, els.appShell.clientWidth);
+  notebookPager.currentIndex = clamp(Math.round(els.appShell.scrollLeft / width), 0, notebookPager.pages.length - 1);
+
+  if (notebookPager.prevButton) {
+    notebookPager.prevButton.disabled = notebookPager.currentIndex === 0;
+  }
+  if (notebookPager.nextButton) {
+    notebookPager.nextButton.disabled = notebookPager.currentIndex === notebookPager.pages.length - 1;
+  }
+  if (notebookPager.status) {
+    notebookPager.status.textContent = `${notebookPager.currentIndex + 1} / ${notebookPager.pages.length}`;
+  }
+}
+
+function goToNotebookPage(index, options = {}) {
+  if (!els.appShell || !notebookPager.pages.length) return;
+  const nextIndex = clamp(index, 0, notebookPager.pages.length - 1);
+  const page = notebookPager.pages[nextIndex];
+  if (!page) return;
+
+  const shouldAnimate = !options.instant && options.animate !== false && nextIndex !== notebookPager.currentIndex;
+  if (shouldAnimate) {
+    animateNotebookPageTurn(notebookPager.currentIndex, nextIndex, options);
+    return;
+  }
+
+  moveNotebookToPage(page, {
+    behavior: options.instant ? "auto" : "smooth",
+    resetScroll: options.resetScroll !== false
+  });
+  notebookPager.currentIndex = nextIndex;
+  updateNotebookPager();
+}
+
+function moveNotebookToPage(page, options = {}) {
+  const previousBehavior = els.appShell.style.scrollBehavior;
+  if (options.behavior === "auto") {
+    els.appShell.style.scrollBehavior = "auto";
+  }
+  els.appShell.scrollTo({ left: page.offsetLeft, behavior: options.behavior || "smooth" });
+  if (options.resetScroll !== false) {
+    page.scrollTo({ top: 0, behavior: "auto" });
+  }
+  if (options.behavior === "auto") {
+    requestAnimationFrame(() => {
+      els.appShell.style.scrollBehavior = previousBehavior;
+    });
+  }
+}
+
+function animateNotebookPageTurn(currentIndex, nextIndex, options = {}) {
+  const currentPage = notebookPager.pages[currentIndex];
+  const nextPage = notebookPager.pages[nextIndex];
+  if (!currentPage || !nextPage) return;
+
+  clearTimeout(notebookPager.turnTimer);
+  clearTimeout(notebookPager.turnSwapTimer);
+  els.appShell.querySelector(".page-turn-ghost")?.remove();
+
+  const direction = nextIndex > currentIndex ? "next" : "prev";
+  const ghost = currentPage.cloneNode(true);
+  ghost.classList.add("page-turn-ghost", `turn-${direction}`);
+  ghost.setAttribute("aria-hidden", "true");
+  ghost.style.left = `${els.appShell.scrollLeft}px`;
+  els.appShell.append(ghost);
+  ghost.scrollTop = currentPage.scrollTop;
+
+  els.appShell.classList.add("book-turning", `book-turning-${direction}`);
+  requestAnimationFrame(() => {
+    ghost.classList.add("is-turning");
+  });
+
+  notebookPager.turnSwapTimer = window.setTimeout(() => {
+    moveNotebookToPage(nextPage, {
+      behavior: "auto",
+      resetScroll: options.resetScroll !== false
+    });
+    notebookPager.currentIndex = nextIndex;
+    updateNotebookPager();
+  }, 180);
+
+  notebookPager.turnTimer = window.setTimeout(() => {
+    ghost.remove();
+    els.appShell.classList.remove("book-turning", `book-turning-${direction}`);
+  }, 760);
+}
+
+function scrollToNotebookPage(target, options = {}) {
+  const element = typeof target === "string" ? document.querySelector(target) : target;
+  const page = element?.closest?.(".notebook-page");
+  const index = notebookPager.pages.indexOf(page);
+  if (index < 0) return false;
+  goToNotebookPage(index, options);
+  return true;
+}
+
+function handleNotebookWheel(event) {
+  if (!notebookPager.pages.length || event.defaultPrevented) return;
+  const deltaY = event.deltaY;
+  if (!deltaY || Math.abs(event.deltaX) > Math.abs(deltaY)) return;
+
+  const page = notebookPager.pages[notebookPager.currentIndex];
+  if (!page) return;
+
+  const nestedScroller = findScrollableAncestor(event.target, page);
+  if (nestedScroller && canScrollInDirection(nestedScroller, deltaY)) return;
+  if (canScrollInDirection(page, deltaY)) return;
+
+  event.preventDefault();
+  const now = Date.now();
+  if (now < notebookPager.wheelUntil) return;
+  notebookPager.wheelUntil = now + 520;
+  goToNotebookPage(notebookPager.currentIndex + (deltaY > 0 ? 1 : -1));
+}
+
+function handleNotebookTouchStart(event) {
+  if (isNotebookSwipeExcluded(event.target)) {
+    notebookPager.touchStart = null;
+    notebookPager.touchHandled = false;
+    return;
+  }
+  const touch = event.touches[0];
+  if (!touch) return;
+  notebookPager.touchStart = {
+    x: touch.clientX,
+    y: touch.clientY,
+    time: Date.now()
+  };
+  notebookPager.touchHandled = false;
+}
+
+function handleNotebookTouchMove(event) {
+  if (!notebookPager.touchStart) return;
+  if (notebookPager.touchHandled) {
+    event.preventDefault();
+    return;
+  }
+  const touch = event.touches[0];
+  if (!touch) return;
+  const dx = touch.clientX - notebookPager.touchStart.x;
+  const dy = touch.clientY - notebookPager.touchStart.y;
+  if (Math.abs(dx) > 16 && Math.abs(dx) > Math.abs(dy) * 1.18) {
+    notebookPager.touchHandled = true;
+    event.preventDefault();
+  }
+}
+
+function handleNotebookTouchEnd(event) {
+  if (!notebookPager.touchStart) return;
+  const touch = event.changedTouches[0];
+  if (!touch) {
+    notebookPager.touchStart = null;
+    notebookPager.touchHandled = false;
+    return;
+  }
+  const dx = touch.clientX - notebookPager.touchStart.x;
+  const dy = touch.clientY - notebookPager.touchStart.y;
+  const elapsed = Date.now() - notebookPager.touchStart.time;
+  notebookPager.touchStart = null;
+
+  if (Math.abs(dx) < 68 || Math.abs(dx) < Math.abs(dy) * 1.18 || elapsed > 900) {
+    notebookPager.touchHandled = false;
+    return;
+  }
+
+  event.preventDefault();
+  notebookPager.touchHandled = false;
+  goToNotebookPage(notebookPager.currentIndex + (dx < 0 ? 1 : -1));
+}
+
+function isNotebookSwipeExcluded(target) {
+  const element = target instanceof Element ? target : null;
+  return Boolean(
+    element?.closest(
+      ".editor-card, .photo-film, .event-strip, .page-strip, .page-theme-picker, .note-toc-list, input, textarea, select, button"
+    )
+  );
+}
+
+function handleNotebookKeys(event) {
+  if (isEditableTarget(event.target)) return;
+  if (event.key === "ArrowRight" || event.key === "PageDown") {
+    event.preventDefault();
+    goToNotebookPage(notebookPager.currentIndex + 1);
+  } else if (event.key === "ArrowLeft" || event.key === "PageUp") {
+    event.preventDefault();
+    goToNotebookPage(notebookPager.currentIndex - 1);
+  } else if (event.key === "Home") {
+    event.preventDefault();
+    goToNotebookPage(0);
+  } else if (event.key === "End") {
+    event.preventDefault();
+    goToNotebookPage(notebookPager.pages.length - 1);
+  }
+}
+
+function findScrollableAncestor(target, stopAt) {
+  let element = target instanceof Element ? target : null;
+  while (element && element !== stopAt) {
+    const style = window.getComputedStyle(element);
+    if (/(auto|scroll)/.test(style.overflowY) && element.scrollHeight > element.clientHeight + 2) {
+      return element;
+    }
+    element = element.parentElement;
+  }
+  return null;
+}
+
+function canScrollInDirection(element, deltaY) {
+  if (!element || element.scrollHeight <= element.clientHeight + 2) return false;
+  if (deltaY > 0) {
+    return element.scrollTop + element.clientHeight < element.scrollHeight - 2;
+  }
+  return element.scrollTop > 2;
+}
+
+function isEditableTarget(target) {
+  const element = target instanceof Element ? target : null;
+  return Boolean(element?.closest("input, textarea, select, [contenteditable='true']"));
+}
+
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
 function bindPageTurn() {
   if (!els.editorCard) return;
 
@@ -473,9 +792,10 @@ function bindPageTurn() {
       touchStart = null;
 
       if (Math.abs(dx) < 72 || Math.abs(dx) < Math.abs(dy) * 1.25 || elapsed > 900) return;
+      event.preventDefault();
       turnToRelativeNote(dx < 0 ? 1 : -1);
     },
-    { passive: true }
+    { passive: false }
   );
 }
 
@@ -677,7 +997,7 @@ function openFilter(filter) {
 }
 
 function scrollToEditor() {
-  document.querySelector(".editor-card")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  scrollToNotebookPage(els.editorCard);
 }
 
 function selectNote(id) {
@@ -1687,7 +2007,7 @@ function renderList() {
     pin.classList.toggle("hidden", !note.pinned);
     button.addEventListener("click", () => {
       selectNote(note.id);
-      document.querySelector(".editor-card")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      scrollToEditor();
     });
     els.noteList.append(fragment);
   });

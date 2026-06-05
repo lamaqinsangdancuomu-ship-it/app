@@ -1,4 +1,4 @@
-const CACHE_NAME = "fawang-notebook-v45";
+const CACHE_NAME = "fawang-notebook-v47";
 const SHELL_ASSETS = [
   "./",
   "./index.html",
