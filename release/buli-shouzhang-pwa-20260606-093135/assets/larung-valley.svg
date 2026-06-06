@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 560" role="img" aria-label="Larung Gar valley landscape">
+  <defs>
+    <linearGradient id="sky" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#f8c86a"/>
+      <stop offset=".52" stop-color="#f3a747"/>
+      <stop offset="1" stop-color="#d96f2b"/>
+    </linearGradient>
+    <linearGradient id="hill" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#496f5b"/>
+      <stop offset="1" stop-color="#243f34"/>
+    </linearGradient>
+    <filter id="soft" x="-10%" y="-10%" width="120%" height="120%">
+      <feGaussianBlur stdDeviation="1.8"/>
+    </filter>
+  </defs>
+  <rect width="900" height="560" fill="url(#sky)"/>
+  <circle cx="704" cy="118" r="58" fill="#fff5c8" opacity=".76"/>
+  <path d="M0 280C112 174 222 143 330 205C438 267 523 246 629 171C722 105 813 132 900 213V560H0Z" fill="url(#hill)"/>
+  <path d="M0 350C153 251 300 246 440 335C594 434 744 369 900 284V560H0Z" fill="#315a43"/>
+  <path d="M0 420C156 338 309 329 459 403C600 472 750 451 900 367V560H0Z" fill="#7b3a36"/>
+  <g opacity=".95">
+    <g fill="#a92f32">
+      <rect x="68" y="376" width="34" height="26" rx="2"/>
+      <rect x="114" y="356" width="38" height="28" rx="2"/>
+      <rect x="162" y="386" width="32" height="24" rx="2"/>
+      <rect x="214" y="344" width="40" height="30" rx="2"/>
+      <rect x="266" y="379" width="34" height="26" rx="2"/>
+      <rect x="324" y="342" width="42" height="30" rx="2"/>
+      <rect x="382" y="389" width="36" height="26" rx="2"/>
+      <rect x="436" y="354" width="40" height="30" rx="2"/>
+      <rect x="492" y="392" width="34" height="26" rx="2"/>
+      <rect x="548" y="364" width="42" height="30" rx="2"/>
+      <rect x="612" y="399" width="36" height="26" rx="2"/>
+      <rect x="674" y="371" width="42" height="30" rx="2"/>
+      <rect x="738" y="405" width="34" height="26" rx="2"/>
+      <rect x="794" y="379" width="40" height="30" rx="2"/>
+    </g>
+    <g fill="#f5d68d">
+      <rect x="75" y="383" width="8" height="8"/>
+      <rect x="90" y="383" width="8" height="8"/>
+      <rect x="124" y="364" width="8" height="8"/>
+      <rect x="141" y="364" width="8" height="8"/>
+      <rect x="226" y="353" width="8" height="8"/>
+      <rect x="245" y="353" width="8" height="8"/>
+      <rect x="337" y="350" width="8" height="8"/>
+      <rect x="356" y="350" width="8" height="8"/>
+      <rect x="449" y="363" width="8" height="8"/>
+      <rect x="468" y="363" width="8" height="8"/>
+      <rect x="563" y="374" width="8" height="8"/>
+      <rect x="582" y="374" width="8" height="8"/>
+      <rect x="690" y="381" width="8" height="8"/>
+      <rect x="708" y="381" width="8" height="8"/>
+      <rect x="808" y="389" width="8" height="8"/>
+      <rect x="826" y="389" width="8" height="8"/>
+    </g>
+  </g>
+  <path d="M72 468C232 424 392 433 552 486C672 526 787 525 900 485V560H0V498C22 488 46 478 72 468Z" fill="#482b2d" opacity=".55"/>
+  <rect width="900" height="560" fill="#fff" opacity=".08" filter="url(#soft)"/>
+</svg>

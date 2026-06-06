@@ -275,7 +275,8 @@ const notebookPager = {
   turnSwapTimer: null,
   prevButton: null,
   nextButton: null,
-  status: null
+  status: null,
+  footerControls: []
 };
 
 const els = {
@@ -460,16 +461,16 @@ function setupNotebookPager() {
   const pageSelectors = [
     ".journey-cover",
     ".note-toc-feature",
-    ".front-matter > .teaching-page",
-    ".front-matter > .message-page",
-    ".app-main > .notebook-overview-page",
-    ".app-main > .portrait-pages",
-    ".app-main > .event-pages",
-    ".app-main > .academy-gallery",
-    ".app-main > .color-pages",
-    ".app-main > .notebook-index-page",
-    ".app-main > .editor-card",
-    ".app-main > .back-cover"
+    ".teaching-page",
+    ".message-page",
+    ".notebook-overview-page",
+    ".portrait-pages",
+    ".event-pages",
+    ".academy-gallery",
+    ".color-pages",
+    ".notebook-index-page",
+    ".editor-card",
+    ".back-cover"
   ];
 
   notebookPager.pages = pageSelectors
@@ -481,37 +482,14 @@ function setupNotebookPager() {
     page.dataset.notebookPage = String(index + 1);
   });
 
-  const controls = document.createElement("nav");
-  controls.className = "notebook-pager";
-  controls.setAttribute("aria-label", "Notebook pages");
+  promoteNotebookPages();
 
-  const prevButton = document.createElement("button");
-  prevButton.type = "button";
-  prevButton.className = "notebook-page-button";
-  prevButton.textContent = "<";
-  prevButton.title = "Previous page";
-  prevButton.setAttribute("aria-label", "Previous page");
+  notebookPager.footerControls = notebookPager.pages.map((page, index) => {
+    const controls = createNotebookPageFooter(index);
+    page.append(controls.root);
+    return controls;
+  });
 
-  const status = document.createElement("span");
-  status.className = "notebook-page-status";
-  status.setAttribute("aria-live", "polite");
-
-  const nextButton = document.createElement("button");
-  nextButton.type = "button";
-  nextButton.className = "notebook-page-button";
-  nextButton.textContent = ">";
-  nextButton.title = "Next page";
-  nextButton.setAttribute("aria-label", "Next page");
-
-  controls.append(prevButton, status, nextButton);
-  els.appShell.append(controls);
-
-  notebookPager.prevButton = prevButton;
-  notebookPager.nextButton = nextButton;
-  notebookPager.status = status;
-
-  prevButton.addEventListener("click", () => goToNotebookPage(notebookPager.currentIndex - 1));
-  nextButton.addEventListener("click", () => goToNotebookPage(notebookPager.currentIndex + 1));
   els.appShell.addEventListener("scroll", scheduleNotebookPagerUpdate, { passive: true });
   els.appShell.addEventListener("wheel", handleNotebookWheel, { passive: false });
   els.appShell.addEventListener("touchstart", handleNotebookTouchStart, { passive: true });
@@ -520,6 +498,41 @@ function setupNotebookPager() {
   document.addEventListener("keydown", handleNotebookKeys);
 
   updateNotebookPager();
+}
+
+function promoteNotebookPages() {
+  if (!els.appShell) return;
+  notebookPager.pages.forEach((page) => els.appShell.append(page));
+}
+
+function createNotebookPageFooter(index) {
+  const controls = document.createElement("nav");
+  controls.className = "notebook-page-footer";
+  controls.setAttribute("aria-label", "翻页");
+
+  const prevButton = createNotebookPageButton("prev");
+  const status = document.createElement("span");
+  status.className = "notebook-page-status";
+  status.setAttribute("aria-live", "polite");
+
+  const nextButton = createNotebookPageButton("next");
+
+  prevButton.addEventListener("click", () => goToNotebookPage(index - 1));
+  nextButton.addEventListener("click", () => goToNotebookPage(index + 1));
+
+  controls.append(prevButton, status, nextButton);
+  return { root: controls, prevButton, nextButton, status };
+}
+
+function createNotebookPageButton(direction) {
+  const button = document.createElement("button");
+  const isPrevious = direction === "prev";
+  button.type = "button";
+  button.className = `notebook-page-button ${direction}`;
+  button.textContent = isPrevious ? "<" : ">";
+  button.title = isPrevious ? "上一页" : "下一页";
+  button.setAttribute("aria-label", isPrevious ? "上一页" : "下一页");
+  return button;
 }
 
 function scheduleNotebookPagerUpdate() {
@@ -544,6 +557,13 @@ function updateNotebookPager() {
   if (notebookPager.status) {
     notebookPager.status.textContent = `${notebookPager.currentIndex + 1} / ${notebookPager.pages.length}`;
   }
+  notebookPager.footerControls.forEach((controls, index) => {
+    controls.root.classList.toggle("is-current", index === notebookPager.currentIndex);
+    controls.prevButton.disabled = index === 0;
+    controls.nextButton.disabled = index === notebookPager.pages.length - 1;
+    controls.status.textContent = `${index + 1} / ${notebookPager.pages.length}`;
+  });
+  updateTocPageActiveState();
 }
 
 function goToNotebookPage(index, options = {}) {
@@ -552,7 +572,8 @@ function goToNotebookPage(index, options = {}) {
   const page = notebookPager.pages[nextIndex];
   if (!page) return;
 
-  const shouldAnimate = !options.instant && options.animate !== false && nextIndex !== notebookPager.currentIndex;
+  const isCoverTurn = notebookPager.currentIndex === 0 || nextIndex === 0;
+  const shouldAnimate = !options.instant && options.animate !== false && isCoverTurn && nextIndex !== notebookPager.currentIndex;
   if (shouldAnimate) {
     animateNotebookPageTurn(notebookPager.currentIndex, nextIndex, options);
     return;
@@ -1911,6 +1932,7 @@ function renderToc() {
   if (!els.noteToc) return;
 
   const notes = getFilteredNotes();
+  const pages = getNotebookPageCatalog();
   els.noteToc.replaceChildren();
 
   const head = document.createElement("div");
@@ -1924,17 +1946,22 @@ function renderToc() {
   titleWrap.append(eyebrow, title);
   const count = document.createElement("span");
   count.className = "note-toc-count";
-  count.textContent = `${notes.length} 篇`;
+  count.textContent = `${pages.length} 页 · ${notes.length} 篇`;
   head.append(titleWrap, count);
 
-  const list = document.createElement("div");
-  list.className = "note-toc-list";
+  const pageSection = createTocSection("页面目录", `${pages.length} 页`);
+  const pageList = pageSection.querySelector(".note-toc-list");
+  pages.forEach((entry) => {
+    pageList.append(createPageTocItem(entry));
+  });
 
+  const noteSection = createTocSection("笔记目录", `${notes.length} 篇`);
+  const noteList = noteSection.querySelector(".note-toc-list");
   if (!notes.length) {
     const empty = document.createElement("p");
     empty.className = "note-toc-empty";
-    empty.textContent = "写下内容后，这里会自动生成目录。";
-    list.append(empty);
+    empty.textContent = "写下内容后，这里会自动生成笔记目录。";
+    noteList.append(empty);
   } else {
     notes.forEach((note, index) => {
       const item = document.createElement("button");
@@ -1959,11 +1986,102 @@ function renderToc() {
       content.append(itemTitle, meta);
 
       item.append(order, content);
-      list.append(item);
+      noteList.append(item);
     });
   }
 
-  els.noteToc.append(head, list);
+  els.noteToc.append(head, pageSection, noteSection);
+  updateTocPageActiveState();
+}
+
+function createTocSection(titleText, countText) {
+  const section = document.createElement("section");
+  section.className = "note-toc-section";
+
+  const title = document.createElement("div");
+  title.className = "note-toc-section-title";
+  const strong = document.createElement("strong");
+  strong.textContent = titleText;
+  const count = document.createElement("span");
+  count.textContent = countText;
+  title.append(strong, count);
+
+  const list = document.createElement("div");
+  list.className = "note-toc-list";
+  section.append(title, list);
+  return section;
+}
+
+function createPageTocItem(entry) {
+  const item = document.createElement("button");
+  item.type = "button";
+  item.className = "note-toc-item page-toc-item";
+  item.dataset.tocPageIndex = String(entry.index);
+  item.addEventListener("click", () => goToNotebookPage(entry.index));
+
+  const order = document.createElement("span");
+  order.className = "note-toc-order";
+  order.textContent = String(entry.index + 1).padStart(2, "0");
+
+  const content = document.createElement("span");
+  content.className = "note-toc-content";
+  const title = document.createElement("strong");
+  title.textContent = entry.title;
+  const meta = document.createElement("small");
+  meta.textContent = entry.meta;
+  content.append(title, meta);
+
+  item.append(order, content);
+  return item;
+}
+
+function getNotebookPageCatalog() {
+  return notebookPager.pages.map((page, index) => ({
+    index,
+    title: getNotebookPageTitle(page, index),
+    meta: getNotebookPageMeta(page, index)
+  }));
+}
+
+function getNotebookPageTitle(page, index) {
+  const fixedTitles = [
+    ["journey-cover", "封面"],
+    ["note-toc-feature", "目录"],
+    ["teaching-page", "扉页一：莫舍己道"],
+    ["message-page", "扉页二：叮咛"],
+    ["notebook-overview-page", "不离"],
+    ["portrait-pages", "法相庄严"],
+    ["event-pages", "岁月锚点"],
+    ["academy-gallery", "家乡风光"],
+    ["color-pages", "彩页"],
+    ["notebook-index-page", "笔记索引"],
+    ["editor-card", "笔记编辑"],
+    ["back-cover", "尾页"]
+  ];
+  const matched = fixedTitles.find(([className]) => page.classList.contains(className));
+  if (matched) return matched[1];
+
+  const label =
+    page.getAttribute("aria-label") ||
+    page.querySelector("[aria-label]")?.getAttribute("aria-label") ||
+    page.querySelector(".section-head h2, h2, .flyleaf-kicker")?.textContent ||
+    "";
+  return normalizeTocText(label) || `第 ${index + 1} 页`;
+}
+
+function getNotebookPageMeta(page, index) {
+  const label = normalizeTocText(page.getAttribute("aria-label"));
+  return `${String(index + 1).padStart(2, "0")} / ${notebookPager.pages.length}${label ? ` · ${label}` : " · 固定页面"}`;
+}
+
+function normalizeTocText(value) {
+  return String(value || "").replace(/\s+/g, " ").trim();
+}
+
+function updateTocPageActiveState() {
+  els.noteToc?.querySelectorAll("[data-toc-page-index]").forEach((item) => {
+    item.classList.toggle("active", Number(item.dataset.tocPageIndex) === notebookPager.currentIndex);
+  });
 }
 
 function getNoteDisplayTitle(note) {

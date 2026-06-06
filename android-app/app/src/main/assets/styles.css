@@ -100,6 +100,7 @@ svg {
 }
 
 .notebook-page {
+  position: relative;
   width: 100%;
   min-width: 100%;
   height: 100%;
@@ -123,6 +124,23 @@ svg {
   padding: max(14px, env(safe-area-inset-top)) 14px 14px;
   background: var(--orange);
   color: #3a2c1c;
+}
+
+.journey-cover::after {
+  content: "";
+  position: absolute;
+  right: 14px;
+  bottom: max(18px, env(safe-area-inset-bottom));
+  z-index: 1;
+  width: 96px;
+  height: 96px;
+  border-bottom-right-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.78), rgba(255, 227, 151, 0.36) 44%, rgba(82, 45, 13, 0.2) 100%);
+  clip-path: polygon(100% 0, 100% 100%, 0 100%);
+  opacity: 0.76;
+  filter: drop-shadow(-10px -10px 18px rgba(68, 38, 12, 0.16));
+  pointer-events: none;
 }
 
 .cover-image {
@@ -206,7 +224,7 @@ svg {
 }
 
 .front-matter,
-.front-matter > .flyleaf-page,
+.flyleaf-page,
 .notebook-overview-page,
 .photo-film,
 .portrait-pages,
@@ -225,8 +243,7 @@ svg {
   padding-bottom: max(86px, env(safe-area-inset-bottom));
 }
 
-.front-matter > .notebook-page,
-.app-main > .notebook-page:not(.editor-card):not(.back-cover) {
+.notebook-page:not(.journey-cover):not(.note-toc-feature):not(.editor-card):not(.back-cover) {
   padding: 18px 16px max(86px, env(safe-area-inset-bottom));
 }
 
@@ -263,7 +280,25 @@ svg {
 }
 
 .back-cover.notebook-page {
+  padding-bottom: max(18px, env(safe-area-inset-bottom));
   border-radius: 0;
+}
+
+.back-cover.notebook-page::after {
+  content: "";
+  position: absolute;
+  bottom: max(18px, env(safe-area-inset-bottom));
+  left: 14px;
+  z-index: 1;
+  width: 96px;
+  height: 96px;
+  border-bottom-left-radius: 8px;
+  background:
+    linear-gradient(225deg, rgba(255, 255, 255, 0.78), rgba(255, 227, 151, 0.36) 44%, rgba(82, 45, 13, 0.2) 100%);
+  clip-path: polygon(0 0, 100% 100%, 0 100%);
+  opacity: 0.76;
+  filter: drop-shadow(10px -10px 18px rgba(68, 38, 12, 0.16));
+  pointer-events: none;
 }
 
 .page-turn-ghost {
@@ -385,18 +420,17 @@ svg {
   }
 }
 
-.notebook-pager {
-  position: fixed;
-  z-index: 40;
-  left: 50%;
-  bottom: max(12px, env(safe-area-inset-bottom));
+.notebook-page-footer {
+  position: relative;
+  z-index: 3;
   display: grid;
-  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  grid-template-columns: 38px minmax(0, 1fr) 38px;
   align-items: center;
-  gap: 10px;
-  width: min(calc(100% - 24px), 398px);
-  transform: translateX(-50%);
-  pointer-events: none;
+  gap: 8px;
+  width: 100%;
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(216, 154, 50, 0.26);
 }
 
 .notebook-page-button,
@@ -415,13 +449,17 @@ svg {
 .notebook-page-button {
   display: grid;
   place-items: center;
-  width: 44px;
-  height: 44px;
+  width: 38px;
+  height: 38px;
   border-radius: 999px;
-  font-size: 24px;
+  font-size: 21px;
   font-weight: 950;
   line-height: 1;
   pointer-events: auto;
+}
+
+.notebook-page-button.next {
+  justify-self: end;
 }
 
 .notebook-page-button:disabled {
@@ -431,7 +469,7 @@ svg {
 
 .notebook-page-status {
   min-width: 0;
-  padding: 8px 12px;
+  padding: 6px 10px;
   border-radius: 999px;
   color: var(--blue);
   font-size: 12px;
@@ -440,11 +478,103 @@ svg {
   pointer-events: none;
 }
 
+.notebook-overview-page .notebook-page-footer,
+.event-pages .notebook-page-footer,
+.color-pages .notebook-page-footer {
+  position: absolute;
+  right: 16px;
+  bottom: max(10px, env(safe-area-inset-bottom));
+  left: 16px;
+  grid-template-columns: 34px minmax(0, 1fr) 34px;
+  width: auto;
+  margin-top: 0;
+  padding-top: 6px;
+  border-top-color: rgba(216, 154, 50, 0.16);
+}
+
+.notebook-overview-page .notebook-page-button,
+.event-pages .notebook-page-button,
+.color-pages .notebook-page-button {
+  width: 34px;
+  height: 34px;
+  font-size: 18px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    0 8px 16px rgba(64, 47, 23, 0.13);
+}
+
+.notebook-overview-page .notebook-page-status,
+.event-pages .notebook-page-status,
+.color-pages .notebook-page-status {
+  padding: 4px 8px;
+  font-size: 11px;
+}
+
+.journey-cover .notebook-page-footer {
+  position: absolute;
+  right: 26px;
+  bottom: max(28px, env(safe-area-inset-bottom));
+  z-index: 2;
+  width: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  grid-template-columns: 58px;
+}
+
+.journey-cover .notebook-page-footer .notebook-page-button.prev,
+.journey-cover .notebook-page-footer .notebook-page-status {
+  display: none;
+}
+
+.journey-cover .notebook-page-footer .notebook-page-button.next {
+  width: 58px;
+  height: 58px;
+  border-color: rgba(255, 232, 152, 0.58);
+  background:
+    linear-gradient(145deg, rgba(255, 246, 194, 0.68), rgba(255, 203, 78, 0.2)),
+    rgba(116, 35, 19, 0.88);
+  color: #ffe89a;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.38),
+    0 16px 34px rgba(72, 35, 9, 0.3);
+}
+
+.back-cover .notebook-page-footer {
+  position: absolute;
+  bottom: max(28px, env(safe-area-inset-bottom));
+  left: 26px;
+  z-index: 2;
+  width: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  grid-template-columns: 58px;
+}
+
+.back-cover .notebook-page-footer .notebook-page-status,
+.back-cover .notebook-page-footer .notebook-page-button.next {
+  display: none;
+}
+
+.back-cover .notebook-page-footer .notebook-page-button.prev {
+  width: 58px;
+  height: 58px;
+  border-color: rgba(255, 232, 152, 0.58);
+  background:
+    linear-gradient(145deg, rgba(255, 246, 194, 0.68), rgba(255, 203, 78, 0.2)),
+    rgba(116, 35, 19, 0.88);
+  color: #ffe89a;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.38),
+    0 16px 34px rgba(72, 35, 9, 0.3);
+}
+
 .front-matter {
   display: contents;
 }
 
-.front-matter > .flyleaf-page.notebook-page {
+.flyleaf-page.notebook-page {
   min-height: 100%;
   overflow-x: hidden;
   overflow-y: auto;
@@ -556,12 +686,11 @@ svg {
 .teaching-page h2 {
   position: relative;
   z-index: 1;
-  display: flex;
+  display: grid;
   align-items: center;
   align-self: center;
-  flex-wrap: wrap;
   justify-content: center;
-  gap: 8px 22px;
+  gap: 0;
   margin: 0;
   color: #efd184;
   font-family: var(--signboard-font);
@@ -575,20 +704,22 @@ svg {
     0 4px 7px rgba(0, 0, 0, 0.34);
 }
 
-.teaching-page h2 span {
-  display: inline-block;
-  background:
-    linear-gradient(180deg, #fff5bf 0%, #f2d487 28%, #bd7e2f 48%, #fff1ad 62%, #d39a42 82%, #6f481b 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: #efd184;
-  -webkit-text-fill-color: transparent;
+.signboard-title-art {
+  display: block;
+  width: min(100%, 390px);
+  height: auto;
   filter:
-    drop-shadow(0 1px 0 rgba(255, 255, 255, 0.2))
-    drop-shadow(0 2px 2px rgba(98, 55, 13, 0.32))
-    drop-shadow(0 4px 5px rgba(0, 0, 0, 0.26));
+    drop-shadow(0 2px 2px rgba(98, 55, 13, 0.34))
+    drop-shadow(0 8px 8px rgba(0, 0, 0, 0.18));
+}
+
+.teaching-page h2 span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
   white-space: nowrap;
-  -webkit-text-stroke: 0.25px rgba(82, 52, 20, 0.42);
 }
 
 .teaching-page p {
@@ -631,7 +762,7 @@ svg {
 .message-page blockquote {
   position: relative;
   margin: 4px 0 0;
-  padding: 24px 18px 22px;
+  padding: 14px 12px 16px;
   border: 1px solid rgba(131, 93, 49, 0.22);
   border-radius: var(--radius);
   color: #202326;
@@ -663,6 +794,24 @@ svg {
   display: grid;
   gap: 8px;
   margin: 0;
+}
+
+.handwriting-note-art {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter:
+    drop-shadow(0.25px 0 rgba(32, 34, 37, 0.26))
+    drop-shadow(0 1px 0 rgba(255, 255, 255, 0.2));
+}
+
+.handwritten-note .handwriting-text {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 
 .handwritten-note p {
@@ -1896,6 +2045,32 @@ svg {
   padding-right: 2px;
 }
 
+.note-toc-section {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.note-toc-section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 2px;
+}
+
+.note-toc-section-title strong {
+  color: #7a4c18;
+  font-size: 13px;
+  font-weight: 950;
+}
+
+.note-toc-section-title span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 900;
+}
+
 .note-toc-item {
   display: grid;
   grid-template-columns: auto 1fr;
@@ -1913,6 +2088,10 @@ svg {
 .note-toc-item.active {
   border-color: rgba(198, 40, 42, 0.34);
   background: rgba(198, 40, 42, 0.08);
+}
+
+.page-toc-item .note-toc-order {
+  background: linear-gradient(145deg, #8f1217, #c6282a);
 }
 
 .note-toc-order {
@@ -2148,7 +2327,7 @@ select {
 .back-cover img {
   display: block;
   width: 100%;
-  min-height: 520px;
+  min-height: min(520px, calc(100svh - 96px));
   object-fit: cover;
   object-position: center;
 }

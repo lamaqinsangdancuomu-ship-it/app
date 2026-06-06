@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 480" role="img" aria-label="Biography notebook portrait collage">
+  <defs>
+    <linearGradient id="paper" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#f7f7f2"/>
+      <stop offset="1" stop-color="#e9edf0"/>
+    </linearGradient>
+    <linearGradient id="ink" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#27323a"/>
+      <stop offset="1" stop-color="#596a6b"/>
+    </linearGradient>
+    <pattern id="rule" width="34" height="34" patternUnits="userSpaceOnUse">
+      <path d="M0 33.5H34" stroke="#c9d2d0" stroke-width="1"/>
+      <path d="M33.5 0V34" stroke="#d9dedb" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="720" height="480" rx="28" fill="url(#paper)"/>
+  <rect x="24" y="24" width="672" height="432" rx="22" fill="url(#rule)" opacity=".55"/>
+  <rect x="58" y="62" width="270" height="350" rx="12" fill="#fffdf8" stroke="#b7c1be" stroke-width="2"/>
+  <path d="M92 110H292M92 146H246M92 182H274M92 218H225M92 254H286M92 290H238M92 326H267" stroke="#58686b" stroke-width="9" stroke-linecap="round" opacity=".72"/>
+  <path d="M112 378C145 348 195 346 226 377" stroke="#a04445" stroke-width="8" stroke-linecap="round" fill="none"/>
+  <rect x="382" y="78" width="242" height="316" rx="16" fill="#faf8f0" stroke="#58686b" stroke-width="5"/>
+  <circle cx="503" cy="184" r="62" fill="url(#ink)"/>
+  <path d="M404 344C423 277 462 249 504 249C548 249 589 279 604 344" fill="#2f3b43"/>
+  <path d="M446 157C468 131 518 121 556 151" stroke="#d7b46a" stroke-width="12" stroke-linecap="round" fill="none"/>
+  <path d="M394 96L620 378" stroke="#9aa8a6" stroke-width="3" opacity=".45"/>
+  <path d="M620 96L394 378" stroke="#9aa8a6" stroke-width="3" opacity=".45"/>
+  <circle cx="418" cy="98" r="9" fill="#2f7f75"/>
+  <circle cx="610" cy="98" r="9" fill="#2f7f75"/>
+  <circle cx="418" cy="378" r="9" fill="#2f7f75"/>
+  <circle cx="610" cy="378" r="9" fill="#2f7f75"/>
+</svg>

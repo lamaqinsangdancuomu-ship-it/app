@@ -1,4 +1,4 @@
-const CACHE_NAME = "fawang-notebook-v47";
+const CACHE_NAME = "fawang-notebook-v48";
 const SHELL_ASSETS = [
   "./",
   "./index.html",
@@ -12,7 +12,9 @@ const SHELL_ASSETS = [
   "./assets/app-icon-192.png",
   "./assets/app-icon-512.png",
   "./assets/app-icon-maskable-512.png",
-  "./assets/buli-gold-title.png"
+  "./assets/buli-gold-title.png",
+  "./assets/flyleaf-signboard-title.png",
+  "./assets/flyleaf-message-handwriting.png"
 ];
 
 self.addEventListener("install", (event) => {
