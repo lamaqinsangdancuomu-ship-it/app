@@ -4449,3 +4449,514 @@ async function installApp() {
 
   alert("安卓 Chrome：点右上角菜单，选择“添加到主屏幕”或“安装应用”。\n苹果 Safari：点分享按钮，选择“添加到主屏幕”。\n请使用 HTTPS 地址或 localhost 打开，file:// 页面不能安装。");
 }
+
+/* === 不离手账：分类空白页模板与编辑页排版优化补丁 2026-06-08 ===
+   仅作用于笔记编辑页：根据“日记 / 读书笔记 / 备忘录 / 教言摘录”类型，显示对应空白页模板。
+   不修改供灯、相册、首页、尾页、导出、保存、图片插入、翻页等功能。
+*/
+(() => {
+  if (window.__buliNotebookTypeTemplatePatch) return;
+  window.__buliNotebookTypeTemplatePatch = "2026-06-08-type-template-pages";
+
+  if (typeof els === "undefined" || !els?.editorForm || !els?.noteType || !els?.noteBody) return;
+
+  const TYPE_TEMPLATE_PAGES = {
+    diary: {
+      label: "日记",
+      badge: "ཉིན་ཐོ། 日记",
+      title: "日记空白页",
+      subtitle: "记录今日所见、心绪觉察、感恩与明日愿望。",
+      placeholder: "从今天的一件小事、一点心绪或一个愿望开始写。",
+      sourcePlaceholder: "地点、缘起或今日关键词",
+      body: [
+        "日期：",
+        "天气 / 地点：",
+        "今日心绪：",
+        "",
+        "一、今日所见",
+        "- ",
+        "",
+        "二、今日所感",
+        "- ",
+        "",
+        "三、今日感恩",
+        "1. ",
+        "2. ",
+        "3. ",
+        "",
+        "四、可以落实的一件小事",
+        "- ",
+        "",
+        "明日一愿："
+      ].join("\n"),
+      sections: [
+        { label: "所见所感", text: "今日所见：\n- \n\n今日所感：\n- " },
+        { label: "三件感恩", text: "今日感恩：\n1. \n2. \n3. " },
+        { label: "明日一愿", text: "明日一愿：\n- " }
+      ]
+    },
+    reading: {
+      label: "读书笔记",
+      badge: "ཀློག་ཐོ། 读书",
+      title: "读书摘录空白页",
+      subtitle: "按书目信息、原文摘录、理解、待查问题分区整理。",
+      placeholder: "摘录原文、页码和自己的理解，适合读书笔记与讲记整理。",
+      sourcePlaceholder: "书名、讲记、课程或页码",
+      body: [
+        "书名 / 讲记：",
+        "作者 / 讲者：",
+        "章节 / 页码：",
+        "阅读日期：",
+        "",
+        "一、原文摘录",
+        "「」",
+        "",
+        "二、关键词",
+        "- ",
+        "",
+        "三、我的理解",
+        "- ",
+        "",
+        "四、可引用句",
+        "- ",
+        "",
+        "五、待查 / 待复习",
+        "- "
+      ].join("\n"),
+      sections: [
+        { label: "书目信息", text: "书名 / 讲记：\n作者 / 讲者：\n章节 / 页码：\n阅读日期：" },
+        { label: "原文摘录", text: "原文摘录：\n「」\n\n页码 / 章节：" },
+        { label: "理解复盘", text: "我的理解：\n- \n\n可引用句：\n- \n\n待查 / 待复习：\n- " }
+      ]
+    },
+    memo: {
+      label: "备忘录",
+      badge: "དྲན་ཐོ། 备忘",
+      title: "备忘录空白页",
+      subtitle: "突出待办、提醒、清单与完成回看，适合手机端快速记录。",
+      placeholder: "写下待办、提醒、清单、灵感或当天需要完成的小事。",
+      sourcePlaceholder: "事项来源、地点或提醒对象",
+      body: [
+        "备忘日期：",
+        "重要程度：□ 今日必做  □ 本周完成  □ 以后处理",
+        "提醒时间：",
+        "",
+        "一、重要事项",
+        "☐ ",
+        "☐ ",
+        "☐ ",
+        "",
+        "二、补充说明",
+        "- ",
+        "",
+        "三、完成后记录",
+        "- "
+      ].join("\n"),
+      sections: [
+        { label: "今日待办", text: "今日待办：\n☐ \n☐ \n☐ " },
+        { label: "提醒事项", text: "提醒时间：\n提醒对象：\n事项：" },
+        { label: "完成回看", text: "完成后记录：\n- \n\n下一步：\n- " }
+      ]
+    },
+    timeline: {
+      label: "教言摘录",
+      badge: "གདམས་ངག 教言",
+      title: "教言整理空白页",
+      subtitle: "按原文、来源、关键词、要义与落实方式分区。",
+      placeholder: "整理教言原文、出处、关键词和自己可以落实的一点。",
+      sourcePlaceholder: "上师、讲记、开示、出处或章节",
+      body: [
+        "教言原文：",
+        "「」",
+        "",
+        "上师 / 来源：",
+        "时间 / 章节：",
+        "",
+        "一、关键词",
+        "- ",
+        "",
+        "二、要义整理",
+        "1. ",
+        "2. ",
+        "",
+        "三、与我相关",
+        "- ",
+        "",
+        "四、今日落实",
+        "- ",
+        "",
+        "回向 / 发愿："
+      ].join("\n"),
+      sections: [
+        { label: "教言原文", text: "教言原文：\n「」\n\n上师 / 来源：\n时间 / 章节：" },
+        { label: "要义整理", text: "关键词：\n- \n\n要义整理：\n1. \n2. " },
+        { label: "今日落实", text: "与我相关：\n- \n\n今日落实：\n- \n\n回向 / 发愿：" }
+      ]
+    }
+  };
+
+  const LEGACY_TEMPLATE_BODIES = Object.values(typeof NOTE_BODY_TEMPLATES === "object" ? NOTE_BODY_TEMPLATES : {})
+    .map((item) => item?.body)
+    .filter(Boolean);
+
+  function normalizeTemplateText(value) {
+    return String(value || "").replace(/\r\n/g, "\n").trim();
+  }
+
+  function getTypeTemplate(type) {
+    return TYPE_TEMPLATE_PAGES[type] || TYPE_TEMPLATE_PAGES.diary;
+  }
+
+  function knownFullTemplates() {
+    return [
+      ...Object.values(TYPE_TEMPLATE_PAGES).map((item) => item.body),
+      ...LEGACY_TEMPLATE_BODIES
+    ].map(normalizeTemplateText);
+  }
+
+  function isBlankOrKnownTemplate(value) {
+    const normalized = normalizeTemplateText(value);
+    return !normalized || knownFullTemplates().includes(normalized);
+  }
+
+  function escapeHtml(value) {
+    return String(value || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  function ensureTemplatePanel() {
+    let panel = document.querySelector("#noteTypeTemplatePanel");
+    if (!panel) {
+      panel = document.createElement("section");
+      panel.id = "noteTypeTemplatePanel";
+      panel.className = "note-type-template-panel";
+      panel.setAttribute("aria-label", "分类空白页模板");
+      const assist = els.editorForm.querySelector(".writing-assist");
+      if (assist) {
+        assist.insertAdjacentElement("afterend", panel);
+      } else {
+        els.noteBody.insertAdjacentElement("beforebegin", panel);
+      }
+    }
+    return panel;
+  }
+
+  function insertTextAtCursor(text, label = "模板") {
+    if (!els.noteBody) return;
+    const start = els.noteBody.selectionStart ?? els.noteBody.value.length;
+    const end = els.noteBody.selectionEnd ?? els.noteBody.value.length;
+    const current = els.noteBody.value;
+    const prefix = current.slice(0, start);
+    const suffix = current.slice(end);
+    const needsBeforeBreak = prefix && !prefix.endsWith("\n") ? "\n\n" : "";
+    const needsAfterBreak = suffix && !suffix.startsWith("\n") ? "\n\n" : "";
+    const inserted = `${needsBeforeBreak}${text}${needsAfterBreak}`;
+    els.noteBody.value = `${prefix}${inserted}${suffix}`;
+    const nextCursor = prefix.length + inserted.length;
+    els.noteBody.setSelectionRange(nextCursor, nextCursor);
+    els.noteBody.focus();
+    updateActiveNote();
+    if (els.saveState) els.saveState.textContent = `已插入「${label}」`;
+  }
+
+  function applyFullTypeTemplate(forceReplace = false) {
+    const note = getActiveNote();
+    if (!note) return;
+    const template = getTypeTemplate(note.type || els.noteType.value);
+    const current = els.noteBody.value;
+
+    if (!forceReplace && !isBlankOrKnownTemplate(current)) {
+      const ok = confirm("当前页面已有正文。是否把该模板插入到光标处？\n\n选择“确定”：插入模板，不覆盖原文。\n选择“取消”：保留原文，不插入。");
+      if (!ok) return;
+      insertTextAtCursor(template.body, template.label);
+      return;
+    }
+
+    els.noteBody.value = template.body;
+    note.body = template.body;
+    note.type = els.noteType.value || note.type;
+    note.updatedAt = Date.now();
+    renderEditorStatus(note);
+    scheduleSave();
+    scheduleNoteRender(note);
+    if (els.saveState) els.saveState.textContent = `已套用「${template.label}」模板`;
+  }
+
+  function renderTypeTemplateUI() {
+    const note = getActiveNote();
+    const activeType = note?.type || els.noteType.value || "diary";
+    const template = getTypeTemplate(activeType);
+    const panel = ensureTemplatePanel();
+
+    els.editorForm.dataset.noteKind = activeType;
+    els.noteBody.placeholder = template.placeholder;
+    if (els.noteSource) els.noteSource.placeholder = template.sourcePlaceholder;
+
+    const buttonBox = els.editorForm.querySelector(".writing-assist-buttons");
+    if (buttonBox) {
+      buttonBox.innerHTML = "";
+      const fullButton = document.createElement("button");
+      fullButton.type = "button";
+      fullButton.className = "note-template-action primary";
+      fullButton.textContent = `套用${template.label}模板`;
+      fullButton.addEventListener("click", () => applyFullTypeTemplate(false));
+      buttonBox.append(fullButton);
+
+      template.sections.forEach((section) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "note-template-action";
+        button.textContent = section.label;
+        button.addEventListener("click", () => insertTextAtCursor(section.text, section.label));
+        buttonBox.append(button);
+      });
+    }
+
+    panel.innerHTML = `
+      <div class="note-type-template-head">
+        <span class="note-type-template-badge">${escapeHtml(template.badge)}</span>
+        <div>
+          <strong>${escapeHtml(template.title)}</strong>
+          <small>${escapeHtml(template.subtitle)}</small>
+        </div>
+      </div>
+      <div class="note-type-template-lines" aria-label="当前模板分区">
+        ${template.sections.map((section) => `<span>${escapeHtml(section.label)}</span>`).join("")}
+      </div>
+    `;
+  }
+
+  function ensureActiveNoteTemplate() {
+    const note = getActiveNote();
+    if (!note) return;
+    const template = getTypeTemplate(note.type);
+    if (isBlankOrKnownTemplate(note.body)) {
+      note.body = template.body;
+      if (els.noteBody) els.noteBody.value = template.body;
+      note.updatedAt = Date.now();
+      renderEditorStatus(note);
+      scheduleSave();
+      scheduleNoteRender(note);
+    }
+  }
+
+  const originalCreateNote = createNote;
+  createNote = function patchedCreateNote(options = {}) {
+    const note = originalCreateNote(options);
+    const template = getTypeTemplate(note.type);
+    if (!options.body && isBlankOrKnownTemplate(note.body)) {
+      note.body = template.body;
+      note.updatedAt = Date.now();
+      if (state.activeId === note.id && els.noteBody) els.noteBody.value = note.body;
+      if (!options.silent) scheduleSave();
+    }
+    return note;
+  };
+
+  const originalRenderEditor = renderEditor;
+  renderEditor = function patchedRenderEditor(...args) {
+    const result = originalRenderEditor.apply(this, args);
+    renderTypeTemplateUI();
+    return result;
+  };
+
+  els.noteType.addEventListener("change", () => {
+    const note = getActiveNote();
+    if (!note) return;
+    const newType = els.noteType.value || "diary";
+    const nextTemplate = getTypeTemplate(newType);
+    note.type = newType;
+
+    if (isBlankOrKnownTemplate(els.noteBody.value)) {
+      els.noteBody.value = nextTemplate.body;
+      note.body = nextTemplate.body;
+      note.updatedAt = Date.now();
+      renderEditorStatus(note);
+      scheduleSave();
+      scheduleNoteRender(note);
+    }
+
+    renderTypeTemplateUI();
+  });
+
+  ensureActiveNoteTemplate();
+  renderTypeTemplateUI();
+})();
+/*
+ * 空白页壁纸上传修复补丁
+ * 作用：修复安卓端 / WebView 中“添加壁纸”点击不稳定、图片过大保存失败、部分机型 crypto.randomUUID 不兼容等问题。
+ * 使用：复制到 app.js 最末尾；或者直接替换补丁包里的完整 app.js。
+ */
+
+function createNotebookSafeId(prefix = "id") {
+  try {
+    if (window.crypto && typeof window.crypto.randomUUID === "function") {
+      return `${prefix}-${window.crypto.randomUUID()}`;
+    }
+  } catch (error) {
+    console.warn("crypto.randomUUID unavailable", error);
+  }
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function getWallpaperUploadTitle(file) {
+  const name = String(file?.name || "").replace(/\.[^.]+$/, "").trim();
+  return name || "自定义壁纸";
+}
+
+function canvasToNotebookWallpaperDataUrl(image, width, height, quality = 0.72) {
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.max(1, Math.round(width));
+  canvas.height = Math.max(1, Math.round(height));
+  const context = canvas.getContext("2d", { alpha: false });
+  if (!context) throw new Error("Canvas is not supported");
+  context.fillStyle = "#f8f1df";
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  context.drawImage(image, 0, 0, canvas.width, canvas.height);
+  return canvas.toDataURL("image/jpeg", quality);
+}
+
+function readWallpaperImageFile(file) {
+  return new Promise((resolve, reject) => {
+    if (!file || !String(file.type || "").startsWith("image/")) {
+      reject(new Error("不是可用的图片文件"));
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.addEventListener("load", () => {
+      const source = String(reader.result || "");
+      if (!source) {
+        reject(new Error("图片读取为空"));
+        return;
+      }
+
+      const image = new Image();
+      image.addEventListener("load", () => {
+        try {
+          const width = image.naturalWidth || image.width || 1;
+          const height = image.naturalHeight || image.height || 1;
+          const profiles = [
+            { maxSide: 1280, quality: 0.74, maxLength: 760000 },
+            { maxSide: 1080, quality: 0.72, maxLength: 640000 },
+            { maxSide: 900, quality: 0.7, maxLength: 520000 },
+            { maxSide: 760, quality: 0.68, maxLength: 420000 }
+          ];
+          let fallback = source;
+          for (const profile of profiles) {
+            const scale = Math.min(1, profile.maxSide / Math.max(width, height));
+            const nextWidth = width * scale;
+            const nextHeight = height * scale;
+            const dataUrl = canvasToNotebookWallpaperDataUrl(image, nextWidth, nextHeight, profile.quality);
+            fallback = dataUrl;
+            if (dataUrl.length <= profile.maxLength) {
+              resolve(dataUrl);
+              return;
+            }
+          }
+          resolve(fallback);
+        } catch (error) {
+          reject(error);
+        }
+      });
+      image.addEventListener("error", () => {
+        reject(new Error("图片格式暂不支持，请换 JPG、PNG 或 WebP 图片"));
+      });
+      image.src = source;
+    });
+    reader.addEventListener("error", () => reject(new Error("图片读取失败")));
+    reader.readAsDataURL(file);
+  });
+}
+
+function createAddPageWallpaperOption() {
+  const card = document.createElement("div");
+  card.className = "page-theme-option page-theme-add page-theme-upload-fixed";
+
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = "image/jpeg,image/png,image/webp,image/gif,image/*";
+  input.multiple = true;
+  input.id = createNotebookSafeId("page-wallpaper-input");
+  input.addEventListener("change", addPageWallpapers);
+
+  const label = document.createElement("label");
+  label.className = "page-theme-select page-theme-add-button";
+  label.htmlFor = input.id;
+  label.setAttribute("role", "button");
+  label.setAttribute("tabindex", "0");
+  label.innerHTML = "<span>添加壁纸</span><small>从相册选择</small>";
+  label.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      input.click();
+    }
+  });
+
+  card.append(input, label);
+  return card;
+}
+
+async function addPageWallpapers(event) {
+  const input = event.currentTarget;
+  const files = [...(input.files || [])].filter((file) => String(file.type || "").startsWith("image/"));
+  if (!files.length) return;
+
+  const previousWallpapers = Array.isArray(pageWallpapers) ? [...pageWallpapers] : [];
+  const added = [];
+  const skipped = [];
+
+  try {
+    for (const file of files.slice(0, 12)) {
+      try {
+        const image = await readWallpaperImageFile(file);
+        added.push({
+          id: createNotebookSafeId("wallpaper"),
+          title: getWallpaperUploadTitle(file),
+          image
+        });
+      } catch (error) {
+        console.warn("Skipped wallpaper image", file?.name, error);
+        skipped.push(file?.name || "未命名图片");
+      }
+    }
+
+    if (!added.length) {
+      alert("壁纸添加失败：图片格式可能不受支持，建议换 JPG、PNG 或 WebP 图片再试。");
+      return;
+    }
+
+    pageWallpapers = [...previousWallpapers, ...added];
+    state.pageWallpapers = pageWallpapers;
+
+    if (!savePageWallpapers()) {
+      pageWallpapers = previousWallpapers;
+      state.pageWallpapers = pageWallpapers;
+      renderPageWallpaperPicker(normalizePageTheme(getActiveNote()?.pageTheme));
+      return;
+    }
+
+    const firstAdded = added[0];
+    if (firstAdded) {
+      updatePageTheme(firstAdded.id);
+      renderPageTheme(firstAdded.id);
+    } else {
+      renderPageWallpaperPicker(normalizePageTheme(getActiveNote()?.pageTheme));
+    }
+
+    if (skipped.length) {
+      alert(`已添加 ${added.length} 张壁纸；另有 ${skipped.length} 张图片格式不支持，未添加。`);
+    }
+  } catch (error) {
+    pageWallpapers = previousWallpapers;
+    state.pageWallpapers = pageWallpapers;
+    console.warn("Failed to add page wallpapers", error);
+    alert("壁纸读取失败，请换一张 JPG、PNG 或 WebP 图片再试。");
+  } finally {
+    input.value = "";
+  }
+}
