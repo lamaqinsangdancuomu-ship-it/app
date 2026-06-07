@@ -10602,3 +10602,235 @@ textarea:focus,
     max-height: calc(100dvh - max(68px, env(safe-area-inset-top) + env(safe-area-inset-bottom) + 50px)) !important;
   }
 }
+/* === Note editor template pages fix === */
+/* === 不离手账：分类空白页模板与编辑页排版优化补丁 2026-06-08 ===
+   仅作用于笔记编辑页，不影响其它页面与功能。
+*/
+.editor-form[data-note-kind] {
+  gap: 13px !important;
+}
+
+.note-type-template-panel {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  gap: 10px;
+  padding: 12px 13px;
+  border: 1px solid rgba(167, 128, 79, 0.22);
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 8% 8%, rgba(255, 226, 155, 0.36), transparent 34%),
+    linear-gradient(135deg, rgba(255, 253, 247, 0.92), rgba(248, 238, 213, 0.82));
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.52),
+    0 10px 22px rgba(64, 47, 23, 0.06);
+}
+
+.note-type-template-panel::before {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  z-index: -1;
+  border: 1px dashed rgba(198, 40, 42, 0.16);
+  border-radius: 10px;
+  pointer-events: none;
+}
+
+.note-type-template-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+}
+
+.note-type-template-badge {
+  display: inline-grid;
+  place-items: center;
+  min-height: 30px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(49, 90, 140, 0.09);
+  color: var(--blue);
+  font-size: 11px;
+  font-weight: 950;
+  white-space: nowrap;
+}
+
+.note-type-template-head strong {
+  display: block;
+  color: var(--red);
+  font-size: 15px;
+  font-weight: 950;
+  line-height: 1.25;
+}
+
+.note-type-template-head small {
+  display: block;
+  margin-top: 2px;
+  color: #7a695b;
+  font-size: 12px;
+  font-weight: 760;
+  line-height: 1.45;
+}
+
+.note-type-template-lines {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.note-type-template-lines span {
+  display: inline-grid;
+  place-items: center;
+  min-height: 26px;
+  padding: 0 9px;
+  border: 1px solid rgba(216, 154, 50, 0.2);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  color: #7a5432;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.writing-assist-buttons .note-template-action.primary {
+  border-color: rgba(198, 40, 42, 0.22);
+  background: linear-gradient(180deg, rgba(255, 248, 220, 0.95), rgba(255, 233, 171, 0.82));
+  color: var(--red);
+}
+
+.editor-form[data-note-kind="diary"] .note-type-template-badge {
+  background: rgba(198, 40, 42, 0.08);
+  color: var(--red);
+}
+
+.editor-form[data-note-kind="reading"] .note-type-template-badge {
+  background: rgba(49, 90, 140, 0.1);
+  color: var(--blue);
+}
+
+.editor-form[data-note-kind="memo"] .note-type-template-badge {
+  background: rgba(216, 154, 50, 0.14);
+  color: #8a5a15;
+}
+
+.editor-form[data-note-kind="timeline"] .note-type-template-badge {
+  background: rgba(39, 123, 82, 0.1);
+  color: #287a52;
+}
+
+.editor-form[data-note-kind="diary"] textarea,
+.editor-form[data-note-kind="reading"] textarea,
+.editor-form[data-note-kind="memo"] textarea,
+.editor-form[data-note-kind="timeline"] textarea {
+  min-height: 410px;
+  padding: 20px 18px;
+  border-radius: 10px;
+  line-height: 1.9;
+}
+
+.editor-form[data-note-kind="reading"] textarea {
+  background:
+    linear-gradient(90deg, rgba(49, 90, 140, 0.08) 0 3px, transparent 3px),
+    radial-gradient(circle at 18% 22%, rgba(128, 103, 69, 0.04) 0 1px, transparent 2px),
+    linear-gradient(rgba(255, 253, 245, 0.76) 40px, rgba(49, 90, 140, 0.08) 41px),
+    rgba(255, 253, 245, 0.72);
+  background-size: 100% 41px;
+}
+
+.editor-form[data-note-kind="memo"] textarea {
+  background:
+    linear-gradient(90deg, rgba(216, 154, 50, 0.08) 0 3px, transparent 3px),
+    radial-gradient(circle at 18% 22%, rgba(128, 103, 69, 0.04) 0 1px, transparent 2px),
+    linear-gradient(rgba(255, 253, 245, 0.78) 40px, rgba(216, 154, 50, 0.1) 41px),
+    rgba(255, 253, 245, 0.72);
+  background-size: 100% 41px;
+}
+
+.editor-form[data-note-kind="timeline"] textarea {
+  background:
+    linear-gradient(90deg, rgba(39, 123, 82, 0.08) 0 3px, transparent 3px),
+    radial-gradient(circle at 18% 22%, rgba(128, 103, 69, 0.04) 0 1px, transparent 2px),
+    linear-gradient(rgba(255, 253, 245, 0.76) 40px, rgba(39, 123, 82, 0.08) 41px),
+    rgba(255, 253, 245, 0.72);
+  background-size: 100% 41px;
+}
+
+@media (max-width: 520px) {
+  .note-type-template-head {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .note-type-template-badge {
+    justify-self: start;
+  }
+
+  .editor-form[data-note-kind] textarea {
+    min-height: 390px;
+  }
+}
+/* 空白页壁纸上传按钮修复与移动端适配 */
+.page-theme-option.page-theme-add.page-theme-upload-fixed {
+  position: relative;
+  overflow: hidden;
+  min-height: 92px;
+  cursor: pointer;
+}
+
+.page-theme-option.page-theme-add.page-theme-upload-fixed input[type="file"] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.page-theme-option.page-theme-add.page-theme-upload-fixed .page-theme-add-button {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: grid;
+  place-content: center;
+  gap: 4px;
+  min-height: 100%;
+  padding: 12px;
+  border: 0;
+  color: var(--red);
+  text-align: center;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.page-theme-option.page-theme-add.page-theme-upload-fixed .page-theme-add-button span {
+  position: static;
+  inset: auto;
+  display: inline-grid;
+  place-items: center;
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.82);
+  color: var(--red);
+  font-size: 13px;
+  font-weight: 950;
+  box-shadow: 0 8px 16px rgba(64, 47, 23, 0.08);
+}
+
+.page-theme-option.page-theme-add.page-theme-upload-fixed .page-theme-add-button small {
+  display: block;
+  color: rgba(135, 83, 29, 0.82);
+  font-size: 11px;
+  font-weight: 850;
+  line-height: 1.2;
+}
+
+.editor-form.page-wallpaper textarea {
+  background:
+    radial-gradient(circle at 18% 22%, rgba(128, 103, 69, 0.035) 0 1px, transparent 2px),
+    repeating-linear-gradient(92deg, rgba(101, 86, 58, 0.022) 0 1px, transparent 1px 18px),
+    linear-gradient(rgba(255, 253, 245, 0.66) 40px, rgba(109, 74, 31, 0.08) 41px),
+    rgba(255, 253, 245, 0.52);
+  background-size: 100% 41px;
+  backdrop-filter: blur(0.4px);
+}
