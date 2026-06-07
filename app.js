@@ -1,6 +1,13 @@
-const STORAGE_KEY = "jigmeyPhuntsokNotebook.v3";
+const STORAGE_KEY = "jigmeyPhuntsokNotebook.v5";
 const TEACHING_STORAGE_KEY = "jigmeyPhuntsokTeachings.v1";
 const MODULE_STORAGE_KEY = "jigmeyPhuntsokModules.v1";
+const OFFERING_LAMP_STORAGE_KEY = "buliOfferingLamp.v1";
+const OFFERING_LAMP_COUNT_STORAGE_KEY = "buliOfferingLampCount.v1";
+const OFFERING_BUDDHA_WALL_STORAGE_KEY = "buliOfferingBuddhaWall.v1";
+const BLOOM_GARDEN_PHOTOS_STORAGE_KEY = "buliBloomGardenPhotos.v1";
+const PAGE_WALLPAPER_STORAGE_KEY = "buliPageWallpapers.v2";
+const PPT_DEFAULT_PROJECT_ID = "ppt-project-default";
+const TEACHING_DEFAULT_TEACHER = "晋美彭措法王";
 
 let deferredInstallPrompt = null;
 
@@ -12,6 +19,7 @@ const typeLabels = {
 };
 
 const seedNotes = [];
+const OFFERING_DEFAULT_BUDDHA_IMAGES = ["assets/offering-buddha-bg.jpg"];
 
 const seedTeachingQuotes = [
   "真正令你受尽折磨的，实际上是心魔。",
@@ -59,29 +67,51 @@ const seedTeachingQuotes = [
 ].map((text, index) => ({
   id: `seed-teaching-${index + 1}`,
   text,
+  teacher: TEACHING_DEFAULT_TEACHER,
   createdAt: Date.now() - index
 }));
 
 const defaultModules = {
+  focusGallery: [
+    {
+      id: "focus-gallery-1",
+      image: "assets/larung-real-panorama.jpg",
+      title: "夜色山谷",
+      subtitle: "喇荣",
+      feature: true
+    },
+    {
+      id: "focus-gallery-2",
+      image: "assets/larung-real-lights.jpg",
+      title: "灯火红屋",
+      subtitle: "灯火"
+    },
+    {
+      id: "focus-gallery-3",
+      image: "assets/larung-real-snow.jpg",
+      title: "雪落山坡",
+      subtitle: "雪景"
+    }
+  ],
   portraits: [
     {
       id: "portrait-1",
       image: "assets/fawang-portrait-seat.jpg",
       title: "ཡིད་བཞིན་ནོར་བུ། 法王如意宝",
-      subtitle: "YISHIN NORBU",
+      subtitle: "如意宝",
       feature: true
     },
     {
       id: "portrait-2",
       image: "assets/fawang-langlang-mountain.jpg",
       title: "ལྷ་རི། 朗朗神山",
-      subtitle: "LANG LANG"
+      subtitle: "朗朗神山"
     },
     {
       id: "portrait-3",
       image: "assets/fawang-radiance.jpg",
       title: "འོད་གསལ། 光明留影",
-      subtitle: "BLESSING"
+      subtitle: "加持"
     }
   ],
   academy: [
@@ -89,26 +119,26 @@ const defaultModules = {
       id: "academy-1",
       image: "assets/larung-real-stairs-night.jpg",
       title: "བླ་རུང་། 夜色阶梯",
-      subtitle: "LARUNG",
+      subtitle: "喇荣",
       layout: "tall"
     },
     {
       id: "academy-2",
       image: "assets/larung-real-temple-mist.jpg",
       title: "སྨུག་པ། 晨雾寺院",
-      subtitle: "MIST"
+      subtitle: "晨雾"
     },
     {
       id: "academy-3",
       image: "assets/larung-real-red-valley.jpg",
       title: "རི་ཁྲོད། 红色山谷",
-      subtitle: "VALLEY"
+      subtitle: "山谷"
     },
     {
       id: "academy-4",
       image: "assets/larung-real-snow.jpg",
       title: "ཁ་བ། 雪景红屋",
-      subtitle: "SNOW",
+      subtitle: "雪景",
       layout: "wide"
     }
   ],
@@ -146,32 +176,94 @@ const defaultModules = {
     {
       id: "color-1",
       image: "assets/color-page-boulder.jpg",
-      title: "ན་བཟའ། BOULDER · 红衣",
-      subtitle: "BOULDER"
+      title: "ན་བཟའ། 红衣",
+      subtitle: "红衣"
     },
     {
       id: "color-2",
       image: "assets/color-page-yogurt.jpg",
-      title: "ཞོ། NAPA VALLEY · 酸奶",
-      subtitle: "NAPA VALLEY"
+      title: "ཞོ། 酸奶",
+      subtitle: "酸奶"
     },
     {
       id: "color-3",
       image: "assets/color-page-bodhisattva.jpg",
-      title: "འཇམ་དཔལ། WASHINGTON · 文殊静修",
-      subtitle: "WASHINGTON"
+      title: "འཇམ་དཔལ། 文殊静修",
+      subtitle: "文殊静修"
     },
     {
       id: "color-4",
       image: "assets/color-page-new-york.jpg",
-      title: "དབང་བསྐུར། NEW YORK · 灌顶",
-      subtitle: "NEW YORK"
+      title: "དབང་བསྐུར། 灌顶",
+      subtitle: "灌顶"
     },
     {
       id: "color-5",
       image: "assets/color-page-confidence.jpg",
-      title: "དད་པ། HALIFAX · 信心所依",
-      subtitle: "HALIFAX"
+      title: "དད་པ། 信心所依",
+      subtitle: "信心所依"
+    }
+  ],
+  practiceCounters: [
+    {
+      id: "practice-refuge",
+      title: "皈依发心 / 大礼拜",
+      subtitle: "མགོན་སྐྱབས།",
+      count: 0,
+      target: 100000,
+      step: 108
+    },
+    {
+      id: "practice-bodhicitta",
+      title: "发菩提心",
+      subtitle: "བྱང་ཆུབ་སེམས།",
+      count: 0,
+      target: 100000,
+      step: 108
+    },
+    {
+      id: "practice-vajrasattva",
+      title: "金刚萨埵百字明",
+      subtitle: "རྡོ་རྗེ་སེམས་དཔའ།",
+      count: 0,
+      target: 100000,
+      step: 108
+    },
+    {
+      id: "practice-mandala",
+      title: "供曼扎",
+      subtitle: "མཎྜལ།",
+      count: 0,
+      target: 100000,
+      step: 108
+    },
+    {
+      id: "practice-guru-yoga",
+      title: "上师瑜伽",
+      subtitle: "བླ་མའི་རྣལ་འབྱོར།",
+      count: 0,
+      target: 100000,
+      step: 108
+    }
+  ],
+  pptProjects: [
+    {
+      id: PPT_DEFAULT_PROJECT_ID,
+      title: "课堂笔记",
+      subtitle: "默认项目",
+      createdAt: Date.now()
+    }
+  ],
+  pptNotes: [
+    {
+      id: "ppt-note-template",
+      title: "课堂笔记整理模板",
+      subtitle: "第 1 课 / 重点页",
+      projectId: PPT_DEFAULT_PROJECT_ID,
+      projectIds: [PPT_DEFAULT_PROJECT_ID],
+      body: "主题：\n核心教言：\n可整理成课件的三条要点：\n待复习问题：",
+      createdAt: Date.now(),
+      attachment: null
     }
   ]
 };
@@ -185,6 +277,33 @@ const pageThemeClassNames = [
   "page-kindness4",
   "page-kindness5"
 ];
+
+const PLAIN_PAGE_THEME = "plain";
+
+const PPT_ATTACHMENT_ACCEPT =
+  [
+    ".ppt",
+    ".pptx",
+    ".doc",
+    ".docx",
+    ".pdf",
+    ".txt",
+    ".md",
+    ".jpg",
+    ".jpeg",
+    ".png",
+    ".webp",
+    ".gif",
+    ".bmp",
+    "image/*",
+    "text/plain",
+    "text/markdown",
+    "application/pdf",
+    "application/msword",
+    "application/vnd.ms-powerpoint",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+  ].join(",");
 
 const pageThemes = new Set(pageThemeClassNames.map((className) => className.replace("page-", "")));
 
@@ -251,15 +370,20 @@ const pageDecorations = [
   }
 ];
 
+let pageWallpapers = loadPageWallpapers();
+
 const state = {
   notes: loadNotes(),
   teachingQuotes: loadTeachingQuotes(),
   modules: loadModules(),
+  pageWallpapers,
   activeId: null,
   filter: "all",
   query: "",
   sort: "updated",
   view: "write",
+  pptProjectFilter: "all",
+  teachingTeacherFilter: "all",
   saveTimer: null,
   renderTimer: null
 };
@@ -287,9 +411,15 @@ const els = {
   totalCount: document.querySelector("#totalCount"),
   personCount: document.querySelector("#personCount"),
   tagCount: document.querySelector("#tagCount"),
+  bloomGarden: document.querySelector("#bloomGarden"),
+  bloomGardenButton: document.querySelector("#bloomGardenButton"),
+  bloomPhotoInputs: [...document.querySelectorAll("[data-bloom-photo-input]")],
+  bloomTeacherPhoto: document.querySelector("#bloomTeacherPhoto"),
+  bloomSelfPhoto: document.querySelector("#bloomSelfPhoto"),
   searchInput: document.querySelector("#searchInput"),
   tocJumpButton: document.querySelector("#tocJumpButton"),
   newNoteButton: document.querySelector("#newNoteButton"),
+  editorNewNoteButton: document.querySelector("#editorNewNoteButton"),
   exportButton: document.querySelector("#exportButton"),
   installButton: document.querySelector("#installButton"),
   typeButtons: [...document.querySelectorAll(".type-button")],
@@ -316,6 +446,7 @@ const els = {
   noteImageInput: document.querySelector("#noteImageInput"),
   noteImageGrid: document.querySelector("#noteImageGrid"),
   pageDecoration: document.querySelector("#pageDecoration"),
+  pageThemePicker: document.querySelector("#pageThemePicker"),
   pageThemeButtons: [...document.querySelectorAll(".page-theme-option")],
   memoCalendarPicker: document.querySelector("#memoCalendarPicker"),
   memoCalendarTitle: document.querySelector("#memoCalendarTitle"),
@@ -323,10 +454,27 @@ const els = {
   memoCalendarDecor: document.querySelector("#memoCalendarDecor"),
   calendarModeButtons: [...document.querySelectorAll(".calendar-mode-button")],
   moduleForms: [...document.querySelectorAll("[data-module-form]")],
+  focusGallery: document.querySelector("#focusGallery"),
   portraitGrid: document.querySelector("#portraitGrid"),
   milestoneStrip: document.querySelector("#milestoneStrip"),
   academyMosaic: document.querySelector("#academyMosaic"),
-  colorPageStrip: document.querySelector("#colorPageStrip")
+  colorPageStrip: document.querySelector("#colorPageStrip"),
+  practiceCounterForm: document.querySelector("#practiceCounterForm"),
+  practiceSummary: document.querySelector("#practiceSummary"),
+  practiceCounterGrid: document.querySelector("#practiceCounterGrid"),
+  offeringLampScene: document.querySelector("#offeringLampScene"),
+  offeringLampButton: document.querySelector("#offeringLampButton"),
+  offeringLampAction: document.querySelector("#offeringLampAction"),
+  offeringLampStatus: document.querySelector("#offeringLampStatus"),
+  offeringLampMeta: document.querySelector("#offeringLampMeta"),
+  offeringBuddhaWall: document.querySelector("#offeringBuddhaWall"),
+  offeringBuddhaInput: document.querySelector("#offeringBuddhaInput"),
+  offeringBuddhaReset: document.querySelector("#offeringBuddhaReset"),
+  pptProjectForm: document.querySelector("#pptProjectForm"),
+  pptProjectTabs: document.querySelector("#pptProjectTabs"),
+  pptNoteForm: document.querySelector("#pptNoteForm"),
+  pptProjectSelect: document.querySelector("#pptNoteForm select[name='projectId']"),
+  pptNoteList: document.querySelector("#pptNoteList")
 };
 
 function prepareStaticImages() {
@@ -371,14 +519,15 @@ function bindEvents() {
     scheduleIndexRender();
   });
 
-  els.newNoteButton.addEventListener("click", () => {
-    const note = createNote();
-    selectNote(note.id);
-    scrollToEditor();
-  });
+  els.newNoteButton.addEventListener("click", createAndOpenNote);
+  els.editorNewNoteButton?.addEventListener("click", createAndOpenNote);
 
-  els.exportButton.addEventListener("click", exportNotes);
+  els.exportButton?.addEventListener("click", exportNotes);
   els.installButton?.addEventListener("click", installApp);
+  els.bloomGardenButton?.addEventListener("click", bloomGardenFlowers);
+  els.bloomPhotoInputs.forEach((input) => {
+    input.addEventListener("change", updateBloomGardenPhoto);
+  });
   els.tocJumpButton?.addEventListener("click", () => {
     scrollToNotebookPage(els.noteToc);
   });
@@ -409,6 +558,13 @@ function bindEvents() {
       }
     });
   });
+  els.practiceCounterForm?.addEventListener("submit", addPracticeCounter);
+  els.offeringLampButton?.addEventListener("click", lightOfferingLamp);
+  els.offeringLampAction?.addEventListener("click", lightOfferingLamp);
+  els.offeringBuddhaInput?.addEventListener("change", addOfferingBuddhaImages);
+  els.offeringBuddhaReset?.addEventListener("click", changeOfferingBuddhaWall);
+  els.pptProjectForm?.addEventListener("submit", addPptProject);
+  els.pptNoteForm?.addEventListener("submit", addPptNote);
 
   els.typeButtons.forEach((button) => {
     button.addEventListener("click", () => {
@@ -455,6 +611,12 @@ function bindEvents() {
   });
 }
 
+function createAndOpenNote() {
+  const note = createNote();
+  selectNote(note.id);
+  scrollToEditor();
+}
+
 function setupNotebookPager() {
   if (!els.appShell) return;
 
@@ -465,9 +627,12 @@ function setupNotebookPager() {
     ".message-page",
     ".notebook-overview-page",
     ".portrait-pages",
+    ".offering-lamp-page",
     ".event-pages",
     ".academy-gallery",
     ".color-pages",
+    ".practice-counter-page",
+    ".ppt-organizer-page",
     ".notebook-index-page",
     ".editor-card",
     ".back-cover"
@@ -488,6 +653,10 @@ function setupNotebookPager() {
     const controls = createNotebookPageFooter(index);
     page.append(controls.root);
     return controls;
+  });
+  notebookPager.pages.forEach((page, index) => {
+    page.addEventListener("scroll", () => updateNotebookPageFooterOffset(index), { passive: true });
+    updateNotebookPageFooterOffset(index);
   });
 
   els.appShell.addEventListener("scroll", scheduleNotebookPagerUpdate, { passive: true });
@@ -511,28 +680,42 @@ function createNotebookPageFooter(index) {
   controls.setAttribute("aria-label", "翻页");
 
   const prevButton = createNotebookPageButton("prev");
+  const tocButton = createNotebookPageButton("toc");
+  const nextButton = createNotebookPageButton("next");
   const status = document.createElement("span");
   status.className = "notebook-page-status";
   status.setAttribute("aria-live", "polite");
 
-  const nextButton = createNotebookPageButton("next");
-
   prevButton.addEventListener("click", () => goToNotebookPage(index - 1));
+  tocButton.addEventListener("click", () => goToNotebookPage(getNotebookTocIndex()));
   nextButton.addEventListener("click", () => goToNotebookPage(index + 1));
 
-  controls.append(prevButton, status, nextButton);
-  return { root: controls, prevButton, nextButton, status };
+  controls.append(prevButton, tocButton, nextButton, status);
+  return { root: controls, prevButton, tocButton, nextButton, status };
 }
 
 function createNotebookPageButton(direction) {
   const button = document.createElement("button");
   const isPrevious = direction === "prev";
+  const isToc = direction === "toc";
   button.type = "button";
   button.className = `notebook-page-button ${direction}`;
-  button.textContent = isPrevious ? "<" : ">";
-  button.title = isPrevious ? "上一页" : "下一页";
-  button.setAttribute("aria-label", isPrevious ? "上一页" : "下一页");
+  button.textContent = isToc ? "☰" : isPrevious ? "‹" : "›";
+  button.title = isToc ? "回到目录" : isPrevious ? "上一页" : "下一页";
+  button.setAttribute("aria-label", isToc ? "回到目录" : isPrevious ? "上一页" : "下一页");
   return button;
+}
+
+function getNotebookTocIndex() {
+  const index = notebookPager.pages.findIndex((page) => page.classList.contains("note-toc-feature"));
+  return index >= 0 ? index : 0;
+}
+
+function updateNotebookPageFooterOffset(index) {
+  const page = notebookPager.pages[index];
+  const controls = notebookPager.footerControls[index];
+  if (!page || !controls?.root) return;
+  controls.root.style.setProperty("--notebook-page-scroll-y", `${page.scrollTop}px`);
 }
 
 function scheduleNotebookPagerUpdate() {
@@ -555,13 +738,20 @@ function updateNotebookPager() {
     notebookPager.nextButton.disabled = notebookPager.currentIndex === notebookPager.pages.length - 1;
   }
   if (notebookPager.status) {
-    notebookPager.status.textContent = `${notebookPager.currentIndex + 1} / ${notebookPager.pages.length}`;
+    notebookPager.status.textContent = String(notebookPager.currentIndex + 1);
+    notebookPager.status.setAttribute("aria-label", `第 ${notebookPager.currentIndex + 1} 页，共 ${notebookPager.pages.length} 页`);
+    notebookPager.status.title = `第 ${notebookPager.currentIndex + 1} 页，共 ${notebookPager.pages.length} 页`;
   }
   notebookPager.footerControls.forEach((controls, index) => {
+    updateNotebookPageFooterOffset(index);
     controls.root.classList.toggle("is-current", index === notebookPager.currentIndex);
+    controls.root.classList.toggle("is-toc-page", index === getNotebookTocIndex());
     controls.prevButton.disabled = index === 0;
+    controls.tocButton.disabled = index === getNotebookTocIndex();
     controls.nextButton.disabled = index === notebookPager.pages.length - 1;
-    controls.status.textContent = `${index + 1} / ${notebookPager.pages.length}`;
+    controls.status.textContent = String(index + 1);
+    controls.status.setAttribute("aria-label", `第 ${index + 1} 页，共 ${notebookPager.pages.length} 页`);
+    controls.status.title = `第 ${index + 1} 页，共 ${notebookPager.pages.length} 页`;
   });
   updateTocPageActiveState();
 }
@@ -727,7 +917,7 @@ function isNotebookSwipeExcluded(target) {
   const element = target instanceof Element ? target : null;
   return Boolean(
     element?.closest(
-      ".editor-card, .photo-film, .event-strip, .page-strip, .page-theme-picker, .note-toc-list, input, textarea, select, button"
+      ".offering-lamp-page, .offering-lamp-scene, .offering-lamp-panel, .editor-card, .photo-film, .event-strip, .page-strip, .page-theme-picker, .note-toc-list, input, textarea, select, button"
     )
   );
 }
@@ -869,6 +1059,7 @@ function loadTeachingQuotes() {
         .map((quote) => ({
           id: quote.id || crypto.randomUUID(),
           text: String(quote.text || "").trim(),
+          teacher: normalizeTeacherLabel(quote.teacher || quote.person || TEACHING_DEFAULT_TEACHER),
           createdAt: quote.createdAt || Date.now()
         }))
         .filter((quote) => quote.text);
@@ -880,12 +1071,44 @@ function loadTeachingQuotes() {
   return seedTeachingQuotes.map((quote) => ({ ...quote }));
 }
 
+function normalizeTeacherLabel(value) {
+  return String(value || "").trim() || TEACHING_DEFAULT_TEACHER;
+}
+
 function saveTeachingQuotes() {
   localStorage.setItem(TEACHING_STORAGE_KEY, JSON.stringify(state.teachingQuotes));
 }
 
 function cloneDefaultModules() {
   return Object.fromEntries(Object.entries(defaultModules).map(([key, items]) => [key, items.map((item) => ({ ...item }))]));
+}
+
+function removeVisibleEnglish(value) {
+  return String(value || "")
+    .replace(/\bLARUNG GAR\b/g, "喇荣")
+    .replace(/\bYISHIN NORBU\b/g, "如意宝")
+    .replace(/\bLANG LANG\b/g, "朗朗神山")
+    .replace(/\bNAPA VALLEY\s*·\s*酸奶\b/g, "酸奶")
+    .replace(/\bNEW YORK\s*·\s*灌顶\b/g, "灌顶")
+    .replace(/\bBOULDER\s*·\s*红衣\b/g, "红衣")
+    .replace(/\bWASHINGTON\s*·\s*文殊静修\b/g, "文殊静修")
+    .replace(/\bHALIFAX\s*·\s*信心所依\b/g, "信心所依")
+    .replace(/\bNAPA VALLEY\b/g, "酸奶")
+    .replace(/\bNEW YORK\b/g, "灌顶")
+    .replace(/\bBOULDER\b/g, "红衣")
+    .replace(/\bWASHINGTON\b/g, "文殊静修")
+    .replace(/\bHALIFAX\b/g, "信心所依")
+    .replace(/\bBLESSING\b/g, "加持")
+    .replace(/\bLIGHTS\b/g, "灯火")
+    .replace(/\bLARUNG\b/g, "喇荣")
+    .replace(/\bVALLEY\b/g, "山谷")
+    .replace(/\bMIST\b/g, "晨雾")
+    .replace(/\bSNOW\b/g, "雪景")
+    .replace(/\bPPT\b/g, "课件")
+    .replace(/\bWORD\b/gi, "文档")
+    .replace(/\bPDF\b/g, "文档")
+    .replace(/\bNEW\b/g, "新图")
+    .trim();
 }
 
 function loadModules() {
@@ -899,6 +1122,12 @@ function loadModules() {
   }
   const modules = cloneDefaultModules();
   localStorage.setItem(MODULE_STORAGE_KEY, JSON.stringify(modules));
+  const pptProjectIds = new Set((modules.pptProjects || []).map((project) => project.id));
+  modules.pptNotes = (modules.pptNotes || []).map((note) => ({
+    ...note,
+    projectIds: normalizePptNoteProjectIds(note, pptProjectIds),
+    projectId: normalizePptNoteProjectIds(note, pptProjectIds)[0]
+  }));
   return modules;
 }
 
@@ -910,20 +1139,59 @@ function normalizeModules(saved) {
       modules[key] = saved[key]
         .map((item, index) => ({
           id: item.id || crypto.randomUUID(),
-          title: String(item.title || "").trim(),
-          subtitle: String(item.subtitle || "").trim(),
-          body: String(item.body || "").trim(),
+          title: removeVisibleEnglish(item.title),
+          subtitle: removeVisibleEnglish(item.subtitle),
+          body: removeVisibleEnglish(item.body),
           tone: item.tone || ["red", "blue", "gold", "green"][index % 4]
         }))
         .filter((item) => item.title || item.body);
+      return;
+    }
+    if (key === "practiceCounters") {
+      modules[key] = saved[key]
+        .map((item) => ({
+          id: item.id || crypto.randomUUID(),
+          title: removeVisibleEnglish(item.title),
+          subtitle: removeVisibleEnglish(item.subtitle),
+          count: Math.max(0, Number(item.count) || 0),
+          target: Math.max(1, Number(item.target) || 100000),
+          step: Math.max(1, Number(item.step) || 108),
+          updatedAt: item.updatedAt || Date.now()
+        }))
+        .filter((item) => item.title);
+      return;
+    }
+    if (key === "pptProjects") {
+      const projects = saved[key].map(normalizePptProject).filter(Boolean);
+      modules[key] = ensureDefaultPptProject(projects);
+      return;
+    }
+    if (key === "pptNotes") {
+      modules[key] = saved[key]
+        .map((item) => {
+          const pptProjectIds = new Set(ensureDefaultPptProject(modules.pptProjects).map((project) => project.id));
+          const projectIds = normalizePptNoteProjectIds(item, pptProjectIds);
+          return {
+            id: item.id || crypto.randomUUID(),
+            title: removeVisibleEnglish(item.title),
+            subtitle: removeVisibleEnglish(item.subtitle),
+            projectId: projectIds[0],
+            projectIds,
+            body: removeVisibleEnglish(item.body),
+            attachment: normalizePptAttachment(item.attachment),
+            createdAt: item.createdAt || Date.now(),
+            updatedAt: item.updatedAt || item.createdAt || Date.now()
+          };
+        })
+        .filter((item) => item.title || item.body || item.attachment);
       return;
     }
     modules[key] = saved[key]
       .map((item) => ({
         id: item.id || crypto.randomUUID(),
         image: String(item.image || ""),
-        title: String(item.title || "").trim(),
-        subtitle: String(item.subtitle || "").trim(),
+        title: removeVisibleEnglish(item.title),
+        subtitle: removeVisibleEnglish(item.subtitle),
         layout: item.layout || "",
         feature: Boolean(item.feature)
       }))
@@ -932,13 +1200,54 @@ function normalizeModules(saved) {
   return modules;
 }
 
+function normalizePptProject(item) {
+  if (!item || typeof item !== "object") return null;
+  const title = removeVisibleEnglish(item.title);
+  if (!title) return null;
+  return {
+    id: item.id || crypto.randomUUID(),
+    title,
+    subtitle: removeVisibleEnglish(item.subtitle),
+    createdAt: item.createdAt || Date.now(),
+    updatedAt: item.updatedAt || item.createdAt || Date.now()
+  };
+}
+
+function ensureDefaultPptProject(projects = []) {
+  const normalized = projects.filter(Boolean);
+  const hasDefault = normalized.some((project) => project.id === PPT_DEFAULT_PROJECT_ID);
+  if (!hasDefault) {
+    normalized.unshift({
+      id: PPT_DEFAULT_PROJECT_ID,
+      title: "课堂笔记",
+      subtitle: "默认项目",
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    });
+  }
+  return normalized;
+}
+
+function normalizePptAttachment(value) {
+  if (!value || typeof value !== "object") return null;
+  const dataUrl = String(value.dataUrl || "");
+  const name = String(value.name || "").trim();
+  if (!dataUrl || !name) return null;
+  return {
+    name,
+    type: String(value.type || "application/octet-stream"),
+    size: Math.max(0, Number(value.size) || 0),
+    dataUrl
+  };
+}
+
 function saveModules() {
   try {
     localStorage.setItem(MODULE_STORAGE_KEY, JSON.stringify(state.modules));
     return true;
   } catch (error) {
     console.warn("Failed to save editable modules", error);
-    alert("图片过大，保存失败。请换一张较小的图片再试。");
+    alert("保存失败。若刚添加了图片或附件，请换一个较小的文件再试。");
     return false;
   }
 }
@@ -980,7 +1289,7 @@ function createNote(options = {}) {
     tags: [],
     body: "",
     images: [],
-    pageTheme: "sky",
+    pageTheme: PLAIN_PAGE_THEME,
     calendarMode: "gregorian",
     pinned: false,
     createdAt: now,
@@ -1118,6 +1427,8 @@ function render() {
   renderStats();
   renderFocus();
   renderModules();
+  renderOfferingLamp();
+  renderBloomGardenPhotos();
   renderTeachingQuotes();
   setView(state.view);
 }
@@ -1133,7 +1444,7 @@ function renderEditor() {
   els.noteTags.value = note.tags.join(", ");
   els.noteBody.value = note.body;
   els.pinButton.classList.toggle("active", note.pinned);
-  renderPageTheme(note.pageTheme || "sky");
+  renderPageTheme(note.pageTheme || PLAIN_PAGE_THEME);
   renderMemoCalendar(note);
   renderNoteImages(note);
   renderPageDecoration(note);
@@ -1141,6 +1452,11 @@ function renderEditor() {
 
 function renderPageDecoration(note) {
   if (!note || !els.pageDecoration) return;
+  if (note.type === "memo") {
+    els.pageDecoration.className = "page-decoration hidden";
+    els.pageDecoration.style.backgroundImage = "";
+    return;
+  }
   const seed = hashString(`${note.id}-${note.createdAt || ""}`);
   const decor = pageDecorations[seed % pageDecorations.length];
   const side = Math.floor(seed / pageDecorations.length) % 2 === 0 ? "left" : "right";
@@ -1268,6 +1584,115 @@ function readImageFile(file) {
   });
 }
 
+function readBloomPortraitFile(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.addEventListener("load", () => {
+      const image = new Image();
+      image.addEventListener("load", () => {
+        const width = image.naturalWidth || image.width;
+        const height = image.naturalHeight || image.height;
+        const maxSide = 900;
+        const scale = Math.min(1, maxSide / Math.max(width, height));
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.max(1, Math.round(width * scale));
+        canvas.height = Math.max(1, Math.round(height * scale));
+        const context = canvas.getContext("2d");
+        if (!context) {
+          resolve(String(reader.result));
+          return;
+        }
+
+        context.drawImage(image, 0, 0, canvas.width, canvas.height);
+        context.globalCompositeOperation = "source-atop";
+        context.fillStyle = "rgba(255, 236, 178, 0.08)";
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        context.globalCompositeOperation = "source-over";
+
+        const data = context.getImageData(0, 0, canvas.width, canvas.height);
+        const pixels = data.data;
+        const cx = canvas.width * 0.5;
+        const cy = canvas.height * 0.46;
+        const rx = canvas.width * 0.53;
+        const ry = canvas.height * 0.66;
+        for (let y = 0; y < canvas.height; y += 1) {
+          for (let x = 0; x < canvas.width; x += 1) {
+            const dx = (x - cx) / rx;
+            const dy = (y - cy) / ry;
+            const distance = dx * dx + dy * dy;
+            const fade = Math.max(0, Math.min(1, (1.2 - distance) / 0.42));
+            const bottomSeat = Math.max(0, Math.min(1, (y / canvas.height - 0.55) / 0.32));
+            const alphaMask = Math.max(0.18 * bottomSeat, fade);
+            const index = (y * canvas.width + x) * 4 + 3;
+            pixels[index] = Math.round(pixels[index] * alphaMask);
+          }
+        }
+        context.putImageData(data, 0, 0);
+        resolve(canvas.toDataURL("image/png"));
+      });
+      image.addEventListener("error", () => resolve(String(reader.result)));
+      image.src = String(reader.result);
+    });
+    reader.addEventListener("error", reject);
+    reader.readAsDataURL(file);
+  });
+}
+
+function readFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.addEventListener("load", () => resolve(String(reader.result || "")));
+    reader.addEventListener("error", reject);
+    reader.readAsDataURL(file);
+  });
+}
+
+function loadPageWallpapers() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(PAGE_WALLPAPER_STORAGE_KEY));
+    if (Array.isArray(saved)) {
+      return saved.map(normalizePageWallpaper).filter(Boolean);
+    }
+  } catch (error) {
+    console.warn("Failed to load page wallpapers", error);
+  }
+  try {
+    localStorage.setItem(PAGE_WALLPAPER_STORAGE_KEY, JSON.stringify([]));
+  } catch (error) {
+    console.warn("Failed to initialize page wallpapers", error);
+  }
+  return [];
+}
+
+function normalizePageWallpaper(value) {
+  if (!value || typeof value !== "object") return null;
+  const id = String(value.id || "").trim();
+  const title = String(value.title || "").trim();
+  const image = String(value.image || "").trim();
+  if (!id || !image) return null;
+  return {
+    id,
+    title: title || "自定义壁纸",
+    image
+  };
+}
+
+function savePageWallpapers() {
+  try {
+    localStorage.setItem(PAGE_WALLPAPER_STORAGE_KEY, JSON.stringify(pageWallpapers));
+    state.pageWallpapers = pageWallpapers;
+    return true;
+  } catch (error) {
+    console.warn("Failed to save page wallpapers", error);
+    alert("壁纸保存失败，请删减几张壁纸或换一张较小的图片。");
+    return false;
+  }
+}
+
+function getPageWallpaper(id) {
+  return pageWallpapers.find((wallpaper) => wallpaper.id === id) || null;
+}
+
 function updatePageTheme(theme) {
   const note = getActiveNote();
   if (!note) return;
@@ -1280,15 +1705,143 @@ function updatePageTheme(theme) {
 
 function renderPageTheme(theme) {
   const selectedTheme = normalizePageTheme(theme);
-  els.editorForm.classList.remove(...pageThemeClassNames);
-  els.editorForm.classList.add(`page-${selectedTheme}`);
-  els.pageThemeButtons.forEach((button) => {
-    button.classList.toggle("active", button.dataset.pageTheme === selectedTheme);
-  });
+  const wallpaper = getPageWallpaper(selectedTheme);
+  els.editorForm.classList.remove(...pageThemeClassNames, "page-wallpaper", "page-plain");
+  if (wallpaper) {
+    els.editorForm.classList.add("page-wallpaper");
+    els.editorForm.style.setProperty("--page-wallpaper-image", `url("${wallpaper.image}")`);
+  } else {
+    els.editorForm.classList.add("page-plain");
+    els.editorForm.style.removeProperty("--page-wallpaper-image");
+  }
+  renderPageWallpaperPicker(selectedTheme);
 }
 
 function normalizePageTheme(theme) {
-  return pageThemes.has(theme) ? theme : "sky";
+  if (theme === PLAIN_PAGE_THEME) return PLAIN_PAGE_THEME;
+  return getPageWallpaper(theme) ? theme : pageWallpapers[0]?.id || PLAIN_PAGE_THEME;
+}
+
+function renderPageWallpaperPicker(selectedTheme = normalizePageTheme(getActiveNote()?.pageTheme)) {
+  if (!els.pageThemePicker) return;
+  els.pageThemePicker.replaceChildren();
+  const normalizedTheme = normalizePageTheme(selectedTheme);
+  els.pageThemeButtons = [];
+
+  const plainOption = createPageWallpaperOption(
+    {
+      id: PLAIN_PAGE_THEME,
+      title: "素纸",
+      image: ""
+    },
+    normalizedTheme
+  );
+  els.pageThemePicker.append(plainOption);
+
+  pageWallpapers.forEach((wallpaper) => {
+    els.pageThemePicker.append(createPageWallpaperOption(wallpaper, normalizedTheme));
+  });
+  els.pageThemePicker.append(createAddPageWallpaperOption());
+}
+
+function createPageWallpaperOption(wallpaper, selectedTheme) {
+  const card = document.createElement("div");
+  card.className = "page-theme-option";
+  card.classList.toggle("active", wallpaper.id === selectedTheme);
+  card.classList.toggle("page-theme-plain", wallpaper.id === PLAIN_PAGE_THEME);
+  card.dataset.pageTheme = wallpaper.id;
+
+  const selectButton = document.createElement("button");
+  selectButton.type = "button";
+  selectButton.className = "page-theme-select";
+  selectButton.addEventListener("click", () => updatePageTheme(wallpaper.id));
+
+  if (wallpaper.image) {
+    const image = document.createElement("img");
+    image.src = wallpaper.image;
+    image.alt = `${wallpaper.title}空白页预览`;
+    prepareImage(image);
+    selectButton.append(image);
+  }
+
+  const title = document.createElement("span");
+  title.textContent = wallpaper.title;
+  selectButton.append(title);
+  card.append(selectButton);
+
+  if (wallpaper.id !== PLAIN_PAGE_THEME) {
+    const deleteButton = document.createElement("button");
+    deleteButton.type = "button";
+    deleteButton.className = "page-theme-delete";
+    deleteButton.textContent = "删";
+    deleteButton.setAttribute("aria-label", `删除${wallpaper.title}`);
+    deleteButton.addEventListener("click", () => deletePageWallpaper(wallpaper.id));
+    card.append(deleteButton);
+  }
+
+  return card;
+}
+
+function createAddPageWallpaperOption() {
+  const label = document.createElement("label");
+  label.className = "page-theme-option page-theme-add";
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = "image/*";
+  input.multiple = true;
+  input.addEventListener("change", addPageWallpapers);
+  const text = document.createElement("span");
+  text.textContent = "添加壁纸";
+  label.append(input, text);
+  return label;
+}
+
+async function addPageWallpapers(event) {
+  const input = event.currentTarget;
+  const files = [...(input.files || [])].filter((file) => file.type.startsWith("image/"));
+  if (!files.length) return;
+  try {
+    const added = [];
+    for (const file of files.slice(0, 12)) {
+      added.push({
+        id: `wallpaper-${crypto.randomUUID()}`,
+        title: file.name.replace(/\.[^.]+$/, "") || "自定义壁纸",
+        image: await readImageFile(file)
+      });
+    }
+    pageWallpapers = [...pageWallpapers, ...added];
+    if (!savePageWallpapers()) {
+      pageWallpapers = pageWallpapers.filter((wallpaper) => !added.some((item) => item.id === wallpaper.id));
+      state.pageWallpapers = pageWallpapers;
+      return;
+    }
+    if (added[0]) updatePageTheme(added[0].id);
+    renderPageWallpaperPicker(added[0]?.id);
+  } catch (error) {
+    console.warn("Failed to add page wallpapers", error);
+    alert("壁纸读取失败，请换一张图片再试。");
+  } finally {
+    input.value = "";
+  }
+}
+
+function deletePageWallpaper(id) {
+  const wallpaper = getPageWallpaper(id);
+  if (!wallpaper) return;
+  const ok = confirm(`删除「${wallpaper.title}」这张空白页壁纸？`);
+  if (!ok) return;
+  pageWallpapers = pageWallpapers.filter((item) => item.id !== id);
+  const fallbackTheme = pageWallpapers[0]?.id || PLAIN_PAGE_THEME;
+  state.notes.forEach((note) => {
+    if (note.pageTheme === id) {
+      note.pageTheme = fallbackTheme;
+      note.updatedAt = Date.now();
+    }
+  });
+  if (savePageWallpapers()) {
+    scheduleSave();
+    renderPageTheme(getActiveNote()?.pageTheme || fallbackTheme);
+  }
 }
 
 function updateMemoCalendarMode(mode) {
@@ -1335,11 +1888,11 @@ function createCalendarHead(mode, date) {
 
   const titleWrap = document.createElement("div");
   const kicker = document.createElement("span");
-  kicker.textContent = mode === "tibetan" ? "TIBETAN CALENDAR" : "GREGORIAN CALENDAR";
+  kicker.textContent = mode === "tibetan" ? "藏历日历" : "公历日历";
   const title = document.createElement("strong");
   title.textContent =
     mode === "tibetan"
-      ? `${date.getFullYear()} · བོད་ཟླའི་དྲན་ཐོ།`
+      ? `${date.getFullYear()} · ${getTibetanMonthLabel(date)}`
       : new Intl.DateTimeFormat("zh-CN", { year: "numeric", month: "long" }).format(date);
   titleWrap.append(kicker, title);
 
@@ -1356,6 +1909,13 @@ function createCalendarHead(mode, date) {
 
   head.append(titleWrap, controls, small);
   return head;
+}
+
+function getTibetanMonthLabel(date) {
+  const tibetanMonths = ["༡", "༢", "༣", "༤", "༥", "༦", "༧", "༨", "༩", "༡༠", "༡༡", "༡༢"];
+  const chineseMonths = ["一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"];
+  const index = Math.max(0, Math.min(11, date.getMonth()));
+  return `བོད་ཟླ་${tibetanMonths[index]} · 藏历${chineseMonths[index]}`;
 }
 
 function createCalendarGrid(mode, date) {
@@ -1528,17 +2088,21 @@ function formatDateInput(date) {
   return `${year}-${month}-${day}`;
 }
 
-function addTeachingQuote(event, sourceInput) {
+function addTeachingQuote(event, sourceInput, teacherInput) {
   event?.preventDefault();
   const text = normalizeTeachingText(sourceInput?.value);
   if (!text) return;
+  const teacher = normalizeTeacherLabel(teacherInput?.value);
 
   state.teachingQuotes.unshift({
     id: crypto.randomUUID(),
     text,
+    teacher,
     createdAt: Date.now()
   });
   sourceInput.value = "";
+  if (teacherInput) teacherInput.value = teacher;
+  state.teachingTeacherFilter = teacher;
   saveTeachingQuotes();
   renderTeachingQuotes();
 }
@@ -1550,6 +2114,19 @@ function deleteTeachingQuote(id) {
   if (!ok) return;
 
   state.teachingQuotes = state.teachingQuotes.filter((item) => item.id !== id);
+  if (state.teachingTeacherFilter !== "all" && !state.teachingQuotes.some((item) => item.teacher === state.teachingTeacherFilter)) {
+    state.teachingTeacherFilter = "all";
+  }
+  saveTeachingQuotes();
+  renderTeachingQuotes();
+}
+
+function editTeachingQuoteTeacher(id) {
+  const quote = state.teachingQuotes.find((item) => item.id === id);
+  if (!quote) return;
+  const teacher = prompt("修改人物 / 上师标签", quote.teacher || TEACHING_DEFAULT_TEACHER);
+  if (teacher === null) return;
+  quote.teacher = normalizeTeacherLabel(teacher);
   saveTeachingQuotes();
   renderTeachingQuotes();
 }
@@ -1617,7 +2194,7 @@ function submitModuleForm(form) {
         id: crypto.randomUUID(),
         image,
         title: form.elements.title.value.trim() || "ཁ་བྱང་། 新图片",
-        subtitle: form.elements.subtitle.value.trim() || "NEW"
+        subtitle: form.elements.subtitle.value.trim() || "新图"
       };
       state.modules[moduleKey].push(item);
       if (saveModules()) {
@@ -1648,10 +2225,24 @@ function setModuleFormStatus(form, message, tone = "") {
 }
 
 function renderModules() {
+  renderFocusGalleryModule();
   renderPortraitModule();
   renderMilestoneModule();
   renderAcademyModule();
   renderColorPageModule();
+  renderPracticeCounters();
+  renderPptProjectManager();
+  renderPptNotes();
+}
+
+function renderFocusGalleryModule() {
+  if (!els.focusGallery) return;
+  renderEmptyModule(els.focusGallery, "འདྲ་པར་མེད། 暂无不离相册");
+  state.modules.focusGallery.forEach((item, index) => {
+    const figure = createImageFigure("photo-card", item, "focusGallery");
+    figure.classList.toggle("large", item.feature || index === 0);
+    els.focusGallery.append(figure);
+  });
 }
 
 function renderPortraitModule() {
@@ -1686,16 +2277,923 @@ function renderMilestoneModule() {
   });
 }
 
+function renderPracticeCounters() {
+  if (!els.practiceCounterGrid || !els.practiceSummary) return;
+  els.practiceCounterGrid.replaceChildren();
+
+  const total = state.modules.practiceCounters.reduce((sum, item) => sum + (Number(item.count) || 0), 0);
+  const target = state.modules.practiceCounters.reduce((sum, item) => sum + (Number(item.target) || 0), 0);
+  els.practiceSummary.textContent = `总计 ${formatNumber(total)} / ${formatNumber(target)} · ${state.modules.practiceCounters.length} 项功课`;
+
+  if (!state.modules.practiceCounters.length) {
+    const empty = document.createElement("div");
+    empty.className = "module-empty";
+    empty.textContent = "暂无计数功课，可先添加一项。";
+    els.practiceCounterGrid.append(empty);
+    return;
+  }
+
+  state.modules.practiceCounters.forEach((item) => {
+    els.practiceCounterGrid.append(createPracticeCounterCard(item));
+  });
+}
+
+function createPracticeCounterCard(item) {
+  const card = document.createElement("article");
+  card.className = "practice-counter-card";
+
+  const head = document.createElement("div");
+  head.className = "practice-counter-head";
+  const titleWrap = document.createElement("div");
+  const subtitle = document.createElement("span");
+  subtitle.textContent = item.subtitle || "སྔོན་འགྲོ།";
+  const title = document.createElement("strong");
+  title.textContent = item.title || "未命名功课";
+  titleWrap.append(subtitle, title);
+  const count = document.createElement("b");
+  count.textContent = formatNumber(item.count);
+  head.append(titleWrap, count);
+
+  const progress = document.createElement("div");
+  progress.className = "practice-progress";
+  const bar = document.createElement("span");
+  const percent = item.target ? Math.min(100, Math.round((item.count / item.target) * 100)) : 0;
+  bar.style.width = `${percent}%`;
+  progress.append(bar);
+
+  const meta = document.createElement("p");
+  meta.textContent = `目标 ${formatNumber(item.target)} · ${percent}% · 每次 +${formatNumber(item.step)}`;
+
+  const actions = document.createElement("div");
+  actions.className = "practice-counter-actions";
+  const manualInput = document.createElement("input");
+  manualInput.className = "practice-counter-manual";
+  manualInput.type = "number";
+  manualInput.inputMode = "numeric";
+  manualInput.placeholder = "输入数量";
+  manualInput.title = "输入正数增加，负数减少";
+  manualInput.setAttribute("aria-label", "手动输入本次功课数量");
+  manualInput.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter") return;
+    event.preventDefault();
+    customPracticeCounterDelta(item.id, manualInput.value);
+    manualInput.value = "";
+  });
+  const targetEditor = createPracticeTargetEditor(item);
+  const targetButton = createActionButton("目标", () => {
+    const shouldOpen = targetEditor.classList.contains("hidden");
+    targetEditor.classList.toggle("hidden", !shouldOpen);
+    if (shouldOpen) targetEditor.querySelector("input[name='target']")?.focus();
+  });
+  actions.append(
+    createActionButton(`+${item.step}`, () => updatePracticeCounter(item.id, item.step)),
+    manualInput,
+    createActionButton("手动", () => {
+      customPracticeCounterDelta(item.id, manualInput.value);
+      manualInput.value = "";
+    }),
+    targetButton,
+    createActionButton("清零", () => resetPracticeCounter(item.id), "danger"),
+    createActionButton("删除", () => deleteModuleItem("practiceCounters", item.id), "danger")
+  );
+
+  card.append(head, progress, meta, actions, targetEditor);
+  return card;
+}
+
+function createPracticeTargetEditor(item) {
+  const form = document.createElement("form");
+  form.className = "practice-target-editor hidden";
+
+  const targetInput = document.createElement("input");
+  targetInput.name = "target";
+  targetInput.type = "number";
+  targetInput.min = "1";
+  targetInput.step = "1";
+  targetInput.inputMode = "numeric";
+  targetInput.placeholder = "目标数量";
+  targetInput.value = String(item.target || 100000);
+  targetInput.setAttribute("aria-label", "目标数量");
+
+  const stepInput = document.createElement("input");
+  stepInput.name = "step";
+  stepInput.type = "number";
+  stepInput.min = "1";
+  stepInput.step = "1";
+  stepInput.inputMode = "numeric";
+  stepInput.placeholder = "每次增加";
+  stepInput.value = String(item.step || 108);
+  stepInput.setAttribute("aria-label", "每次增加数量");
+
+  const actions = document.createElement("div");
+  actions.className = "practice-target-editor-actions";
+  const saveButton = document.createElement("button");
+  saveButton.type = "submit";
+  saveButton.className = "module-action-button";
+  saveButton.textContent = "保存目标";
+  const cancelButton = createActionButton("取消", () => form.classList.add("hidden"));
+  actions.append(saveButton, cancelButton);
+
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    savePracticeCounterTarget(item.id, targetInput.value, stepInput.value);
+  });
+
+  form.append(targetInput, stepInput, actions);
+  return form;
+}
+
+function addPracticeCounter(event) {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const title = form.elements.title.value.trim();
+  if (!title) return;
+
+  state.modules.practiceCounters.push({
+    id: crypto.randomUUID(),
+    title,
+    subtitle: "自定义",
+    count: 0,
+    target: Math.max(1, Number(form.elements.target.value) || 100000),
+    step: Math.max(1, Number(form.elements.step.value) || 108),
+    updatedAt: Date.now()
+  });
+  if (saveModules()) {
+    form.reset();
+    renderPracticeCounters();
+  }
+}
+
+function updatePracticeCounter(id, delta) {
+  const item = findModuleItem("practiceCounters", id);
+  if (!item) return;
+  item.count = Math.max(0, (Number(item.count) || 0) + delta);
+  item.updatedAt = Date.now();
+  if (saveModules()) renderPracticeCounters();
+}
+
+function customPracticeCounterDelta(id, rawValue) {
+  const item = findModuleItem("practiceCounters", id);
+  if (!item) return;
+  const value = rawValue ?? prompt("输入本次增减数量，正数增加，负数减少", String(item.step || 108));
+  if (value === null) return;
+  const normalizedValue = String(value).trim();
+  const delta = Number(normalizedValue);
+  if (!Number.isFinite(delta) || delta === 0) {
+    alert("请输入有效数字，例如 108 或 -21。");
+    return;
+  }
+  updatePracticeCounter(id, Math.trunc(delta));
+}
+
+function savePracticeCounterTarget(id, targetValue, stepValue) {
+  const item = findModuleItem("practiceCounters", id);
+  if (!item) return;
+  const target = Number(String(targetValue || "").trim());
+  const step = Number(String(stepValue || "").trim());
+  if (!Number.isFinite(target) || target < 1 || !Number.isFinite(step) || step < 1) {
+    alert("请输入有效数字，目标数量和每次增加数量都需要大于 0。");
+    return;
+  }
+  item.target = Math.trunc(target);
+  item.step = Math.trunc(step);
+  item.updatedAt = Date.now();
+  if (saveModules()) renderPracticeCounters();
+}
+
+function resetPracticeCounter(id) {
+  const item = findModuleItem("practiceCounters", id);
+  if (!item) return;
+  const ok = confirm(`清零「${item.title}」的计数？`);
+  if (!ok) return;
+  item.count = 0;
+  item.updatedAt = Date.now();
+  if (saveModules()) renderPracticeCounters();
+}
+
+function renderOfferingLamp() {
+  if (!els.offeringLampScene) return;
+  const count = getOfferingLampCount();
+  els.offeringLampScene.classList.remove("is-lit");
+  els.offeringLampButton?.classList.remove("just-lit");
+  if (els.offeringLampStatus) {
+    els.offeringLampStatus.textContent = "愿除垢暗，愿智如炬。";
+  }
+  if (els.offeringLampMeta) {
+    els.offeringLampMeta.textContent = count ? `供灯累计：${count}次` : "轻触供灯，点亮灯火。";
+  }
+  if (els.offeringLampAction) {
+    els.offeringLampAction.textContent = "供灯";
+  }
+  renderOfferingBuddhaWall();
+}
+
+function lightOfferingLamp() {
+  const now = Date.now();
+  const count = getOfferingLampCount() + 1;
+  localStorage.setItem(OFFERING_LAMP_STORAGE_KEY, String(now));
+  localStorage.setItem(OFFERING_LAMP_COUNT_STORAGE_KEY, String(count));
+  els.offeringLampScene?.classList.add("is-lit");
+  els.offeringLampScene?.classList.remove("is-offering-pulse");
+  els.offeringLampButton?.classList.remove("just-lit");
+  els.offeringLampAction?.classList.remove("is-offering-press");
+  window.requestAnimationFrame(() => {
+    els.offeringLampScene?.classList.add("is-offering-pulse");
+    els.offeringLampButton?.classList.add("just-lit");
+    els.offeringLampAction?.classList.add("is-offering-press");
+  });
+  window.setTimeout(() => {
+    els.offeringLampScene?.classList.remove("is-offering-pulse");
+    els.offeringLampAction?.classList.remove("is-offering-press");
+  }, 920);
+  if (els.offeringLampStatus) {
+    els.offeringLampStatus.textContent = "灯火已明，愿做众生心中的光";
+  }
+  if (els.offeringLampMeta) {
+    els.offeringLampMeta.textContent = `供灯累计：${count}次`;
+  }
+  if (els.offeringLampAction) {
+    els.offeringLampAction.textContent = "再次供灯";
+  }
+}
+
+function getOfferingLampCount() {
+  const saved = Math.max(0, Number(localStorage.getItem(OFFERING_LAMP_COUNT_STORAGE_KEY)) || 0);
+  if (saved) return saved;
+  const legacyLitAt = Number(localStorage.getItem(OFFERING_LAMP_STORAGE_KEY)) || 0;
+  return legacyLitAt > 0 ? 1 : 0;
+}
+
+function loadOfferingBuddhaImages() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(OFFERING_BUDDHA_WALL_STORAGE_KEY));
+    if (Array.isArray(saved) && saved.length) {
+      return saved.filter(Boolean).map(String);
+    }
+  } catch (error) {
+    console.warn("Failed to load offering Buddha wall", error);
+  }
+  return [...OFFERING_DEFAULT_BUDDHA_IMAGES];
+}
+
+function saveOfferingBuddhaImages(images) {
+  try {
+    localStorage.setItem(OFFERING_BUDDHA_WALL_STORAGE_KEY, JSON.stringify(images));
+    return true;
+  } catch (error) {
+    console.warn("Failed to save offering Buddha wall", error);
+    alert("佛像图片保存失败，请减少图片数量或换一张较小的图片。");
+    return false;
+  }
+}
+
+function renderOfferingBuddhaWall() {
+  if (!els.offeringBuddhaWall) return;
+  const images = loadOfferingBuddhaImages();
+  els.offeringBuddhaWall.replaceChildren();
+  images.forEach((src, index) => {
+    const figure = document.createElement("figure");
+    figure.className = "offering-buddha-photo";
+    const image = document.createElement("img");
+    image.src = src;
+    image.alt = `供灯佛像 ${index + 1}`;
+    image.loading = "lazy";
+    image.decoding = "async";
+    figure.append(image);
+    els.offeringBuddhaWall.append(figure);
+  });
+}
+
+async function addOfferingBuddhaImages(event) {
+  const input = event.currentTarget;
+  await saveOfferingBuddhaFiles(input.files, { replace: false });
+  input.value = "";
+}
+
+function changeOfferingBuddhaWall() {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = "image/*";
+  input.multiple = true;
+  input.style.position = "fixed";
+  input.style.left = "-9999px";
+  input.style.top = "-9999px";
+  document.body.append(input);
+  input.addEventListener(
+    "change",
+    async (event) => {
+      await saveOfferingBuddhaFiles(event.currentTarget.files, { replace: true });
+      input.remove();
+    },
+    { once: true }
+  );
+  window.setTimeout(() => input.remove(), 10000);
+  input.click();
+}
+
+async function saveOfferingBuddhaFiles(fileList, options = {}) {
+  const files = [...(fileList || [])];
+  if (!files.length) return;
+  try {
+    const current = options.replace ? [] : loadOfferingBuddhaImages();
+    const added = [];
+    for (const file of files.slice(0, 8)) {
+      added.push(await readImageFile(file));
+    }
+    if (saveOfferingBuddhaImages([...current, ...added].slice(-12))) {
+      renderOfferingBuddhaWall();
+    }
+  } catch (error) {
+    console.warn("Failed to add offering Buddha images", error);
+    alert("佛像图片读取失败，请换一张图片再试。");
+  }
+}
+
+function renderPptProjectManager() {
+  const projects = getPptProjects();
+  const activeExists = state.pptProjectFilter === "all" || projects.some((project) => project.id === state.pptProjectFilter);
+  if (!activeExists) state.pptProjectFilter = "all";
+  renderPptProjectSelect();
+  renderPptProjectTabs();
+}
+
+function getPptProjects() {
+  state.modules.pptProjects = ensureDefaultPptProject(state.modules.pptProjects || []);
+  return state.modules.pptProjects;
+}
+
+function getPptProject(id) {
+  return getPptProjects().find((project) => project.id === id) || getPptProjects()[0];
+}
+
+function getPptProjectTitle(id) {
+  return getPptProject(id)?.title || "课堂笔记";
+}
+
+function normalizePptNoteProjectIds(item, allowedIds = new Set(getPptProjects().map((project) => project.id))) {
+  const rawIds = Array.isArray(item?.projectIds) ? item.projectIds : [item?.projectId];
+  const ids = [...new Set(rawIds.map((id) => String(id || "")).filter((id) => allowedIds.has(id)))];
+  return ids.length ? ids : [PPT_DEFAULT_PROJECT_ID];
+}
+
+function getPptNoteProjectIds(item) {
+  return normalizePptNoteProjectIds(item);
+}
+
+function syncPptNoteProjects(item, projectIds) {
+  const allowedIds = new Set(getPptProjects().map((project) => project.id));
+  const normalized = normalizePptNoteProjectIds({ projectIds }, allowedIds);
+  item.projectIds = normalized;
+  item.projectId = normalized[0];
+}
+
+function getPptNoteProjectTitles(item) {
+  return getPptNoteProjectIds(item).map((id) => getPptProjectTitle(id));
+}
+
+function getPptProjectButtonLabel(item) {
+  return getPptNoteProjectTitles(item).join(" / ");
+}
+
+function getSelectedPptProjectIds(select) {
+  return [...(select?.selectedOptions || [])].map((option) => option.value);
+}
+
+function renderPptProjectSelect() {
+  if (!els.pptProjectSelect) return;
+  const current = getSelectedPptProjectIds(els.pptProjectSelect);
+  const selectedIds = new Set(
+    state.pptProjectFilter === "all" ? (current.length ? current : [PPT_DEFAULT_PROJECT_ID]) : [state.pptProjectFilter]
+  );
+  els.pptProjectSelect.multiple = true;
+  els.pptProjectSelect.size = Math.min(4, Math.max(2, getPptProjects().length));
+  els.pptProjectSelect.replaceChildren();
+  getPptProjects().forEach((project) => {
+    const option = document.createElement("option");
+    option.value = project.id;
+    option.textContent = project.title;
+    option.selected = selectedIds.has(project.id);
+    els.pptProjectSelect.append(option);
+  });
+  if (![...els.pptProjectSelect.selectedOptions].length) {
+    els.pptProjectSelect.value = PPT_DEFAULT_PROJECT_ID;
+  }
+}
+
+function renderPptProjectTabs() {
+  if (!els.pptProjectTabs) return;
+  els.pptProjectTabs.replaceChildren();
+
+  const counts = getPptProjectCounts();
+  els.pptProjectTabs.append(createPptProjectFilterChip({ id: "all", title: "全部项目", count: state.modules.pptNotes.length }));
+  getPptProjects().forEach((project) => {
+    els.pptProjectTabs.append(createPptProjectFilterChip({ ...project, count: counts.get(project.id) || 0 }));
+  });
+}
+
+function getPptProjectCounts() {
+  const counts = new Map();
+  const projectIds = new Set(getPptProjects().map((project) => project.id));
+  state.modules.pptNotes.forEach((note) => {
+    getPptNoteProjectIds(note)
+      .filter((projectId) => projectIds.has(projectId))
+      .forEach((projectId) => {
+        counts.set(projectId, (counts.get(projectId) || 0) + 1);
+      });
+  });
+  return counts;
+}
+
+function createPptProjectFilterChip(project) {
+  const chip = document.createElement("div");
+  chip.className = "ppt-project-chip";
+  chip.classList.toggle("active", state.pptProjectFilter === project.id);
+
+  const filter = document.createElement("button");
+  filter.type = "button";
+  filter.className = "ppt-project-filter";
+  filter.addEventListener("click", () => {
+    state.pptProjectFilter = project.id;
+    renderPptProjectManager();
+    renderPptNotes();
+  });
+
+  const title = document.createElement("strong");
+  title.textContent = project.title;
+  const count = document.createElement("span");
+  count.textContent = `${project.count} 条`;
+  filter.append(title, count);
+  chip.append(filter);
+
+  if (project.id !== "all") {
+    chip.append(
+      createPptProjectAction("改名", () => renamePptProject(project.id)),
+      createPptProjectAction("删", () => deletePptProject(project.id), project.id === PPT_DEFAULT_PROJECT_ID)
+    );
+  }
+
+  return chip;
+}
+
+function createPptProjectAction(label, onClick, disabled = false) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "ppt-project-action";
+  button.textContent = label;
+  button.disabled = disabled;
+  button.addEventListener("click", onClick);
+  return button;
+}
+
+function addPptProject(event) {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const title = form.elements.title.value.trim();
+  if (!title) {
+    setModuleFormStatus(form, "请先填写项目名称", "warn");
+    return;
+  }
+  const project = {
+    id: crypto.randomUUID(),
+    title,
+    subtitle: form.elements.subtitle.value.trim(),
+    createdAt: Date.now(),
+    updatedAt: Date.now()
+  };
+  state.modules.pptProjects.push(project);
+  state.pptProjectFilter = project.id;
+  if (saveModules()) {
+    form.reset();
+    setModuleFormStatus(form, "项目已新增", "done");
+    renderPptProjectManager();
+    renderPptNotes();
+  }
+}
+
+function renamePptProject(id) {
+  const project = getPptProject(id);
+  if (!project) return;
+  const title = prompt("修改项目名称", project.title || "");
+  if (title === null) return;
+  const subtitle = prompt("修改项目说明", project.subtitle || "");
+  if (subtitle === null) return;
+  project.title = title.trim() || project.title;
+  project.subtitle = subtitle.trim();
+  project.updatedAt = Date.now();
+  if (saveModules()) {
+    renderPptProjectManager();
+    renderPptNotes();
+  }
+}
+
+function deletePptProject(id) {
+  if (id === PPT_DEFAULT_PROJECT_ID) return;
+  const project = getPptProject(id);
+  if (!project) return;
+  const count = state.modules.pptNotes.filter((note) => getPptNoteProjectIds(note).includes(id)).length;
+  const ok = confirm(`删除项目「${project.title}」？其中 ${count} 条课堂笔记会归入默认项目。`);
+  if (!ok) return;
+  state.modules.pptProjects = getPptProjects().filter((item) => item.id !== id);
+  state.modules.pptNotes.forEach((note) => {
+    const remainingIds = getPptNoteProjectIds(note).filter((projectId) => projectId !== id);
+    syncPptNoteProjects(note, remainingIds);
+  });
+  if (state.pptProjectFilter === id) state.pptProjectFilter = "all";
+  if (saveModules()) {
+    renderPptProjectManager();
+    renderPptNotes();
+  }
+}
+
+function getFilteredPptNotes() {
+  if (state.pptProjectFilter === "all") return state.modules.pptNotes;
+  return state.modules.pptNotes.filter((note) => getPptNoteProjectIds(note).includes(state.pptProjectFilter));
+}
+
+function renderPptNotes() {
+  if (!els.pptNoteList) return;
+  els.pptNoteList.replaceChildren();
+  const notes = getFilteredPptNotes();
+
+  if (!notes.length) {
+    const empty = document.createElement("div");
+    empty.className = "module-empty";
+    empty.textContent = state.pptProjectFilter === "all" ? "暂无课堂整理，可先加入一条。" : "这个项目里还没有课堂笔记。";
+    els.pptNoteList.append(empty);
+    return;
+  }
+
+  notes.forEach((item) => {
+    els.pptNoteList.append(createPptNoteCard(item));
+  });
+}
+
+function createPptNoteCard(item) {
+  const article = document.createElement("article");
+  article.className = "ppt-note-card";
+  article.dataset.moduleKey = "pptNotes";
+  article.dataset.moduleId = item.id;
+
+  const head = document.createElement("div");
+  head.className = "ppt-note-head";
+  const title = document.createElement("h3");
+  title.textContent = item.title || "未命名整理";
+  const meta = document.createElement("div");
+  meta.className = "ppt-note-meta";
+  const project = document.createElement("span");
+  project.className = "ppt-note-project";
+  project.textContent = getPptProjectButtonLabel(item);
+  project.title = project.textContent;
+  const subtitle = document.createElement("span");
+  subtitle.textContent = item.subtitle || "课堂笔记";
+  meta.append(project, subtitle);
+  head.append(title, meta);
+
+  const body = document.createElement("p");
+  body.textContent = item.body || " ";
+
+  const attachment = createPptAttachmentLink(item.attachment);
+
+  const actions = document.createElement("div");
+  actions.className = "ppt-note-actions";
+  actions.append(
+    createActionButton("更改", () => editPptNote(item.id)),
+    createActionButton(getPptProjectButtonLabel(item), () => movePptNoteProject(item.id), "project"),
+    createActionButton("复制", () => copyPptNote(item.id)),
+    createActionButton(item.attachment ? "换附件" : "附件", () => replacePptAttachment(item.id)),
+    createActionButton("删除", () => deleteModuleItem("pptNotes", item.id), "danger")
+  );
+  if (item.attachment) {
+    actions.append(createActionButton("删附件", () => removePptAttachment(item.id), "danger"));
+  }
+
+  article.append(head, body);
+  if (attachment) article.append(attachment);
+  article.append(actions);
+  return article;
+}
+
+function createPptAttachmentLink(attachment) {
+  const normalized = normalizePptAttachment(attachment);
+  if (!normalized) return null;
+  const link = document.createElement("a");
+  link.className = "ppt-attachment-link";
+  link.href = normalized.dataUrl;
+  link.download = normalized.name;
+  link.textContent = `附件：${normalized.name}${formatFileSize(normalized.size) ? ` (${formatFileSize(normalized.size)})` : ""}`;
+  return link;
+}
+
+function formatFileSize(size) {
+  if (!size) return "";
+  if (size >= 1024 * 1024) return `${(size / 1024 / 1024).toFixed(1)} 兆`;
+  if (size >= 1024) return `${Math.round(size / 1024)} 千字节`;
+  return `${size} 字节`;
+}
+
+async function addPptNote(event) {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const title = form.elements.title.value.trim();
+  const body = form.elements.body.value.trim();
+  const selectedProjectIds = getSelectedPptProjectIds(form.elements.projectId);
+  const projectIds = normalizePptNoteProjectIds({ projectIds: selectedProjectIds });
+  const file = form.elements.attachment?.files[0];
+  const attachment = file ? await createPptAttachment(file) : null;
+  if (file && !attachment) return;
+  if (!title && !body && !attachment) return;
+
+  state.modules.pptNotes.unshift({
+    id: crypto.randomUUID(),
+    title: title || attachment?.name?.replace(/\.(pptx?|PPTX?)$/, "") || "未命名课堂整理",
+    subtitle: form.elements.subtitle.value.trim(),
+    projectId: projectIds[0],
+    projectIds,
+    body,
+    attachment,
+    createdAt: Date.now(),
+    updatedAt: Date.now()
+  });
+  if (saveModules()) {
+    form.reset();
+    renderPptProjectManager();
+    renderPptNotes();
+  }
+}
+
+function editPptNote(id) {
+  const item = findModuleItem("pptNotes", id);
+  if (!item) return;
+  const article = getPptNoteCardElement(id);
+  if (!article) return;
+  const existingEditor = article.querySelector('[data-ppt-editor="note"]');
+  if (existingEditor) {
+    existingEditor.querySelector("input, textarea")?.focus();
+    return;
+  }
+
+  closePptInlineEditors(article);
+
+  const editor = document.createElement("form");
+  editor.className = "ppt-inline-editor";
+  editor.dataset.pptEditor = "note";
+
+  const titleInput = createPptInlineTextInput("课程 / 主题", item.title || "");
+  const subtitleInput = createPptInlineTextInput("课次 / 页码 / 日期", item.subtitle || "");
+  const bodyInput = document.createElement("textarea");
+  bodyInput.placeholder = "课堂整理内容";
+  bodyInput.value = item.body || "";
+
+  const actions = createPptInlineEditorActions("保存更改", () => editor.remove());
+  editor.append(titleInput, subtitleInput, bodyInput, actions);
+  editor.addEventListener("submit", (event) => {
+    event.preventDefault();
+    item.title = titleInput.value.trim() || item.title;
+    item.subtitle = subtitleInput.value.trim();
+    item.body = bodyInput.value.trim();
+    item.updatedAt = Date.now();
+    if (saveModules()) renderPptNotes();
+  });
+
+  article.append(editor);
+  titleInput.focus();
+}
+
+function movePptNoteProject(id) {
+  const item = findModuleItem("pptNotes", id);
+  if (!item) return;
+  const article = getPptNoteCardElement(id);
+  if (!article) return;
+  const existingEditor = article.querySelector('[data-ppt-editor="projects"]');
+  if (existingEditor) {
+    existingEditor.querySelector("input")?.focus();
+    return;
+  }
+
+  closePptInlineEditors(article);
+
+  const projects = getPptProjects();
+  const selectedIds = new Set(getPptNoteProjectIds(item));
+  const editor = document.createElement("form");
+  editor.className = "ppt-inline-editor ppt-project-assignment";
+  editor.dataset.pptEditor = "projects";
+
+  const choices = document.createElement("div");
+  choices.className = "ppt-project-choice-list";
+  projects.forEach((project) => {
+    const label = document.createElement("label");
+    label.className = "ppt-project-choice";
+
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.value = project.id;
+    input.checked = selectedIds.has(project.id);
+
+    const text = document.createElement("span");
+    text.textContent = project.title;
+    label.append(input, text);
+    choices.append(label);
+  });
+
+  const actions = createPptInlineEditorActions("保存项目", () => editor.remove());
+  editor.append(choices, actions);
+  editor.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const checkedIds = [...editor.querySelectorAll('input[type="checkbox"]:checked')].map((input) => input.value);
+    syncPptNoteProjects(item, checkedIds);
+    item.updatedAt = Date.now();
+    if (!saveModules()) return;
+    renderPptProjectManager();
+    renderPptNotes();
+  });
+
+  article.append(editor);
+  editor.querySelector("input")?.focus();
+}
+
+function getPptNoteCardElement(id) {
+  return document.querySelector(`[data-module-key="pptNotes"][data-module-id="${id}"]`);
+}
+
+function closePptInlineEditors(article) {
+  article.querySelectorAll(".ppt-inline-editor").forEach((editor) => editor.remove());
+}
+
+function createPptInlineTextInput(placeholder, value) {
+  const input = document.createElement("input");
+  input.type = "text";
+  input.placeholder = placeholder;
+  input.value = value;
+  return input;
+}
+
+function createPptInlineEditorActions(saveLabel, onCancel) {
+  const actions = document.createElement("div");
+  actions.className = "ppt-inline-editor-actions";
+
+  const saveButton = document.createElement("button");
+  saveButton.type = "submit";
+  saveButton.textContent = saveLabel;
+
+  const cancelButton = document.createElement("button");
+  cancelButton.type = "button";
+  cancelButton.className = "cancel";
+  cancelButton.textContent = "取消";
+  cancelButton.addEventListener("click", onCancel);
+
+  actions.append(saveButton, cancelButton);
+  return actions;
+}
+
+async function createPptAttachment(file) {
+  if (!isPptAttachmentFile(file)) {
+    alert("请选择课件、文档、图片或文本附件。");
+    return null;
+  }
+  if (file.size > 4 * 1024 * 1024) {
+    const ok = confirm("这个附件较大，可能导致本地保存失败。是否继续添加？");
+    if (!ok) return null;
+  }
+  try {
+    const dataUrl = await readFileAsDataUrl(file);
+    return normalizePptAttachment({
+      name: file.name,
+      type: file.type,
+      size: file.size,
+      dataUrl
+    });
+  } catch (error) {
+    console.warn("Failed to read classroom attachment", error);
+    alert("附件读取失败，请换一个文件再试。");
+    return null;
+  }
+}
+
+function isPptAttachmentFile(file) {
+  if (!file) return false;
+  const name = file.name.toLowerCase();
+  const type = file.type || "";
+  return (
+    name.endsWith(".ppt") ||
+    name.endsWith(".pptx") ||
+    name.endsWith(".doc") ||
+    name.endsWith(".docx") ||
+    name.endsWith(".pdf") ||
+    name.endsWith(".txt") ||
+    name.endsWith(".md") ||
+    name.endsWith(".jpg") ||
+    name.endsWith(".jpeg") ||
+    name.endsWith(".png") ||
+    name.endsWith(".webp") ||
+    name.endsWith(".gif") ||
+    name.endsWith(".bmp") ||
+    type.startsWith("image/") ||
+    type.startsWith("text/") ||
+    type === "application/pdf" ||
+    type === "application/msword" ||
+    file.type === "application/vnd.ms-powerpoint" ||
+    file.type === "application/vnd.openxmlformats-officedocument.presentationml.presentation" ||
+    type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+  );
+}
+
+function replacePptAttachment(id) {
+  const item = findModuleItem("pptNotes", id);
+  if (!item) return;
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = PPT_ATTACHMENT_ACCEPT;
+  input.style.position = "fixed";
+  input.style.opacity = "0";
+  input.addEventListener("change", async () => {
+    const file = input.files?.[0];
+    input.remove();
+    if (!file) return;
+    const attachment = await createPptAttachment(file);
+    if (!attachment) return;
+    item.attachment = attachment;
+    item.updatedAt = Date.now();
+    if (saveModules()) renderPptNotes();
+  });
+  document.body.append(input);
+  input.click();
+}
+
+function removePptAttachment(id) {
+  const item = findModuleItem("pptNotes", id);
+  if (!item?.attachment) return;
+  const ok = confirm(`删除「${item.attachment.name}」这个附件？`);
+  if (!ok) return;
+  item.attachment = null;
+  item.updatedAt = Date.now();
+  if (saveModules()) renderPptNotes();
+}
+
+function copyPptNote(id) {
+  const item = findModuleItem("pptNotes", id);
+  if (!item) return;
+  const text = formatPptNoteForCopy(item);
+  copyText(text);
+}
+
+function formatPptNoteForCopy(item) {
+  const lines = String(item.body || "")
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => (line.startsWith("-") ? line : `- ${line}`));
+  const project = `项目：${getPptProjectButtonLabel(item)}`;
+  const attachment = item.attachment?.name ? `附件：${item.attachment.name}` : "";
+  return [`# ${item.title || "课堂整理"}`, item.subtitle ? `## ${item.subtitle}` : "", project, attachment, ...lines]
+    .filter(Boolean)
+    .join("\n");
+}
+
+function copyText(text) {
+  if (navigator.clipboard?.writeText) {
+    navigator.clipboard.writeText(text).then(() => alert("已复制，可粘贴到课件备注或大纲。")).catch(() => fallbackCopyText(text));
+    return;
+  }
+  fallbackCopyText(text);
+}
+
+function fallbackCopyText(text) {
+  const area = document.createElement("textarea");
+  area.value = text;
+  area.setAttribute("readonly", "");
+  area.style.position = "fixed";
+  area.style.opacity = "0";
+  document.body.append(area);
+  area.select();
+  try {
+    document.execCommand("copy");
+    alert("已复制，可粘贴到课件备注或大纲。");
+  } catch (error) {
+    prompt("复制下面内容到课件", text);
+  }
+  area.remove();
+}
+
+function formatNumber(value) {
+  return new Intl.NumberFormat("zh-CN").format(Number(value) || 0);
+}
+
 function renderEmptyModule(container, text) {
   container.replaceChildren();
   const moduleKey =
-    container === els.portraitGrid
+    container === els.focusGallery
+      ? "focusGallery"
+      : container === els.portraitGrid
       ? "portraits"
       : container === els.milestoneStrip
         ? "milestones"
         : container === els.academyMosaic
           ? "academy"
-          : "colorPages";
+          : container === els.colorPageStrip
+            ? "colorPages"
+            : container === els.practiceCounterGrid
+              ? "practiceCounters"
+              : "pptNotes";
   if (state.modules[moduleKey]?.length) return;
   const empty = document.createElement("div");
   empty.className = "module-empty";
@@ -1766,7 +3264,11 @@ function createActionButton(label, onClick, tone = "") {
   button.type = "button";
   button.className = `module-action-button ${tone}`.trim();
   button.textContent = label;
-  button.addEventListener("click", onClick);
+  button.title = label;
+  button.addEventListener("click", (event) => {
+    event.stopPropagation();
+    onClick(event);
+  });
   return button;
 }
 
@@ -1881,6 +3383,7 @@ function findModuleItem(moduleKey, id) {
 
 function renderTeachingQuoteList(container, options = {}) {
   container.replaceChildren();
+  const quotes = getFilteredTeachingQuotes();
 
   if (!state.teachingQuotes.length) {
     const empty = document.createElement("div");
@@ -1890,26 +3393,112 @@ function renderTeachingQuoteList(container, options = {}) {
     return;
   }
 
-  state.teachingQuotes.forEach((quote) => {
+  if (!quotes.length) {
+    const empty = document.createElement("div");
+    empty.className = "empty-state";
+    empty.textContent = "这个人物标签下还没有教言摘录。";
+    container.append(empty);
+    return;
+  }
+
+  quotes.forEach((quote) => {
     container.append(createTeachingQuoteCard(quote, options));
   });
+}
+
+function getFilteredTeachingQuotes() {
+  if (state.teachingTeacherFilter === "all") return state.teachingQuotes;
+  return state.teachingQuotes.filter((quote) => normalizeTeacherLabel(quote.teacher) === state.teachingTeacherFilter);
+}
+
+function getTeachingTeacherLabels() {
+  return [...new Set(state.teachingQuotes.map((quote) => normalizeTeacherLabel(quote.teacher)))].sort((a, b) => a.localeCompare(b, "zh-CN"));
+}
+
+function createTeachingTeacherTabs() {
+  const tabs = document.createElement("div");
+  tabs.className = "teaching-teacher-tabs";
+  const labels = getTeachingTeacherLabels();
+  if (state.teachingTeacherFilter !== "all" && !labels.includes(state.teachingTeacherFilter)) {
+    state.teachingTeacherFilter = "all";
+  }
+  tabs.append(createTeachingTeacherChip("all", "全部人物", state.teachingQuotes.length));
+  labels.forEach((label) => {
+    const count = state.teachingQuotes.filter((quote) => normalizeTeacherLabel(quote.teacher) === label).length;
+    tabs.append(createTeachingTeacherChip(label, label, count));
+  });
+  return tabs;
+}
+
+function createTeachingTeacherChip(value, label, count) {
+  const chip = document.createElement("div");
+  chip.className = "teaching-teacher-chip";
+  chip.classList.toggle("active", state.teachingTeacherFilter === value);
+
+  const filter = document.createElement("button");
+  filter.type = "button";
+  filter.className = "teaching-teacher-filter";
+  filter.addEventListener("click", () => {
+    state.teachingTeacherFilter = value;
+    renderTeachingQuotes();
+  });
+
+  const title = document.createElement("strong");
+  title.textContent = label;
+  const total = document.createElement("span");
+  total.textContent = `${count} 条`;
+  filter.append(title, total);
+  chip.append(filter);
+
+  if (value !== "all") {
+    const rename = document.createElement("button");
+    rename.type = "button";
+    rename.className = "teaching-teacher-action";
+    rename.textContent = "改名";
+    rename.addEventListener("click", () => renameTeachingTeacherLabel(value));
+    chip.append(rename);
+  }
+  return chip;
+}
+
+function renameTeachingTeacherLabel(oldLabel) {
+  const next = prompt("修改人物 / 上师标签", oldLabel);
+  if (next === null) return;
+  const normalized = normalizeTeacherLabel(next);
+  state.teachingQuotes.forEach((quote) => {
+    if (normalizeTeacherLabel(quote.teacher) === oldLabel) quote.teacher = normalized;
+  });
+  state.teachingTeacherFilter = normalized;
+  saveTeachingQuotes();
+  renderTeachingQuotes();
 }
 
 function createTeachingQuoteCard(quote, options = {}) {
   const card = document.createElement("blockquote");
   card.className = "teaching-quote";
 
+  const teacher = document.createElement("span");
+  teacher.className = "teaching-teacher-label";
+  teacher.textContent = normalizeTeacherLabel(quote.teacher);
   const text = document.createElement("p");
   text.textContent = quote.text;
-  card.append(text);
+  card.append(teacher, text);
 
   if (options.editable) {
-    const button = document.createElement("button");
-    button.className = "teaching-delete-button";
-    button.type = "button";
-    button.textContent = "删除";
-    button.addEventListener("click", () => deleteTeachingQuote(quote.id));
-    card.append(button);
+    const actions = document.createElement("div");
+    actions.className = "teaching-quote-actions";
+    const teacherButton = document.createElement("button");
+    teacherButton.className = "teaching-delete-button secondary";
+    teacherButton.type = "button";
+    teacherButton.textContent = "改标签";
+    teacherButton.addEventListener("click", () => editTeachingQuoteTeacher(quote.id));
+    const deleteButton = document.createElement("button");
+    deleteButton.className = "teaching-delete-button";
+    deleteButton.type = "button";
+    deleteButton.textContent = "删除";
+    deleteButton.addEventListener("click", () => deleteTeachingQuote(quote.id));
+    actions.append(teacherButton, deleteButton);
+    card.append(actions);
   }
 
   return card;
@@ -1918,13 +3507,17 @@ function createTeachingQuoteCard(quote, options = {}) {
 function createTeachingQuoteForm() {
   const form = document.createElement("form");
   form.className = "teaching-quote-form compact";
+  const teacher = document.createElement("input");
+  teacher.type = "text";
+  teacher.placeholder = "人物 / 上师，如晋美彭措法王";
+  teacher.value = state.teachingTeacherFilter !== "all" ? state.teachingTeacherFilter : TEACHING_DEFAULT_TEACHER;
   const input = document.createElement("textarea");
   input.placeholder = "གདམས་ངག 请输入新的教言摘录";
   const button = document.createElement("button");
   button.type = "submit";
   button.textContent = "加入摘录";
-  form.append(input, button);
-  form.addEventListener("submit", (event) => addTeachingQuote(event, input));
+  form.append(teacher, input, button);
+  form.addEventListener("submit", (event) => addTeachingQuote(event, input, teacher));
   return form;
 }
 
@@ -1940,7 +3533,7 @@ function renderToc() {
   const titleWrap = document.createElement("div");
   const eyebrow = document.createElement("span");
   eyebrow.className = "eyebrow";
-  eyebrow.textContent = "Auto Catalog";
+  eyebrow.textContent = "自动目录";
   const title = document.createElement("strong");
   title.textContent = "目录";
   titleWrap.append(eyebrow, title);
@@ -2054,6 +3647,9 @@ function getNotebookPageTitle(page, index) {
     ["event-pages", "岁月锚点"],
     ["academy-gallery", "家乡风光"],
     ["color-pages", "彩页"],
+    ["practice-counter-page", "功课计数"],
+    ["offering-lamp-page", "供灯"],
+    ["ppt-organizer-page", "课堂整理"],
     ["notebook-index-page", "笔记索引"],
     ["editor-card", "笔记编辑"],
     ["back-cover", "尾页"]
@@ -2134,9 +3730,9 @@ function renderList() {
 function renderStats() {
   const people = new Set(state.notes.map((note) => note.person).filter(Boolean));
   const tags = new Set(state.notes.flatMap((note) => note.tags));
-  els.totalCount.textContent = state.notes.length;
-  els.personCount.textContent = people.size;
-  els.tagCount.textContent = tags.size;
+  if (els.totalCount) els.totalCount.textContent = state.notes.length;
+  if (els.personCount) els.personCount.textContent = people.size;
+  if (els.tagCount) els.tagCount.textContent = tags.size;
 }
 
 function renderFocus() {
@@ -2150,6 +3746,77 @@ function renderFocus() {
   els.focusMeta.textContent = `ཟིན་བྲིས། ${count} 篇笔记${latest ? ` · 最近 ${displayDate(latest.date)}` : ""}`;
 }
 
+function bloomGardenFlowers() {
+  if (!els.bloomGarden) return;
+  els.bloomGarden.classList.remove("is-blooming");
+  void els.bloomGarden.offsetWidth;
+  els.bloomGarden.classList.add("is-blooming");
+}
+
+function loadBloomGardenPhotos() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(BLOOM_GARDEN_PHOTOS_STORAGE_KEY));
+    if (saved && typeof saved === "object") {
+      return {
+        teacher: String(saved.teacher || ""),
+        self: String(saved.self || "")
+      };
+    }
+  } catch (error) {
+    console.warn("Failed to load bloom garden photos", error);
+  }
+  return { teacher: "", self: "" };
+}
+
+function saveBloomGardenPhotos(photos) {
+  try {
+    localStorage.setItem(BLOOM_GARDEN_PHOTOS_STORAGE_KEY, JSON.stringify(photos));
+    return true;
+  } catch (error) {
+    console.warn("Failed to save bloom garden photos", error);
+    alert("照片保存失败，请换一张较小的图片。");
+    return false;
+  }
+}
+
+function renderBloomGardenPhotos() {
+  const photos = loadBloomGardenPhotos();
+  setBloomGardenPhotoElement(els.bloomTeacherPhoto, photos.teacher);
+  setBloomGardenPhotoElement(els.bloomSelfPhoto, photos.self);
+}
+
+function setBloomGardenPhotoElement(image, src) {
+  if (!image) return;
+  const hasPhoto = Boolean(src);
+  image.classList.toggle("has-photo", hasPhoto);
+  if (hasPhoto) {
+    image.src = src;
+  } else {
+    image.removeAttribute("src");
+  }
+}
+
+async function updateBloomGardenPhoto(event) {
+  const input = event.currentTarget;
+  const key = input.dataset.bloomPhotoInput;
+  const file = input.files?.[0];
+  if (!key || !file) return;
+  try {
+    const image = await readBloomPortraitFile(file);
+    const photos = loadBloomGardenPhotos();
+    photos[key] = image;
+    if (saveBloomGardenPhotos(photos)) {
+      renderBloomGardenPhotos();
+      bloomGardenFlowers();
+    }
+  } catch (error) {
+    console.warn("Failed to update bloom garden photo", error);
+    alert("照片读取失败，请换一张图片再试。");
+  } finally {
+    input.value = "";
+  }
+}
+
 function renderTimeline() {
   if (state.view !== "timeline") return;
   els.timelineView.replaceChildren();
@@ -2158,11 +3825,12 @@ function renderTimeline() {
   intro.innerHTML = "<span>གདམས་ངག</span><strong>教言摘录彩页</strong><p>这里的内容会同步到上方彩页，可继续添加，也可删除不需要的条目。</p>";
 
   const form = createTeachingQuoteForm();
+  const teacherTabs = createTeachingTeacherTabs();
   const list = document.createElement("div");
   list.className = "teaching-quote-grid manager";
   renderTeachingQuoteList(list, { editable: true });
 
-  els.timelineView.append(intro, form, list);
+  els.timelineView.append(intro, form, teacherTabs, list);
 }
 
 function getActiveNote() {
@@ -2218,17 +3886,18 @@ function displayDate(value) {
 function exportNotes() {
   const data = {
     exportedAt: new Date().toISOString(),
-    notes: state.notes
+    appName: "不离手账",
+    notes: state.notes,
+    teachingQuotes: state.teachingQuotes,
+    modules: state.modules
   };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = `晋美彭措法王传记手账-${new Date().toISOString().slice(0, 10)}.json`;
-  document.body.append(link);
+  link.download = `不离手账-完整备份-${new Date().toISOString().slice(0, 10)}.json`;
   link.click();
-  link.remove();
-  URL.revokeObjectURL(url);
+  window.setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 
 function registerServiceWorker() {

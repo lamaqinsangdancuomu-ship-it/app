@@ -231,6 +231,9 @@ svg {
 .event-pages,
 .academy-gallery,
 .color-pages,
+.practice-counter-page,
+.offering-lamp-page,
+.ppt-organizer-page,
 .notebook-index-page,
 .note-list,
 .editor-card,
@@ -257,6 +260,11 @@ svg {
 .notebook-index-page {
   display: grid;
   gap: 18px;
+}
+
+.notebook-overview-page {
+  position: relative;
+  isolation: isolate;
 }
 
 .note-toc.note-toc-feature.notebook-page {
@@ -424,7 +432,7 @@ svg {
   position: relative;
   z-index: 3;
   display: grid;
-  grid-template-columns: 38px minmax(0, 1fr) 38px;
+  grid-template-columns: 38px 38px minmax(0, 1fr) 38px;
   align-items: center;
   gap: 8px;
   width: 100%;
@@ -459,7 +467,22 @@ svg {
 }
 
 .notebook-page-button.next {
+  grid-column: 4;
   justify-self: end;
+}
+
+.notebook-page-button.toc {
+  grid-column: 2;
+  color: var(--red);
+  font-size: 15px;
+}
+
+.notebook-page:not(.journey-cover):not(.back-cover) .notebook-page-button.prev {
+  grid-column: 1;
+}
+
+.notebook-page:not(.journey-cover):not(.back-cover) .notebook-page-button.next {
+  grid-column: 4;
 }
 
 .notebook-page-button:disabled {
@@ -468,6 +491,8 @@ svg {
 }
 
 .notebook-page-status {
+  grid-column: 3;
+  grid-row: 1;
   min-width: 0;
   padding: 6px 10px;
   border-radius: 999px;
@@ -478,21 +503,19 @@ svg {
   pointer-events: none;
 }
 
-.notebook-overview-page .notebook-page-footer,
 .event-pages .notebook-page-footer,
 .color-pages .notebook-page-footer {
   position: absolute;
   right: 16px;
   bottom: max(10px, env(safe-area-inset-bottom));
   left: 16px;
-  grid-template-columns: 34px minmax(0, 1fr) 34px;
+  grid-template-columns: 34px 34px minmax(0, 1fr) 34px;
   width: auto;
   margin-top: 0;
   padding-top: 6px;
   border-top-color: rgba(216, 154, 50, 0.16);
 }
 
-.notebook-overview-page .notebook-page-button,
 .event-pages .notebook-page-button,
 .color-pages .notebook-page-button {
   width: 34px;
@@ -503,7 +526,11 @@ svg {
     0 8px 16px rgba(64, 47, 23, 0.13);
 }
 
-.notebook-overview-page .notebook-page-status,
+.event-pages .notebook-page-button.toc,
+.color-pages .notebook-page-button.toc {
+  font-size: 13px;
+}
+
 .event-pages .notebook-page-status,
 .color-pages .notebook-page-status {
   padding: 4px 8px;
@@ -519,7 +546,7 @@ svg {
   margin: 0;
   padding: 0;
   border: 0;
-  grid-template-columns: 58px;
+  grid-template-columns: 44px 58px;
 }
 
 .journey-cover .notebook-page-footer .notebook-page-button.prev,
@@ -527,7 +554,19 @@ svg {
   display: none;
 }
 
+.journey-cover .notebook-page-footer .notebook-page-button.toc {
+  grid-column: 1;
+  align-self: center;
+  width: 44px;
+  height: 44px;
+  border-color: rgba(255, 232, 152, 0.5);
+  background: rgba(116, 35, 19, 0.78);
+  color: #ffe89a;
+  box-shadow: 0 12px 24px rgba(72, 35, 9, 0.22);
+}
+
 .journey-cover .notebook-page-footer .notebook-page-button.next {
+  grid-column: 2;
   width: 58px;
   height: 58px;
   border-color: rgba(255, 232, 152, 0.58);
@@ -549,7 +588,7 @@ svg {
   margin: 0;
   padding: 0;
   border: 0;
-  grid-template-columns: 58px;
+  grid-template-columns: 58px 44px;
 }
 
 .back-cover .notebook-page-footer .notebook-page-status,
@@ -557,7 +596,23 @@ svg {
   display: none;
 }
 
+.back-cover .notebook-page-footer .notebook-page-button.toc {
+  grid-column: 2;
+  align-self: center;
+  width: 44px;
+  height: 44px;
+  border-color: rgba(255, 232, 152, 0.5);
+  background: rgba(116, 35, 19, 0.78);
+  color: #ffe89a;
+  box-shadow: 0 12px 24px rgba(72, 35, 9, 0.22);
+}
+
+.notebook-page-footer.is-toc-page .notebook-page-button.toc {
+  display: none;
+}
+
 .back-cover .notebook-page-footer .notebook-page-button.prev {
+  grid-column: 1;
   width: 58px;
   height: 58px;
   border-color: rgba(255, 232, 152, 0.58);
@@ -623,13 +678,43 @@ svg {
 
 .teaching-page {
   display: grid;
+  gap: 13px;
   align-content: center;
   justify-items: center;
-  padding: 42px 28px;
+  isolation: isolate;
   background:
-    linear-gradient(180deg, rgba(255, 250, 240, 0.9), rgba(247, 236, 217, 0.95)),
-    radial-gradient(circle at 50% 40%, rgba(49, 90, 140, 0.18), transparent 34%);
+    linear-gradient(180deg, rgba(255, 252, 246, 0.96), rgba(248, 237, 217, 0.96)),
+    radial-gradient(ellipse at 50% 18%, rgba(206, 58, 24, 0.11), transparent 48%),
+    linear-gradient(90deg, rgba(142, 34, 25, 0.08), transparent 18%, transparent 82%, rgba(142, 34, 25, 0.08));
   text-align: center;
+}
+
+.teaching-page > * {
+  position: relative;
+  z-index: 1;
+}
+
+.teaching-image-frame {
+  width: min(100%, 342px);
+  margin: 4px 0 2px;
+  padding: 7px;
+  border: 1px solid rgba(120, 38, 22, 0.46);
+  border-radius: 4px;
+  background:
+    linear-gradient(180deg, rgba(255, 248, 217, 0.95), rgba(223, 170, 78, 0.5)),
+    rgba(255, 249, 232, 0.9);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.72),
+    0 12px 24px rgba(89, 50, 20, 0.18);
+}
+
+.teaching-image-frame img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 500 / 304;
+  object-fit: cover;
+  border: 1px solid rgba(90, 24, 20, 0.55);
+  border-radius: 2px;
 }
 
 .teaching-signboard {
@@ -641,7 +726,7 @@ svg {
   gap: 12px;
   width: 100%;
   min-height: 188px;
-  margin-top: 26px;
+  margin-top: 2px;
   padding: 16px 22px 18px;
   border: 4px solid #caa64a;
   border-radius: 4px;
@@ -751,19 +836,16 @@ svg {
   align-content: start;
   padding: 34px 24px 24px;
   background:
-    radial-gradient(circle at 18% 16%, rgba(98, 72, 34, 0.14) 0 1px, transparent 2px),
-    radial-gradient(circle at 78% 64%, rgba(255, 244, 205, 0.65) 0 2px, transparent 4px),
-    repeating-linear-gradient(94deg, rgba(117, 88, 48, 0.1) 0 1px, transparent 1px 19px),
-    repeating-linear-gradient(0deg, rgba(92, 68, 38, 0.06) 0 1px, transparent 1px 30px),
-    linear-gradient(180deg, #efe1bd, #e6d2a5 50%, #ddc392);
-  background-size: 120px 120px, 180px 180px, auto, auto, auto;
+    linear-gradient(180deg, rgba(255, 250, 240, 0.93), rgba(247, 236, 217, 0.96)),
+    radial-gradient(circle at 50% 40%, rgba(49, 90, 140, 0.12), transparent 34%);
+  background-size: auto;
 }
 
 .message-page blockquote {
   position: relative;
   margin: 4px 0 0;
   padding: 14px 12px 16px;
-  border: 1px solid rgba(131, 93, 49, 0.22);
+  border: 1px solid rgba(139, 109, 65, 0.18);
   border-radius: var(--radius);
   color: #202326;
   font-family: var(--message-hand-font);
@@ -772,13 +854,13 @@ svg {
   line-height: 1.78;
   letter-spacing: 0;
   background:
-    linear-gradient(90deg, rgba(255, 255, 255, 0.18), transparent 28%, transparent 72%, rgba(105, 76, 39, 0.08)),
-    repeating-linear-gradient(92deg, rgba(88, 66, 40, 0.12) 0 1px, transparent 1px 18px),
-    linear-gradient(rgba(236, 217, 177, 0.84) 37px, rgba(112, 82, 44, 0.13) 38px),
-    rgba(239, 224, 190, 0.9);
+    linear-gradient(90deg, rgba(255, 255, 255, 0.28), transparent 28%, transparent 72%, rgba(139, 109, 65, 0.06)),
+    repeating-linear-gradient(92deg, rgba(139, 109, 65, 0.08) 0 1px, transparent 1px 18px),
+    linear-gradient(rgba(255, 250, 240, 0.84) 37px, rgba(139, 109, 65, 0.1) 38px),
+    rgba(255, 248, 235, 0.92);
   background-size: auto, auto, 100% 38px, auto;
   box-shadow:
-    inset 0 0 0 1px rgba(255, 247, 224, 0.36),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.42),
     0 14px 30px rgba(80, 55, 28, 0.12);
 }
 
@@ -863,7 +945,7 @@ svg {
   margin: 0;
   padding: 8px;
   border-radius: var(--radius);
-  background: rgba(239, 224, 190, 0.72);
+  background: rgba(255, 250, 240, 0.72);
 }
 
 .message-page img {
@@ -885,12 +967,14 @@ svg {
 
 .focus-strip {
   position: relative;
+  z-index: 6;
   display: grid;
   grid-template-columns: minmax(0, 1fr) 112px;
   align-items: center;
   gap: 14px;
   min-height: 150px;
   padding: 16px;
+  margin-bottom: 2px;
   overflow: hidden;
   border: 1px solid rgba(241, 203, 115, 0.42);
   border-radius: var(--radius);
@@ -907,6 +991,7 @@ svg {
   content: "";
   position: absolute;
   inset: 0;
+  z-index: 0;
   background:
     linear-gradient(90deg, rgba(255, 228, 154, 0.08) 0 1px, transparent 1px 18px),
     radial-gradient(circle at 28% 28%, rgba(255, 246, 204, 0.13) 0 1px, transparent 2px),
@@ -918,6 +1003,7 @@ svg {
 .focus-strip::after {
   content: "";
   position: absolute;
+  z-index: 0;
   right: 102px;
   top: 18px;
   bottom: 18px;
@@ -928,7 +1014,7 @@ svg {
 
 .focus-copy {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   min-width: 0;
 }
 
@@ -991,7 +1077,7 @@ svg {
 
 .focus-lamp {
   position: relative;
-  z-index: 1;
+  z-index: 3;
   margin: 0;
 }
 
@@ -1017,6 +1103,837 @@ svg {
   text-align: center;
 }
 
+.bloom-garden {
+  position: relative;
+  z-index: 1;
+  min-height: clamp(470px, 64svh, 560px);
+  overflow: hidden;
+  border: 1px solid rgba(84, 130, 74, 0.3);
+  border-radius: var(--radius);
+  background:
+    radial-gradient(ellipse at 54% 20%, rgba(255, 255, 255, 0.34), transparent 18%),
+    linear-gradient(180deg, #0f5fac 0%, #2f87d0 31%, #9bd8f3 47%, #4f803e 48%, #1d4c23 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.24),
+    0 16px 32px rgba(64, 47, 23, 0.12);
+}
+
+.bloom-garden::before {
+  content: "";
+  position: absolute;
+  right: -6px;
+  left: -6px;
+  top: 34%;
+  z-index: 1;
+  height: 154px;
+  background:
+    linear-gradient(135deg, transparent 0 17%, rgba(31, 82, 41, 0.96) 17% 34%, transparent 34%),
+    linear-gradient(150deg, transparent 0 42%, rgba(57, 103, 47, 0.88) 42% 61%, transparent 61%),
+    linear-gradient(125deg, transparent 0 62%, rgba(42, 76, 38, 0.96) 62% 78%, transparent 78%);
+  filter: blur(0.8px);
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+.bloom-garden::after {
+  content: "";
+  position: absolute;
+  right: -14px;
+  bottom: -10px;
+  left: -14px;
+  z-index: 3;
+  height: 138px;
+  background:
+    radial-gradient(circle at 12% 52%, rgba(255, 219, 39, 0.72) 0 3px, transparent 4px),
+    radial-gradient(circle at 31% 44%, rgba(238, 214, 255, 0.76) 0 4px, transparent 5px),
+    radial-gradient(circle at 58% 48%, rgba(255, 247, 199, 0.74) 0 3px, transparent 4px),
+    radial-gradient(circle at 82% 38%, rgba(255, 220, 44, 0.74) 0 4px, transparent 5px),
+    repeating-linear-gradient(84deg, rgba(20, 84, 31, 0.78) 0 3px, transparent 3px 15px),
+    repeating-linear-gradient(104deg, rgba(128, 176, 75, 0.56) 0 2px, transparent 2px 18px);
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 22%, #000 100%);
+  mask-image: linear-gradient(180deg, transparent 0, #000 22%, #000 100%);
+  opacity: 0.86;
+  pointer-events: none;
+}
+
+.bloom-sky,
+.bloom-field {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.bloom-sky {
+  z-index: 0;
+  background:
+    radial-gradient(ellipse at 18% 26%, rgba(255, 255, 255, 0.82), transparent 16%),
+    radial-gradient(ellipse at 78% 20%, rgba(255, 255, 255, 0.72), transparent 14%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 58%);
+}
+
+.bloom-sky .halo {
+  position: absolute;
+  top: 34px;
+  left: 52%;
+  width: 184px;
+  height: 184px;
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  border-radius: 50%;
+  transform: translateX(-50%);
+  opacity: 0.5;
+  box-shadow:
+    0 0 32px rgba(255, 255, 255, 0.2),
+    inset 0 0 24px rgba(255, 255, 255, 0.12);
+}
+
+.cloud {
+  position: absolute;
+  width: 152px;
+  height: 48px;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 18% 60%, rgba(255, 255, 255, 0.9) 0 19px, transparent 20px),
+    radial-gradient(circle at 43% 45%, rgba(255, 255, 255, 0.84) 0 27px, transparent 28px),
+    radial-gradient(circle at 71% 58%, rgba(255, 255, 255, 0.88) 0 21px, transparent 22px);
+  filter: blur(1px);
+  opacity: 0.84;
+}
+
+.cloud-one {
+  top: 58px;
+  left: 18px;
+}
+
+.cloud-two {
+  top: 114px;
+  right: 18px;
+  transform: scale(1.22);
+}
+
+.bloom-field {
+  top: 38%;
+  z-index: 2;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12), transparent 12%),
+    radial-gradient(ellipse at 22% 74%, rgba(255, 225, 37, 0.28), transparent 18%),
+    radial-gradient(ellipse at 55% 72%, rgba(202, 139, 255, 0.24), transparent 22%),
+    radial-gradient(ellipse at 82% 78%, rgba(255, 249, 224, 0.18), transparent 16%),
+    linear-gradient(180deg, rgba(68, 125, 45, 0.14), rgba(17, 69, 27, 0.94));
+}
+
+.bloom-field::before {
+  content: "";
+  position: absolute;
+  inset: auto -12px 0;
+  height: 86%;
+  background:
+    repeating-linear-gradient(77deg, rgba(31, 104, 39, 0.72) 0 3px, transparent 3px 14px),
+    repeating-linear-gradient(102deg, rgba(159, 190, 77, 0.44) 0 2px, transparent 2px 18px),
+    linear-gradient(180deg, rgba(81, 132, 44, 0.16), rgba(11, 53, 22, 0.86));
+  opacity: 0.92;
+  transform-origin: bottom;
+}
+
+.bloom-field::after {
+  content: "";
+  position: absolute;
+  inset: 22px -8px 0;
+  background:
+    radial-gradient(circle at 8% 64%, #f8d829 0 3px, transparent 4px),
+    radial-gradient(circle at 16% 48%, #fff6cf 0 2px, transparent 3px),
+    radial-gradient(circle at 26% 70%, #d9b2ff 0 3px, transparent 4px),
+    radial-gradient(circle at 42% 56%, #ffe43a 0 3px, transparent 4px),
+    radial-gradient(circle at 62% 72%, #f5d7ff 0 3px, transparent 4px),
+    radial-gradient(circle at 78% 52%, #fff6cf 0 2px, transparent 3px),
+    radial-gradient(circle at 90% 66%, #f8d829 0 3px, transparent 4px);
+  opacity: 0.74;
+}
+
+.garden-companions {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.garden-photo-seat {
+  position: absolute;
+  bottom: 72px;
+  display: grid;
+  place-items: center;
+  width: 118px;
+  height: 158px;
+  pointer-events: auto;
+  cursor: pointer;
+  filter: drop-shadow(0 16px 18px rgba(20, 48, 22, 0.34));
+}
+
+.garden-photo-seat.teacher {
+  left: 13%;
+}
+
+.garden-photo-seat.self {
+  right: 14%;
+  bottom: 62px;
+  width: 104px;
+  height: 142px;
+}
+
+.garden-photo-seat input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.garden-photo-seat img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 4px;
+  border: 1px solid rgba(255, 244, 191, 0.7);
+  border-radius: 46% 46% 20% 20% / 34% 34% 24% 24%;
+  background:
+    linear-gradient(180deg, rgba(255, 248, 213, 0.72), rgba(177, 64, 44, 0.28)),
+    rgba(88, 22, 24, 0.48);
+  object-fit: cover;
+  object-position: center top;
+  opacity: 0;
+  transform: translateY(8px) scale(0.96);
+  transition: opacity 0.28s ease, transform 0.28s ease;
+}
+
+.garden-photo-seat img.has-photo {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.garden-photo-seat::before {
+  content: "";
+  position: absolute;
+  inset: 18px 10px 0;
+  border: 1px dashed rgba(255, 245, 194, 0.78);
+  border-radius: 48% 48% 22% 22% / 36% 36% 26% 26%;
+  background:
+    radial-gradient(circle at 50% 26%, rgba(255, 255, 255, 0.26), transparent 26%),
+    linear-gradient(180deg, rgba(113, 28, 33, 0.72), rgba(84, 20, 28, 0.82));
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.14),
+    0 12px 20px rgba(18, 52, 20, 0.22);
+}
+
+.garden-photo-seat::after {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  right: -18px;
+  bottom: -12px;
+  left: -18px;
+  height: 54px;
+  background:
+    repeating-linear-gradient(84deg, rgba(28, 86, 33, 0.96) 0 4px, transparent 4px 12px),
+    repeating-linear-gradient(104deg, rgba(118, 168, 67, 0.74) 0 3px, transparent 3px 14px);
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 28%, #000 100%);
+  mask-image: linear-gradient(180deg, transparent 0, #000 28%, #000 100%);
+}
+
+.garden-photo-seat span {
+  position: absolute;
+  z-index: 3;
+  bottom: -6px;
+  min-width: 78px;
+  padding: 5px 9px;
+  border: 1px solid rgba(255, 244, 191, 0.62);
+  border-radius: 999px;
+  background: rgba(35, 74, 31, 0.72);
+  color: #fff4bf;
+  font-size: 12px;
+  font-weight: 950;
+  text-align: center;
+  backdrop-filter: blur(6px);
+}
+
+.garden-photo-seat img.has-photo + span {
+  background: rgba(116, 35, 19, 0.74);
+}
+
+.garden-flower {
+  --head-size: 54px;
+  --head-top: -28px;
+  --stem-w: 4px;
+  --tilt: 0deg;
+  --petal: #ffd426;
+  --petal-soft: #fff180;
+  --center: #8a4b16;
+  position: absolute;
+  left: var(--x);
+  bottom: 28px;
+  z-index: 3;
+  width: var(--stem-w);
+  height: var(--h);
+  border-radius: 999px;
+  background:
+    linear-gradient(90deg, #123818, #77aa49 48%, #153616),
+    linear-gradient(180deg, transparent 0 42%, rgba(255, 255, 255, 0.14) 43% 44%, transparent 45%);
+  box-shadow:
+    -8px 44px 0 -5px rgba(95, 151, 58, 0.94),
+    10px 68px 0 -6px rgba(74, 130, 49, 0.9);
+  transform: scaleY(0.2);
+  transform-origin: bottom;
+  opacity: 0.62;
+}
+
+.garden-flower::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: var(--head-top);
+  width: var(--head-size);
+  height: var(--head-size);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at center, var(--center) 0 14%, #f6c332 15% 23%, transparent 24%),
+    repeating-conic-gradient(from 2deg, var(--petal) 0 7deg, var(--petal-soft) 8deg 12deg, transparent 13deg 20deg);
+  filter: drop-shadow(0 7px 8px rgba(24, 56, 18, 0.26));
+  opacity: 0.42;
+  transform: translateX(-50%) scale(0.16) rotate(-24deg);
+  transform-origin: center bottom;
+}
+
+.garden-flower::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -9px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 37% 34%, #fff6a5 0 2px, transparent 3px),
+    radial-gradient(circle, #6b3912 0 38%, #f0b51e 40% 100%);
+  opacity: 0;
+  transform: translateX(-50%) scale(0.18);
+}
+
+.garden-flower.large {
+  --head-size: 78px;
+  --head-top: -42px;
+}
+
+.garden-flower.foreground {
+  --head-size: 84px;
+  --head-top: -44px;
+  z-index: 6;
+  bottom: 12px;
+}
+
+.garden-flower.small {
+  --head-size: 40px;
+  --head-top: -22px;
+}
+
+.garden-flower.tall,
+.garden-flower.slim {
+  z-index: 2;
+}
+
+.garden-flower.daisy.purple {
+  --petal: #b889ff;
+  --petal-soft: #ecd9ff;
+  --center: #754117;
+  --tilt: -4deg;
+}
+
+.garden-flower.daisy::before {
+  background:
+    radial-gradient(circle at 50% 50%, #ffd238 0 10%, #8a4717 11% 17%, transparent 18%),
+    repeating-conic-gradient(from 1deg, #ad71ee 0 4deg, #e3c7ff 5deg 8deg, transparent 9deg 17deg);
+  border-radius: 50%;
+}
+
+.garden-flower.calendula {
+  --head-size: 78px;
+  --head-top: -42px;
+  --tilt: 3deg;
+}
+
+.garden-flower.calendula::before {
+  background:
+    radial-gradient(circle at 50% 52%, #7f2d14 0 13%, #f38d20 14% 21%, transparent 22%),
+    repeating-conic-gradient(from -2deg, #ffd51f 0 5deg, #fff36e 6deg 9deg, #d99b10 10deg 12deg, transparent 13deg 20deg);
+}
+
+.garden-flower.buttercup {
+  --head-size: 56px;
+  --head-top: -28px;
+  --tilt: 4deg;
+}
+
+.garden-flower.buttercup::before {
+  background:
+    radial-gradient(circle at 50% 50%, #8f4a12 0 9%, #ffd23c 10% 17%, transparent 18%),
+    radial-gradient(ellipse at 50% 10%, #fff06d 0 18%, transparent 19%),
+    radial-gradient(ellipse at 88% 40%, #ffd322 0 18%, transparent 19%),
+    radial-gradient(ellipse at 70% 88%, #e9ad16 0 17%, transparent 18%),
+    radial-gradient(ellipse at 30% 88%, #ffd93b 0 17%, transparent 18%),
+    radial-gradient(ellipse at 12% 40%, #ffe45a 0 18%, transparent 19%);
+}
+
+.garden-flower.anemone {
+  --head-size: 48px;
+  --head-top: -25px;
+  --center: #6c3a14;
+}
+
+.garden-flower.anemone::before {
+  background:
+    radial-gradient(circle at 50% 50%, #5d3415 0 9%, #ffd836 10% 20%, transparent 21%),
+    radial-gradient(ellipse at 50% 8%, #fffdf4 0 18%, transparent 19%),
+    radial-gradient(ellipse at 88% 39%, #ffe2f1 0 18%, transparent 19%),
+    radial-gradient(ellipse at 70% 88%, #fffdf4 0 18%, transparent 19%),
+    radial-gradient(ellipse at 30% 88%, #ffe9f4 0 18%, transparent 19%),
+    radial-gradient(ellipse at 12% 39%, #fffdf4 0 18%, transparent 19%);
+}
+
+.garden-flower.bud {
+  --head-size: 30px;
+  --head-top: -31px;
+  --stem-w: 3px;
+  --tilt: -7deg;
+}
+
+.garden-flower.bud::before {
+  width: 30px;
+  height: 42px;
+  border-radius: 56% 56% 42% 42% / 62% 62% 34% 34%;
+  background:
+    linear-gradient(110deg, rgba(55, 27, 20, 0.78), transparent 32%),
+    radial-gradient(ellipse at 58% 26%, #ffe559 0 12%, transparent 13%),
+    linear-gradient(180deg, #7b2a5e 0%, #c98df0 44%, #35241b 100%);
+}
+
+.garden-flower.yellow-bud::before {
+  background:
+    linear-gradient(110deg, rgba(62, 37, 16, 0.74), transparent 32%),
+    radial-gradient(ellipse at 60% 25%, #fff17c 0 12%, transparent 13%),
+    linear-gradient(180deg, #7a5210 0%, #ffd930 50%, #3a3315 100%);
+}
+
+.garden-flower.bud::after {
+  display: none;
+}
+
+.garden-flower.meadow-dot {
+  --head-size: 24px;
+  --head-top: -14px;
+  --stem-w: 2px;
+  bottom: 18px;
+  z-index: 2;
+  box-shadow: none;
+}
+
+.garden-flower.meadow-dot::before {
+  background:
+    radial-gradient(circle at 50% 50%, #7b4416 0 18%, transparent 19%),
+    repeating-conic-gradient(from 0deg, var(--petal) 0 14deg, transparent 15deg 30deg);
+}
+
+.garden-flower.yellow-dot {
+  --petal: #ffe041;
+  --petal-soft: #fff8a4;
+}
+
+.garden-flower.white-dot {
+  --petal: #fffdf7;
+  --petal-soft: #ffddea;
+}
+
+.garden-flower.purple-dot {
+  --petal: #c49aff;
+  --petal-soft: #eddfff;
+}
+
+.field-sprig {
+  position: absolute;
+  bottom: 16px;
+  z-index: 3;
+  width: 3px;
+  height: 118px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #183f18, #79aa4b, #244a1c);
+  transform-origin: bottom;
+  opacity: 0.8;
+}
+
+.field-sprig::before,
+.field-sprig::after {
+  content: "";
+  position: absolute;
+  width: 17px;
+  height: 8px;
+  border-radius: 999px 999px 999px 0;
+  background: #7eb04c;
+}
+
+.field-sprig::before {
+  left: -13px;
+  top: 46px;
+  transform: rotate(-34deg);
+}
+
+.field-sprig::after {
+  right: -13px;
+  top: 72px;
+  transform: rotate(34deg);
+}
+
+.sprig-one {
+  left: 7%;
+  height: 96px;
+  transform: rotate(-11deg);
+}
+
+.sprig-two {
+  left: 57%;
+  height: 132px;
+  transform: rotate(7deg);
+}
+
+.sprig-three {
+  right: 9%;
+  height: 108px;
+  transform: rotate(13deg);
+}
+
+.bloom-button {
+  position: absolute;
+  z-index: 8;
+  right: 16px;
+  bottom: 16px;
+  min-width: 120px;
+  min-height: 42px;
+  border: 1px solid rgba(255, 244, 191, 0.58);
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg, rgba(255, 250, 187, 0.94), rgba(239, 173, 40, 0.9)),
+    var(--gold);
+  color: #64320e;
+  font-size: 14px;
+  font-weight: 950;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    0 12px 24px rgba(24, 68, 28, 0.28);
+}
+
+.bloom-garden.is-blooming .garden-flower {
+  animation: gardenStemGrow 0.86s var(--d) cubic-bezier(0.2, 0.82, 0.22, 1) both;
+}
+
+.bloom-garden.is-blooming .garden-flower::before {
+  animation: gardenBloomOpen 0.9s calc(var(--d) + 0.34s) cubic-bezier(0.17, 0.88, 0.24, 1.2) both;
+}
+
+.bloom-garden.is-blooming .garden-flower::after {
+  animation: gardenCenterRise 0.42s calc(var(--d) + 0.58s) ease both;
+}
+
+.bloom-garden.is-blooming .bloom-sky .halo {
+  animation: gardenHaloPulse 1.8s ease both;
+}
+
+@keyframes gardenStemGrow {
+  0% {
+    opacity: 0.38;
+    transform: scaleY(0.16) translateY(18px);
+  }
+  100% {
+    opacity: 1;
+    transform: scaleY(1) translateY(0);
+  }
+}
+
+@keyframes gardenBloomOpen {
+  0% {
+    opacity: 0.4;
+    transform: translateX(-50%) scale(0.12) rotate(-28deg);
+  }
+  62% {
+    opacity: 1;
+    transform: translateX(-50%) scale(1.1) rotate(4deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) scale(1) rotate(var(--tilt, 0deg));
+  }
+}
+
+@keyframes gardenCenterRise {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) scale(0.2);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+  }
+}
+
+@keyframes gardenHaloPulse {
+  0% {
+    opacity: 0.24;
+    transform: translateX(-50%) scale(0.82);
+  }
+  100% {
+    opacity: 0.6;
+    transform: translateX(-50%) scale(1.08);
+  }
+}
+
+@media (max-width: 520px) {
+  .bloom-garden {
+    min-height: 510px;
+  }
+
+  .garden-photo-seat {
+    bottom: 84px;
+    left: 9%;
+    width: 98px;
+    height: 136px;
+  }
+
+  .garden-photo-seat.teacher {
+    left: 8%;
+  }
+
+  .garden-photo-seat.self {
+    right: 8%;
+    bottom: 72px;
+    width: 92px;
+    height: 124px;
+  }
+
+  .garden-flower.foreground {
+    --head-size: 72px;
+  }
+}
+
+.bloom-garden {
+  min-height: clamp(500px, 68svh, 620px);
+  border-color: rgba(111, 150, 90, 0.36);
+  background:
+    linear-gradient(180deg, rgba(255, 252, 236, 0.1), rgba(31, 79, 29, 0.16)),
+    url("assets/buli-real-garden.png") center / cover no-repeat;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.28),
+    inset 0 -90px 120px rgba(18, 66, 22, 0.12),
+    0 16px 32px rgba(64, 47, 23, 0.12);
+}
+
+.bloom-garden::before {
+  inset: 0;
+  z-index: 1;
+  height: auto;
+  background:
+    radial-gradient(ellipse at 52% 18%, rgba(255, 250, 216, 0.32), transparent 24%),
+    linear-gradient(180deg, rgba(255, 252, 236, 0.18), transparent 40%, rgba(21, 82, 28, 0.18) 100%);
+  filter: none;
+  opacity: 1;
+}
+
+.bloom-garden::after {
+  right: -10px;
+  bottom: -8px;
+  left: -10px;
+  z-index: 6;
+  height: 150px;
+  background:
+    linear-gradient(180deg, transparent 0, rgba(20, 82, 29, 0.16) 24%, rgba(14, 64, 24, 0.82) 100%),
+    radial-gradient(circle at 12% 48%, rgba(255, 238, 150, 0.82) 0 3px, transparent 4px),
+    radial-gradient(circle at 27% 36%, rgba(246, 190, 227, 0.72) 0 4px, transparent 5px),
+    radial-gradient(circle at 54% 42%, rgba(255, 245, 208, 0.78) 0 3px, transparent 4px),
+    radial-gradient(circle at 76% 34%, rgba(255, 218, 70, 0.76) 0 4px, transparent 5px),
+    radial-gradient(circle at 91% 52%, rgba(207, 182, 255, 0.7) 0 4px, transparent 5px),
+    repeating-linear-gradient(84deg, rgba(23, 89, 33, 0.9) 0 3px, transparent 3px 13px),
+    repeating-linear-gradient(105deg, rgba(132, 177, 72, 0.68) 0 2px, transparent 2px 16px);
+  opacity: 0.88;
+}
+
+.bloom-sky {
+  display: none;
+}
+
+.bloom-field {
+  inset: 0;
+  top: 0;
+  z-index: 2;
+  background:
+    radial-gradient(ellipse at 18% 76%, rgba(255, 214, 64, 0.24), transparent 18%),
+    radial-gradient(ellipse at 78% 72%, rgba(251, 171, 214, 0.24), transparent 22%),
+    linear-gradient(180deg, transparent 0 62%, rgba(22, 84, 29, 0.18) 100%);
+  mix-blend-mode: screen;
+  opacity: 0.62;
+}
+
+.bloom-field::before {
+  inset: auto -12px 0;
+  height: 38%;
+  background:
+    linear-gradient(180deg, transparent 0, rgba(16, 75, 26, 0.56) 100%),
+    repeating-linear-gradient(78deg, rgba(25, 92, 34, 0.6) 0 2px, transparent 2px 14px),
+    repeating-linear-gradient(104deg, rgba(166, 196, 92, 0.34) 0 2px, transparent 2px 18px);
+  opacity: 0.58;
+}
+
+.bloom-field::after {
+  inset: 0;
+  background:
+    radial-gradient(circle at 16% 58%, rgba(255, 246, 198, 0.55) 0 2px, transparent 3px),
+    radial-gradient(circle at 28% 70%, rgba(255, 210, 229, 0.48) 0 3px, transparent 4px),
+    radial-gradient(circle at 48% 54%, rgba(255, 230, 82, 0.5) 0 3px, transparent 4px),
+    radial-gradient(circle at 66% 66%, rgba(206, 188, 255, 0.5) 0 3px, transparent 4px),
+    radial-gradient(circle at 86% 58%, rgba(255, 246, 198, 0.5) 0 2px, transparent 3px);
+  opacity: 0;
+  transform: scale(0.96);
+}
+
+.garden-flower,
+.field-sprig {
+  display: none;
+}
+
+.garden-companions {
+  z-index: 7;
+}
+
+.garden-photo-seat {
+  bottom: 84px;
+  width: 128px;
+  height: 170px;
+  filter:
+    drop-shadow(0 16px 16px rgba(21, 69, 27, 0.28))
+    drop-shadow(0 0 18px rgba(255, 236, 164, 0.18));
+}
+
+.garden-photo-seat.teacher {
+  left: 13%;
+}
+
+.garden-photo-seat.self {
+  right: 14%;
+  bottom: 76px;
+  width: 112px;
+  height: 150px;
+}
+
+.garden-photo-seat img {
+  z-index: 2;
+  inset: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 42% 42% 28% 28% / 36% 36% 28% 28%;
+  background: transparent;
+  filter: saturate(0.92) contrast(0.95) brightness(1.06) sepia(0.08);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 43%, #000 0 48%, rgba(0, 0, 0, 0.82) 61%, transparent 80%);
+  mask-image: radial-gradient(ellipse at 50% 43%, #000 0 48%, rgba(0, 0, 0, 0.82) 61%, transparent 80%);
+}
+
+.garden-photo-seat img.has-photo {
+  opacity: 0.94;
+  transform: translateY(0) scale(0.98);
+}
+
+.garden-photo-seat::before {
+  z-index: 1;
+  inset: 22px 8px 10px;
+  border: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse at 50% 82%, rgba(20, 76, 28, 0.54), transparent 54%),
+    radial-gradient(ellipse at 50% 34%, rgba(255, 248, 211, 0.18), transparent 62%);
+  box-shadow: none;
+}
+
+.garden-photo-seat::after {
+  z-index: 4;
+  right: -24px;
+  bottom: -16px;
+  left: -24px;
+  height: 82px;
+  background:
+    linear-gradient(180deg, transparent 0, rgba(25, 92, 34, 0.3) 30%, rgba(15, 70, 27, 0.92) 100%),
+    radial-gradient(circle at 24% 38%, rgba(255, 232, 82, 0.76) 0 3px, transparent 4px),
+    radial-gradient(circle at 72% 44%, rgba(255, 221, 238, 0.64) 0 3px, transparent 4px),
+    repeating-linear-gradient(83deg, rgba(25, 93, 34, 0.95) 0 4px, transparent 4px 12px),
+    repeating-linear-gradient(105deg, rgba(139, 177, 73, 0.7) 0 3px, transparent 3px 14px);
+}
+
+.garden-photo-seat span {
+  z-index: 5;
+  bottom: -7px;
+  background: rgba(28, 79, 34, 0.62);
+}
+
+.bloom-garden.is-blooming {
+  animation: realGardenBloom 1.2s ease both;
+}
+
+.bloom-garden.is-blooming .bloom-field::after {
+  animation: realGardenSparkle 1.1s ease both;
+}
+
+@keyframes realGardenBloom {
+  0% {
+    filter: saturate(0.95) brightness(0.98);
+  }
+  55% {
+    filter: saturate(1.16) brightness(1.08);
+  }
+  100% {
+    filter: saturate(1.06) brightness(1.02);
+  }
+}
+
+@keyframes realGardenSparkle {
+  0% {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  55% {
+    opacity: 0.82;
+    transform: scale(1.02);
+  }
+  100% {
+    opacity: 0.36;
+    transform: scale(1);
+  }
+}
+
+@media (max-width: 520px) {
+  .bloom-garden {
+    min-height: 540px;
+    background-position: center center;
+  }
+
+  .garden-photo-seat {
+    bottom: 104px;
+    width: 104px;
+    height: 146px;
+  }
+
+  .garden-photo-seat.teacher {
+    left: 8%;
+  }
+
+  .garden-photo-seat.self {
+    right: 8%;
+    bottom: 92px;
+    width: 94px;
+    height: 132px;
+  }
+}
+
 .photo-film {
   display: grid;
   grid-auto-columns: 76%;
@@ -1037,6 +1954,7 @@ svg {
 .photo-card {
   position: relative;
   min-height: 174px;
+  margin: 0;
   overflow: hidden;
   border: 8px solid #fff;
   border-radius: var(--radius);
@@ -1062,7 +1980,8 @@ svg {
   background: linear-gradient(180deg, rgba(20, 18, 16, 0), rgba(20, 18, 16, 0.64));
 }
 
-.photo-card div {
+.photo-card div,
+.photo-card figcaption {
   position: absolute;
   z-index: 1;
   left: 14px;
@@ -1071,18 +1990,24 @@ svg {
   color: #fff;
 }
 
-.photo-card span {
+.photo-card span,
+.photo-card figcaption span {
   display: block;
   font-size: 11px;
   font-weight: 900;
   letter-spacing: 0.16em;
 }
 
-.photo-card strong {
+.photo-card strong,
+.photo-card figcaption strong {
   display: block;
   margin-top: 4px;
   font-size: 20px;
   line-height: 1.1;
+}
+
+.photo-film .module-empty {
+  min-width: 100%;
 }
 
 .stats-ribbon {
@@ -1118,7 +2043,10 @@ svg {
 
 .portrait-pages,
 .event-pages,
-.academy-gallery {
+.academy-gallery,
+.practice-counter-page,
+.offering-lamp-page,
+.ppt-organizer-page {
   display: grid;
   gap: 12px;
 }
@@ -1175,12 +2103,21 @@ svg {
   background: var(--paper-soft);
 }
 
-.module-editor input[type="text"] {
+.module-editor input[type="text"],
+.module-editor select {
   min-width: 0;
   height: 40px;
   padding: 0 11px;
   outline: 0;
   font-size: 13px;
+}
+
+.module-editor select {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--ink);
+  font-weight: 800;
 }
 
 .module-file-button,
@@ -1469,6 +2406,3083 @@ svg {
   scroll-snap-align: center;
 }
 
+.practice-summary {
+  padding: 10px 12px;
+  border: 1px solid rgba(49, 90, 140, 0.16);
+  border-radius: var(--radius);
+  background: rgba(49, 90, 140, 0.08);
+  color: var(--blue);
+  font-size: 13px;
+  font-weight: 950;
+}
+
+.practice-counter-grid,
+.ppt-note-list {
+  display: grid;
+  gap: 10px;
+}
+
+.ppt-project-tabs,
+.teaching-teacher-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ppt-project-chip,
+.teaching-teacher-chip {
+  display: inline-flex;
+  align-items: stretch;
+  overflow: hidden;
+  border: 1px solid rgba(49, 90, 140, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 6px 14px rgba(64, 47, 23, 0.06);
+}
+
+.ppt-project-chip.active,
+.teaching-teacher-chip.active {
+  border-color: rgba(198, 40, 42, 0.28);
+  background: rgba(198, 40, 42, 0.06);
+}
+
+.ppt-project-filter,
+.teaching-teacher-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 34px;
+  padding: 0 11px;
+  border: 0;
+  background: transparent;
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.ppt-project-filter strong,
+.teaching-teacher-filter strong {
+  max-width: 156px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ppt-project-filter span,
+.teaching-teacher-filter span {
+  color: var(--gold);
+  font-size: 11px;
+}
+
+.ppt-project-action,
+.teaching-teacher-action {
+  min-height: 34px;
+  padding: 0 9px;
+  border: 0;
+  border-left: 1px solid rgba(49, 90, 140, 0.12);
+  background: rgba(255, 255, 255, 0.6);
+  color: var(--red);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.ppt-project-action:disabled {
+  color: rgba(95, 88, 80, 0.38);
+}
+
+.practice-counter-card,
+.ppt-note-card {
+  position: relative;
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid rgba(234, 223, 208, 0.94);
+  border-radius: var(--radius);
+  background:
+    radial-gradient(circle at 92% 8%, rgba(244, 213, 122, 0.18), transparent 32%),
+    rgba(255, 253, 247, 0.94);
+  box-shadow: 0 10px 24px rgba(64, 47, 23, 0.08);
+}
+
+.practice-counter-head,
+.ppt-note-head {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.practice-counter-head span,
+.ppt-note-head span,
+.ppt-note-project {
+  display: block;
+  color: var(--gold);
+  font-size: 11px;
+  font-weight: 950;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.practice-counter-head strong,
+.ppt-note-head h3 {
+  display: block;
+  margin-top: 3px;
+  color: var(--blue);
+  font-size: 18px;
+  font-weight: 950;
+  line-height: 1.2;
+}
+
+.ppt-note-meta {
+  display: grid;
+  justify-items: end;
+  gap: 2px;
+  text-align: right;
+}
+
+.ppt-note-project {
+  color: var(--red);
+}
+
+.practice-counter-head b {
+  color: var(--red);
+  font-size: 22px;
+  font-weight: 950;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.practice-progress {
+  height: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(49, 90, 140, 0.12);
+}
+
+.practice-progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--gold), var(--red));
+}
+
+.practice-counter-card p,
+.ppt-note-card p {
+  color: #5f5850;
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.7;
+  white-space: pre-line;
+}
+
+.practice-counter-actions,
+.ppt-note-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.practice-counter-actions .module-action-button,
+.ppt-note-actions .module-action-button {
+  border-color: rgba(49, 90, 140, 0.16);
+  background: #fff;
+  box-shadow: 0 6px 14px rgba(64, 47, 23, 0.08);
+}
+
+.ppt-note-actions .module-action-button.project {
+  flex: 1 1 138px;
+  max-width: 100%;
+  min-height: 30px;
+  padding: 5px 10px;
+  color: var(--red);
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.ppt-inline-editor {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid rgba(49, 90, 140, 0.14);
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 250, 238, 0.96));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.82);
+}
+
+.ppt-inline-editor input[type="text"],
+.ppt-inline-editor textarea {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid rgba(234, 223, 208, 0.95);
+  border-radius: 6px;
+  outline: 0;
+  background: #fff;
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.ppt-inline-editor input[type="text"] {
+  height: 34px;
+  padding: 0 10px;
+}
+
+.ppt-inline-editor textarea {
+  min-height: 110px;
+  padding: 10px;
+  resize: vertical;
+  line-height: 1.65;
+}
+
+.ppt-project-choice-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.ppt-project-choice {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid rgba(49, 90, 140, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.76);
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.ppt-project-choice input {
+  accent-color: var(--red);
+}
+
+.ppt-inline-editor-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+}
+
+.ppt-inline-editor-actions button {
+  min-height: 34px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--blue);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.ppt-inline-editor-actions button.cancel {
+  background: rgba(49, 90, 140, 0.1);
+  color: var(--blue);
+}
+
+.practice-counter-manual {
+  flex: 1 1 92px;
+  min-width: 86px;
+  max-width: 132px;
+  height: 34px;
+  padding: 0 9px;
+  border: 1px solid rgba(49, 90, 140, 0.16);
+  border-radius: 999px;
+  outline: 0;
+  background: #fff;
+  color: #2d2a24;
+  font-size: 13px;
+  font-weight: 850;
+  box-shadow: 0 6px 14px rgba(64, 47, 23, 0.08);
+}
+
+.practice-counter-manual:focus {
+  border-color: rgba(216, 154, 50, 0.58);
+  box-shadow:
+    0 0 0 3px rgba(255, 214, 120, 0.24),
+    0 6px 14px rgba(64, 47, 23, 0.08);
+}
+
+.practice-target-editor {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 7px;
+  padding: 9px;
+  border: 1px solid rgba(49, 90, 140, 0.14);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(255, 251, 238, 0.94), rgba(246, 236, 212, 0.72)),
+    #fff;
+}
+
+.practice-target-editor input {
+  min-width: 0;
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid rgba(49, 90, 140, 0.16);
+  border-radius: 999px;
+  outline: 0;
+  background: #fff;
+  color: #2d2a24;
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.practice-target-editor input:focus {
+  border-color: rgba(216, 154, 50, 0.58);
+  box-shadow: 0 0 0 3px rgba(255, 214, 120, 0.22);
+}
+
+.practice-target-editor-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.practice-target-editor-actions .module-action-button {
+  border-color: rgba(49, 90, 140, 0.16);
+  background: #fff;
+  box-shadow: 0 6px 14px rgba(64, 47, 23, 0.08);
+}
+
+.practice-counter-editor input[type="number"] {
+  min-width: 0;
+  height: 40px;
+  padding: 0 11px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  outline: 0;
+  background: #fff;
+  font-size: 13px;
+}
+
+.offering-lamp-page {
+  position: relative;
+  overflow: hidden;
+  min-height: min(720px, calc(100svh - 56px));
+  align-content: start;
+  border-color: rgba(116, 35, 19, 0.18);
+  background:
+    linear-gradient(180deg, rgba(255, 248, 226, 0.94), rgba(248, 235, 205, 0.96)),
+    var(--paper);
+}
+
+.offering-lamp-page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(116, 18, 30, 0.86), rgba(150, 31, 31, 0.78) 46%, rgba(64, 10, 17, 0.86)),
+    repeating-linear-gradient(90deg, rgba(255, 214, 120, 0.08) 0 1px, transparent 1px 34px);
+  opacity: 0.18;
+  pointer-events: none;
+}
+
+.offering-lamp-page::after {
+  content: "";
+  position: absolute;
+  inset: 100px 8px auto 8px;
+  height: 280px;
+  background:
+    radial-gradient(ellipse at 48% 22%, rgba(95, 14, 24, 0.32), transparent 38%),
+    linear-gradient(90deg, transparent 0 14%, rgba(103, 15, 24, 0.28) 14% 30%, transparent 30% 70%, rgba(103, 15, 24, 0.28) 70% 86%, transparent 86%),
+    linear-gradient(180deg, rgba(151, 32, 31, 0.2), transparent 72%);
+  filter: blur(10px);
+  pointer-events: none;
+}
+
+.offering-lamp-page > * {
+  position: relative;
+  z-index: 1;
+}
+
+.offering-lamp-scene {
+  position: relative;
+  display: grid;
+  place-items: center;
+  gap: 18px;
+  min-height: 510px;
+  padding: 28px 16px 18px;
+  overflow: hidden;
+  border: 1px solid rgba(116, 35, 19, 0.18);
+  border-radius: var(--radius);
+  background:
+    linear-gradient(180deg, rgba(88, 13, 22, 0.9), rgba(54, 10, 15, 0.92)),
+    #5f1018;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 214, 120, 0.08),
+    0 18px 36px rgba(64, 47, 23, 0.18);
+}
+
+.offering-lamp-scene::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, transparent 0 16%, rgba(132, 31, 35, 0.56) 16% 32%, transparent 32% 68%, rgba(132, 31, 35, 0.56) 68% 84%, transparent 84%),
+    radial-gradient(ellipse at center 36%, rgba(196, 61, 34, 0.2), transparent 48%);
+  filter: blur(2px);
+  opacity: 0.82;
+}
+
+.offering-lamp-scene::after {
+  content: "";
+  position: absolute;
+  right: -18%;
+  bottom: -20%;
+  left: -18%;
+  height: 42%;
+  background: linear-gradient(180deg, transparent, rgba(28, 7, 8, 0.74));
+  pointer-events: none;
+}
+
+.offering-lamp {
+  position: relative;
+  z-index: 2;
+  display: block;
+  width: min(330px, 78vw);
+  height: 360px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  filter: drop-shadow(0 30px 28px rgba(15, 4, 3, 0.54));
+}
+
+.lamp-aura {
+  position: absolute;
+  left: 50%;
+  top: 18px;
+  width: 190px;
+  height: 190px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, rgba(255, 233, 136, 0.48) 0 13%, rgba(255, 135, 48, 0.22) 26%, rgba(255, 135, 48, 0) 68%);
+  opacity: 0;
+  transform: translateX(-50%) scale(0.72);
+  transition: opacity 0.45s ease, transform 0.45s ease;
+  pointer-events: none;
+}
+
+.lamp-flame {
+  position: absolute;
+  z-index: 5;
+  left: 50%;
+  top: 42px;
+  width: 43px;
+  height: 92px;
+  border-radius: 58% 42% 54% 46% / 70% 70% 34% 34%;
+  background:
+    radial-gradient(ellipse at 50% 72%, rgba(255, 255, 255, 0.98) 0 18%, rgba(255, 236, 128, 0.9) 34%, transparent 56%),
+    linear-gradient(180deg, #fff9cf 0%, #fff 22%, #ffd45b 46%, #f26a1d 78%, rgba(173, 43, 14, 0.26) 100%);
+  opacity: 0;
+  transform: translateX(-50%) scaleY(0.35);
+  transform-origin: 50% 100%;
+  box-shadow:
+    0 0 24px rgba(255, 219, 96, 0.72),
+    0 0 60px rgba(237, 93, 26, 0.52);
+  transition: opacity 0.24s ease, transform 0.32s ease;
+}
+
+.lamp-wick {
+  position: absolute;
+  z-index: 6;
+  left: 50%;
+  top: 119px;
+  width: 8px;
+  height: 28px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #221410, #0b0604);
+  transform: translateX(-50%) rotate(-4deg);
+}
+
+.lamp-bowl {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  top: 126px;
+  width: 270px;
+  height: 102px;
+  border-radius: 50% 50% 42% 42% / 36% 36% 62% 62%;
+  background:
+    linear-gradient(180deg, #f0aa45 0 9%, #a96528 10% 18%, #5b2d1b 58%, #25100c 100%);
+  transform: translateX(-50%);
+  box-shadow:
+    inset 0 10px 10px rgba(255, 235, 154, 0.38),
+    inset 0 -16px 24px rgba(25, 8, 5, 0.74),
+    0 14px 18px rgba(16, 4, 3, 0.34);
+}
+
+.lamp-bowl::before {
+  content: "";
+  position: absolute;
+  left: 9px;
+  right: 9px;
+  top: -20px;
+  height: 45px;
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse at 50% 48%, rgba(255, 209, 79, 0.34), rgba(112, 42, 14, 0.82) 60%, rgba(45, 17, 9, 0.96) 75%),
+    linear-gradient(180deg, #f5b258, #5c2817);
+  box-shadow:
+    inset 0 8px 6px rgba(255, 238, 166, 0.38),
+    0 5px 0 #7c3d1e,
+    0 13px 16px rgba(0, 0, 0, 0.32);
+}
+
+.lamp-bowl::after {
+  content: "";
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  top: 16px;
+  height: 15px;
+  border-radius: 50%;
+  background: linear-gradient(90deg, transparent, rgba(255, 238, 171, 0.82) 22%, transparent 38%, rgba(255, 238, 171, 0.54) 62%, transparent 82%);
+  opacity: 0.56;
+}
+
+.lamp-oil {
+  position: absolute;
+  z-index: 2;
+  left: 36px;
+  right: 36px;
+  top: -9px;
+  height: 25px;
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse at 50% 40%, rgba(255, 229, 91, 0.84), rgba(169, 82, 20, 0.7) 58%, rgba(54, 19, 8, 0.72) 100%);
+  opacity: 0.58;
+}
+
+.lamp-stem {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  top: 214px;
+  width: 68px;
+  height: 88px;
+  border-radius: 34px 34px 20px 20px;
+  background:
+    linear-gradient(90deg, #2a110b, #9d5b29 20%, #e2a452 48%, #79411f 74%, #1d0b08 100%);
+  transform: translateX(-50%);
+  box-shadow:
+    inset 0 8px 8px rgba(255, 224, 140, 0.22),
+    inset 0 -10px 14px rgba(19, 6, 4, 0.5);
+}
+
+.lamp-stem::before,
+.lamp-stem::after {
+  content: "";
+  position: absolute;
+  left: -18px;
+  right: -18px;
+  height: 18px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #c7813a, #4a2112);
+  box-shadow: inset 0 5px 5px rgba(255, 229, 146, 0.24);
+}
+
+.lamp-stem::before {
+  top: 12px;
+}
+
+.lamp-stem::after {
+  bottom: 7px;
+}
+
+.lamp-base {
+  position: absolute;
+  z-index: 1;
+  left: 50%;
+  bottom: 24px;
+  width: 190px;
+  height: 60px;
+  border-radius: 50%;
+  background:
+    linear-gradient(180deg, #d6984d 0 26%, #723717 42%, #1d0b07 100%);
+  transform: translateX(-50%);
+  box-shadow:
+    inset 0 10px 8px rgba(255, 224, 142, 0.22),
+    0 16px 20px rgba(10, 3, 2, 0.5);
+}
+
+.offering-lamp-scene.is-lit .lamp-aura {
+  opacity: 1;
+  transform: translateX(-50%) scale(1.08);
+}
+
+.offering-lamp-scene.is-lit .lamp-flame {
+  opacity: 1;
+  transform: translateX(-50%) scaleY(1);
+  animation: lampFlameFlicker 1.8s ease-in-out infinite;
+}
+
+.offering-lamp.just-lit .lamp-flame {
+  animation: lampLightBloom 0.75s ease both, lampFlameFlicker 1.8s ease-in-out 0.75s infinite;
+}
+
+.offering-lamp-panel {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  width: min(360px, 100%);
+  padding: 14px;
+  border: 1px solid rgba(255, 223, 145, 0.18);
+  border-radius: var(--radius);
+  background: rgba(38, 9, 10, 0.5);
+  color: #ffe8ad;
+  text-align: center;
+  backdrop-filter: blur(10px);
+}
+
+.offering-lamp-panel strong {
+  font-size: 18px;
+  font-weight: 950;
+}
+
+.offering-lamp-panel span {
+  color: rgba(255, 232, 173, 0.76);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.offering-lamp-action {
+  min-width: 126px;
+  min-height: 40px;
+  border: 1px solid rgba(255, 232, 152, 0.44);
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg, rgba(255, 238, 153, 0.28), rgba(199, 94, 28, 0.18)),
+    rgba(116, 35, 19, 0.82);
+  color: #ffe89a;
+  font-size: 14px;
+  font-weight: 950;
+  box-shadow: 0 12px 24px rgba(22, 5, 4, 0.24);
+}
+
+@keyframes lampLightBloom {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) scale(0.22);
+  }
+  58% {
+    opacity: 1;
+    transform: translateX(-50%) scale(1.18);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+  }
+}
+
+@keyframes lampFlameFlicker {
+  0%,
+  100% {
+    border-radius: 58% 42% 54% 46% / 70% 70% 34% 34%;
+    transform: translateX(-50%) scaleY(1) rotate(-1deg);
+  }
+  45% {
+    border-radius: 46% 54% 58% 42% / 72% 68% 36% 32%;
+    transform: translateX(-50%) scaleY(0.94) rotate(2deg);
+  }
+  72% {
+    transform: translateX(-50%) scaleY(1.05) rotate(-2deg);
+  }
+}
+
+.offering-lamp-page {
+  background:
+    radial-gradient(circle at 50% 14%, rgba(255, 236, 166, 0.34), transparent 24%),
+    radial-gradient(circle at 12% 12%, rgba(198, 40, 42, 0.16), transparent 26%),
+    linear-gradient(180deg, #fff3d1 0%, #f7dfaa 48%, #e9c777 100%);
+}
+
+.offering-lamp-page .section-head {
+  padding: 14px 14px 12px;
+  border: 1px solid rgba(164, 91, 29, 0.2);
+  border-radius: var(--radius);
+  background:
+    linear-gradient(90deg, rgba(116, 35, 19, 0.12), rgba(255, 235, 169, 0.26)),
+    rgba(255, 251, 236, 0.78);
+  box-shadow: 0 10px 24px rgba(64, 47, 23, 0.08);
+}
+
+.offering-lamp-page .section-head h2 {
+  color: #8d2e18;
+  text-shadow: 0 1px 0 rgba(255, 242, 184, 0.8);
+}
+
+.offering-lamp-scene {
+  min-height: 580px;
+  padding: 34px 16px 22px;
+  border-color: rgba(255, 224, 134, 0.26);
+  background:
+    radial-gradient(ellipse at 50% 28%, rgba(255, 198, 72, 0.34), transparent 24%),
+    radial-gradient(ellipse at 50% 54%, rgba(124, 22, 26, 0.58), transparent 52%),
+    linear-gradient(180deg, #7d111f 0%, #5a0d18 42%, #220607 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 232, 152, 0.14),
+    inset 0 34px 90px rgba(255, 212, 112, 0.08),
+    0 22px 42px rgba(64, 47, 23, 0.2);
+}
+
+.offering-lamp-scene::before {
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 28%, rgba(255, 240, 164, 0.22) 0 10%, transparent 11% 100%),
+    repeating-conic-gradient(from 2deg at 50% 28%, rgba(255, 229, 146, 0.11) 0 5deg, transparent 5deg 13deg),
+    radial-gradient(circle at 16% 74%, rgba(255, 201, 74, 0.6) 0 5px, rgba(255, 118, 34, 0.28) 6px 13px, transparent 14px),
+    radial-gradient(circle at 31% 78%, rgba(255, 201, 74, 0.46) 0 4px, rgba(255, 118, 34, 0.22) 5px 11px, transparent 12px),
+    radial-gradient(circle at 69% 78%, rgba(255, 201, 74, 0.46) 0 4px, rgba(255, 118, 34, 0.22) 5px 11px, transparent 12px),
+    radial-gradient(circle at 84% 74%, rgba(255, 201, 74, 0.6) 0 5px, rgba(255, 118, 34, 0.28) 6px 13px, transparent 14px),
+    linear-gradient(90deg, transparent 0 15%, rgba(186, 55, 42, 0.48) 15% 30%, transparent 30% 70%, rgba(186, 55, 42, 0.48) 70% 85%, transparent 85%),
+    radial-gradient(ellipse at center 36%, rgba(255, 199, 91, 0.2), transparent 50%);
+  opacity: 1;
+  filter: blur(0.25px);
+}
+
+.offering-lamp-scene::after {
+  right: -12%;
+  bottom: -18%;
+  left: -12%;
+  height: 44%;
+  border-radius: 50% 50% 0 0;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(255, 207, 103, 0.22), transparent 32%),
+    linear-gradient(180deg, rgba(112, 42, 22, 0.22), rgba(20, 4, 4, 0.86));
+}
+
+.offering-lamp {
+  width: min(360px, 86vw);
+  height: 390px;
+  margin-top: 2px;
+  filter:
+    drop-shadow(0 34px 26px rgba(12, 3, 2, 0.58))
+    drop-shadow(0 0 0 rgba(255, 204, 95, 0));
+}
+
+.offering-lamp::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 34px;
+  z-index: 1;
+  width: 210px;
+  height: 260px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(255, 211, 92, 0.18), transparent 68%);
+  opacity: 0;
+  transform: translateX(-50%) scale(0.84);
+  transition: opacity 0.38s ease, transform 0.38s ease;
+  pointer-events: none;
+}
+
+.lamp-aura {
+  top: -10px;
+  width: 270px;
+  height: 270px;
+  background:
+    radial-gradient(circle, rgba(255, 255, 215, 0.72) 0 8%, rgba(255, 223, 107, 0.48) 17%, rgba(255, 132, 40, 0.2) 34%, rgba(255, 132, 40, 0) 70%);
+  filter: blur(0.35px);
+}
+
+.lamp-flame {
+  top: 28px;
+  width: 50px;
+  height: 112px;
+  background:
+    radial-gradient(ellipse at 50% 72%, rgba(255, 255, 255, 0.98) 0 16%, rgba(255, 243, 143, 0.92) 30%, transparent 54%),
+    radial-gradient(ellipse at 50% 28%, rgba(255, 255, 255, 0.92) 0 18%, transparent 30%),
+    linear-gradient(180deg, #fff8c9 0%, #fff 20%, #ffd65a 48%, #f57521 80%, rgba(154, 32, 12, 0.34) 100%);
+  box-shadow:
+    0 0 28px rgba(255, 235, 124, 0.78),
+    0 0 74px rgba(247, 103, 28, 0.58),
+    0 0 110px rgba(255, 194, 76, 0.22);
+}
+
+.lamp-wick {
+  top: 122px;
+  height: 34px;
+  background: linear-gradient(180deg, #4b2514, #080403);
+  box-shadow: 0 0 8px rgba(255, 172, 54, 0.28);
+}
+
+.lamp-bowl {
+  top: 135px;
+  width: 292px;
+  height: 108px;
+  background:
+    linear-gradient(180deg, #ffd37a 0 8%, #b66b2e 9% 18%, #663116 54%, #1b0805 100%);
+  box-shadow:
+    inset 0 12px 11px rgba(255, 238, 181, 0.45),
+    inset 0 -18px 28px rgba(18, 5, 3, 0.78),
+    0 17px 22px rgba(11, 3, 2, 0.42);
+}
+
+.lamp-bowl::before {
+  left: 6px;
+  right: 6px;
+  top: -25px;
+  height: 52px;
+  background:
+    radial-gradient(ellipse at 50% 48%, rgba(255, 230, 118, 0.48), rgba(139, 55, 14, 0.86) 58%, rgba(39, 13, 7, 0.98) 76%),
+    linear-gradient(180deg, #ffc66d, #642a15);
+  box-shadow:
+    inset 0 10px 8px rgba(255, 244, 194, 0.42),
+    0 5px 0 #8b451f,
+    0 15px 18px rgba(0, 0, 0, 0.36);
+}
+
+.lamp-oil {
+  left: 34px;
+  right: 34px;
+  top: -13px;
+  height: 31px;
+  background:
+    radial-gradient(ellipse at 52% 40%, rgba(255, 243, 126, 0.9), rgba(197, 93, 20, 0.76) 56%, rgba(47, 15, 7, 0.78) 100%);
+  opacity: 0.68;
+  box-shadow: inset 0 4px 8px rgba(255, 255, 214, 0.28);
+}
+
+.lamp-stem {
+  top: 228px;
+  height: 96px;
+  background:
+    linear-gradient(90deg, #1e0905, #7d3917 18%, #ffc06a 48%, #7d3917 76%, #150604 100%);
+}
+
+.lamp-base {
+  bottom: 16px;
+  width: 208px;
+  height: 66px;
+  background:
+    radial-gradient(ellipse at 50% 20%, rgba(255, 225, 139, 0.32), transparent 48%),
+    linear-gradient(180deg, #e0a253 0 26%, #783817 44%, #170604 100%);
+}
+
+.offering-lamp-scene.is-lit .offering-lamp::before {
+  opacity: 1;
+  transform: translateX(-50%) scale(1.08);
+}
+
+.offering-lamp-scene.is-lit .lamp-bowl,
+.offering-lamp-scene.is-lit .lamp-stem,
+.offering-lamp-scene.is-lit .lamp-base {
+  filter: saturate(1.14) brightness(1.08);
+}
+
+.offering-lamp-scene.is-lit .lamp-oil {
+  opacity: 1;
+  box-shadow:
+    inset 0 4px 8px rgba(255, 255, 214, 0.34),
+    0 0 22px rgba(255, 192, 65, 0.38);
+}
+
+.offering-lamp-panel {
+  width: min(390px, 100%);
+  padding: 16px 15px;
+  border-color: rgba(255, 231, 155, 0.32);
+  background:
+    linear-gradient(180deg, rgba(83, 17, 18, 0.74), rgba(41, 8, 9, 0.7)),
+    rgba(38, 9, 10, 0.58);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 16px 26px rgba(15, 3, 3, 0.22);
+}
+
+.offering-lamp-panel strong {
+  color: #fff0b8;
+  font-size: 19px;
+  text-shadow: 0 2px 10px rgba(255, 173, 58, 0.2);
+}
+
+.offering-lamp-action {
+  min-width: 142px;
+  min-height: 42px;
+  background:
+    linear-gradient(180deg, rgba(255, 244, 177, 0.92), rgba(214, 129, 39, 0.72)),
+    rgba(116, 35, 19, 0.86);
+  color: #6b2c0f;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.52),
+    0 14px 26px rgba(22, 5, 4, 0.28);
+}
+
+@media (max-width: 520px) {
+  .offering-lamp-scene {
+    min-height: 530px;
+    padding-top: 26px;
+  }
+
+  .offering-lamp {
+    width: min(320px, 88vw);
+    height: 356px;
+  }
+
+  .lamp-bowl {
+    width: 258px;
+  }
+
+  .lamp-base {
+    width: 184px;
+  }
+}
+
+.offering-lamp-scene {
+  min-height: min(680px, calc(100svh - 120px));
+  place-items: end center;
+  align-content: end;
+  padding: 22px 14px;
+  border-color: rgba(255, 223, 137, 0.32);
+  background:
+    radial-gradient(ellipse at 50% 42%, rgba(255, 222, 126, 0.12), transparent 36%),
+    linear-gradient(180deg, rgba(20, 6, 3, 0.34), rgba(20, 6, 3, 0.62)),
+    url("assets/offering-buddha-bg.jpg") center 24% / cover no-repeat;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 232, 152, 0.12),
+    inset 0 -130px 150px rgba(26, 7, 4, 0.38),
+    0 22px 42px rgba(64, 47, 23, 0.2);
+}
+
+.offering-lamp-scene::before {
+  inset: 0;
+  z-index: 1;
+  background:
+    radial-gradient(ellipse at 50% 56%, rgba(255, 206, 81, 0.18), transparent 26%),
+    linear-gradient(180deg, rgba(23, 6, 4, 0.18), transparent 36%, rgba(20, 5, 3, 0.64) 100%);
+  opacity: 0.88;
+  filter: none;
+  transition: opacity 0.38s ease;
+}
+
+.offering-lamp-scene::after {
+  inset: auto -6% -6% -6%;
+  z-index: 2;
+  height: 56%;
+  border-radius: 42% 42% 0 0;
+  background:
+    radial-gradient(ellipse at 50% 26%, rgba(255, 220, 103, 0.34), transparent 32%),
+    linear-gradient(180deg, transparent 0%, rgba(24, 7, 4, 0.1) 28%, rgba(18, 4, 3, 0.68) 100%),
+    url("assets/offering-real-lamps.png") center bottom / cover no-repeat;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 22%, #000 100%);
+  mask-image: linear-gradient(180deg, transparent 0, #000 22%, #000 100%);
+  opacity: 0.96;
+}
+
+.offering-lamp {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  border-radius: inherit;
+  opacity: 1;
+  filter: none;
+}
+
+.offering-lamp > span,
+.offering-lamp::before {
+  display: none;
+}
+
+.offering-lamp-panel {
+  position: relative;
+  z-index: 5;
+  width: min(420px, 100%);
+  margin-top: auto;
+  border-color: rgba(255, 232, 152, 0.36);
+  background:
+    linear-gradient(180deg, rgba(76, 20, 9, 0.72), rgba(22, 6, 4, 0.74)),
+    rgba(36, 10, 6, 0.62);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 16px 30px rgba(12, 3, 2, 0.32);
+}
+
+.offering-lamp-scene.is-lit {
+  animation: realLampGlow 1.1s ease both;
+}
+
+.offering-lamp-scene.is-lit::before {
+  opacity: 1;
+}
+
+.offering-lamp-scene.is-lit::after {
+  background:
+    radial-gradient(ellipse at 50% 24%, rgba(255, 232, 127, 0.48), transparent 34%),
+    linear-gradient(180deg, transparent 0%, rgba(255, 185, 54, 0.08) 28%, rgba(18, 4, 3, 0.56) 100%),
+    url("assets/offering-real-lamps.png") center bottom / cover no-repeat;
+}
+
+.offering-lamp.just-lit {
+  animation: realLampClickPulse 0.72s ease both;
+}
+
+@keyframes realLampGlow {
+  0% {
+    filter: saturate(0.96) brightness(0.98);
+  }
+  58% {
+    filter: saturate(1.18) brightness(1.12);
+  }
+  100% {
+    filter: saturate(1.08) brightness(1.04);
+  }
+}
+
+@keyframes realLampClickPulse {
+  0% {
+    background-color: rgba(255, 196, 72, 0);
+  }
+  45% {
+    background-color: rgba(255, 206, 78, 0.14);
+  }
+  100% {
+    background-color: rgba(255, 196, 72, 0);
+  }
+}
+
+@media (max-width: 520px) {
+  .offering-lamp-scene {
+    min-height: 590px;
+    padding: 18px 12px;
+    background-position: center center;
+  }
+}
+
+.notebook-overview-page {
+  gap: 10px;
+}
+
+.notebook-overview-page .focus-strip {
+  grid-template-columns: minmax(0, 1fr) 90px;
+  min-height: 112px;
+  padding: 12px;
+}
+
+.notebook-overview-page .buli-title-image {
+  width: min(152px, 48vw);
+}
+
+.notebook-overview-page .focus-title.image-title {
+  min-height: 68px;
+}
+
+.notebook-overview-page .focus-lamp img {
+  width: 90px;
+  height: 104px;
+}
+
+.bloom-garden {
+  min-height: clamp(340px, 45svh, 430px);
+  background:
+    linear-gradient(180deg, rgba(255, 252, 236, 0.1), rgba(31, 79, 29, 0.1)),
+    url("assets/buli-meadow-before.png") center / cover no-repeat;
+}
+
+.bloom-garden::after {
+  display: none;
+}
+
+.bloom-field {
+  inset: 0;
+  top: 0;
+  z-index: 2;
+  background:
+    linear-gradient(180deg, rgba(255, 250, 220, 0.08), rgba(24, 96, 34, 0.05)),
+    url("assets/buli-real-garden.png") center / cover no-repeat;
+  mix-blend-mode: normal;
+  opacity: 0;
+  transform: translateY(18px) scale(1.04);
+  transform-origin: center bottom;
+  transition: none;
+}
+
+.bloom-field::before,
+.bloom-field::after,
+.garden-photo-seat::after {
+  display: none;
+}
+
+.bloom-garden.is-blooming {
+  animation: realGardenBloom 1s ease both;
+}
+
+.bloom-garden.is-blooming .bloom-field {
+  animation: flowerFieldAppear 1.25s cubic-bezier(0.16, 0.86, 0.24, 1) both;
+}
+
+.bloom-garden.is-blooming .bloom-field::after {
+  display: none;
+}
+
+@keyframes flowerFieldAppear {
+  0% {
+    opacity: 0;
+    transform: translateY(28px) scale(1.08);
+    filter: saturate(0.82) brightness(0.96);
+  }
+  55% {
+    opacity: 1;
+    transform: translateY(-3px) scale(1.01);
+    filter: saturate(1.18) brightness(1.08);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: saturate(1.05) brightness(1.02);
+  }
+}
+
+@media (max-width: 520px) {
+  .notebook-overview-page {
+    gap: 8px;
+  }
+
+  .notebook-overview-page .focus-strip {
+    grid-template-columns: minmax(0, 1fr) 76px;
+    min-height: 98px;
+    padding: 10px;
+  }
+
+  .notebook-overview-page .focus-lamp img {
+    width: 76px;
+    height: 90px;
+  }
+
+  .notebook-overview-page .buli-title-image {
+    width: min(132px, 46vw);
+  }
+
+  .bloom-garden {
+    min-height: 390px;
+  }
+}
+
+.offering-lamp-page {
+  position: relative;
+  display: grid;
+  align-content: start;
+  gap: 14px;
+  background:
+    radial-gradient(circle at 50% 10%, rgba(255, 231, 150, 0.34), transparent 24%),
+    linear-gradient(180deg, #fff4d6 0%, #f3dba2 46%, #d5aa58 100%);
+}
+
+.offering-lamp-page .section-head {
+  border-color: rgba(132, 62, 22, 0.18);
+  background:
+    linear-gradient(90deg, rgba(116, 35, 19, 0.12), rgba(255, 235, 169, 0.26)),
+    rgba(255, 251, 236, 0.86);
+}
+
+.offering-lamp-page .notebook-page-footer {
+  position: relative;
+  right: auto;
+  bottom: auto;
+  left: auto;
+  z-index: 24;
+  grid-template-columns: 34px 34px minmax(0, 1fr) 34px;
+  width: 100%;
+  margin-top: 0;
+  padding-top: 8px;
+  border-top-color: rgba(116, 35, 19, 0.16);
+}
+
+.offering-lamp-page .notebook-page-button {
+  width: 34px;
+  height: 34px;
+  background: rgba(255, 247, 214, 0.92);
+  color: #8d2e18;
+  font-size: 18px;
+}
+
+.offering-lamp-page .notebook-page-button.toc {
+  font-size: 13px;
+}
+
+.offering-lamp-scene {
+  min-height: clamp(780px, 128svh, 960px);
+  padding: 18px 14px 20px;
+  overflow: hidden;
+  border-color: rgba(116, 35, 19, 0.22);
+  border-radius: 8px;
+  background:
+    radial-gradient(ellipse at 50% 56%, rgba(255, 207, 87, 0.22), transparent 34%),
+    linear-gradient(180deg, #2c0906 0%, #52140c 54%, #180403 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 232, 152, 0.18),
+    inset 0 -160px 190px rgba(15, 4, 3, 0.62),
+    0 22px 42px rgba(64, 47, 23, 0.22);
+}
+
+.offering-buddha-wall {
+  position: absolute;
+  top: 18px;
+  right: 14px;
+  left: 14px;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
+  gap: 9px;
+  height: clamp(310px, 42%, 390px);
+  padding: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 224, 137, 0.28);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(255, 225, 145, 0.12), rgba(28, 6, 3, 0.18)),
+    rgba(36, 9, 5, 0.54);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 18px 34px rgba(13, 3, 2, 0.24);
+  opacity: 0.96;
+}
+
+.offering-buddha-wall::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background:
+    radial-gradient(ellipse at 50% 86%, transparent 0 38%, rgba(42, 10, 5, 0.46) 74%),
+    linear-gradient(180deg, rgba(15, 4, 3, 0.02), rgba(18, 5, 3, 0.3));
+  pointer-events: none;
+}
+
+.offering-buddha-photo {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid rgba(255, 226, 150, 0.32);
+  border-radius: 6px;
+  background:
+    radial-gradient(ellipse at 50% 42%, rgba(255, 230, 153, 0.12), transparent 58%),
+    rgba(18, 5, 3, 0.46);
+}
+
+.offering-buddha-photo:first-child {
+  grid-column: span 2;
+}
+
+.offering-buddha-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  filter: saturate(0.96) brightness(0.86) sepia(0.08);
+}
+
+.offering-lamp-scene::before {
+  z-index: 5;
+  background:
+    radial-gradient(ellipse at 50% 63%, rgba(255, 215, 99, 0.2), transparent 26%),
+    linear-gradient(180deg, transparent 0 36%, rgba(23, 5, 3, 0.34) 62%, rgba(18, 4, 3, 0.82) 100%);
+  opacity: 1;
+  filter: none;
+  pointer-events: none;
+}
+
+.offering-lamp-scene::after {
+  inset: auto -6% 178px -6%;
+  z-index: 7;
+  height: 34%;
+  background:
+    radial-gradient(ellipse at 50% 14%, rgba(255, 232, 127, 0.44), transparent 34%),
+    linear-gradient(180deg, transparent 0%, rgba(255, 185, 54, 0.08) 28%, rgba(18, 4, 3, 0.54) 100%),
+    url("assets/offering-real-lamps.png") center bottom / 118% auto no-repeat;
+  opacity: 0;
+  transform: translateY(22px) scale(0.98);
+  transition: none;
+  pointer-events: none;
+}
+
+.offering-lamp {
+  position: absolute;
+  inset: auto auto 220px 50%;
+  z-index: 9;
+  width: min(272px, 64vw);
+  height: 326px;
+  margin: 0;
+  border: 0;
+  border-radius: 16px;
+  background: transparent;
+  cursor: pointer;
+  filter: drop-shadow(0 30px 28px rgba(9, 2, 1, 0.54));
+  transform: translateX(-50%);
+}
+
+.offering-lamp > span:not(.real-main-lamp),
+.offering-lamp::before {
+  display: none;
+}
+
+.offering-lamp > .real-main-lamp {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 16px;
+  background: url("assets/oil-lamp.jpg") center bottom / cover no-repeat;
+  clip-path: inset(39% 8% 0 8% round 16px);
+  filter: brightness(0.62) saturate(0.88) contrast(1.02);
+  transform: translateX(-50%);
+  opacity: 0.95;
+  box-shadow: 0 28px 36px rgba(8, 2, 1, 0.52);
+  transition: opacity 0.32s ease, filter 0.32s ease, clip-path 0.42s ease;
+}
+
+.offering-lamp-scene.is-lit::after {
+  animation: offeringFlamesAppear 1.05s cubic-bezier(0.15, 0.82, 0.24, 1) both;
+}
+
+.offering-lamp-scene.is-lit .real-main-lamp {
+  clip-path: inset(0 0 0 0 round 16px);
+  filter: brightness(1.12) saturate(1.18) contrast(1.03);
+  opacity: 1;
+  animation: mainLampIgnite 0.95s ease both;
+}
+
+.offering-lamp-panel {
+  position: absolute;
+  right: 16px;
+  bottom: 18px;
+  left: 16px;
+  z-index: 15;
+  width: auto;
+  margin: 0;
+  padding: 14px 14px 13px;
+  gap: 8px;
+  border-color: rgba(255, 232, 152, 0.34);
+  background:
+    linear-gradient(180deg, rgba(82, 22, 9, 0.76), rgba(24, 7, 4, 0.82)),
+    rgba(36, 10, 6, 0.7);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 18px 34px rgba(12, 3, 2, 0.34);
+}
+
+.offering-lamp-panel strong {
+  max-width: 100%;
+  color: #fff0b8;
+  font-size: 18px;
+  line-height: 1.5;
+  text-shadow: 0 2px 10px rgba(255, 173, 58, 0.22);
+}
+
+.offering-lamp-panel span {
+  line-height: 1.45;
+}
+
+.offering-buddha-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 7px;
+}
+
+.offering-buddha-upload,
+.offering-buddha-reset {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 32px;
+  padding: 0 11px;
+  border: 1px solid rgba(255, 232, 152, 0.34);
+  border-radius: 999px;
+  background: rgba(255, 242, 190, 0.14);
+  color: #ffe7a5;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.offering-buddha-upload input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.offering-buddha-reset {
+  cursor: pointer;
+}
+
+.offering-lamp-action {
+  min-width: 126px;
+  min-height: 38px;
+}
+
+@keyframes offeringFlamesAppear {
+  0% {
+    opacity: 0;
+    transform: translateY(26px) scale(0.96);
+    filter: saturate(0.82) brightness(0.82);
+  }
+  58% {
+    opacity: 1;
+    transform: translateY(-3px) scale(1.02);
+    filter: saturate(1.22) brightness(1.12);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: saturate(1.08) brightness(1.04);
+  }
+}
+
+@keyframes mainLampIgnite {
+  0% {
+    transform: translateX(-50%) scale(0.98);
+  }
+  48% {
+    transform: translateX(-50%) scale(1.035);
+  }
+  100% {
+    transform: translateX(-50%) scale(1);
+  }
+}
+
+@media (max-width: 520px) {
+  .offering-lamp-scene {
+    min-height: clamp(760px, 120svh, 900px);
+    padding: 14px 10px 18px;
+  }
+
+  .offering-buddha-wall {
+    top: 12px;
+    right: 10px;
+    left: 10px;
+    grid-template-columns: repeat(auto-fit, minmax(94px, 1fr));
+    height: clamp(290px, 39%, 350px);
+    padding: 8px;
+  }
+
+  .offering-buddha-photo:first-child {
+    grid-column: span 2;
+  }
+
+  .offering-lamp {
+    bottom: 214px;
+    width: min(214px, 58vw);
+    height: 264px;
+  }
+
+  .offering-lamp-scene::after {
+    bottom: 164px;
+    height: 30%;
+    background-size: 140% auto;
+  }
+
+  .offering-lamp-panel {
+    right: 10px;
+    bottom: 12px;
+    left: 10px;
+    padding: 11px 10px;
+  }
+
+  .offering-lamp-panel strong {
+    font-size: 16px;
+  }
+}
+
+/* Final page polish for the compact notebook and offering-lamp scene. */
+.notebook-overview-page.notebook-page {
+  gap: 8px;
+  padding-bottom: max(58px, env(safe-area-inset-bottom));
+}
+
+.notebook-overview-page .focus-strip {
+  min-height: 98px;
+  padding: 10px;
+}
+
+.notebook-overview-page .focus-title.image-title {
+  min-height: 58px;
+}
+
+.notebook-overview-page .buli-title-image {
+  width: min(138px, 44vw);
+}
+
+.notebook-overview-page .focus-lamp img {
+  width: 74px;
+  height: 88px;
+}
+
+.notebook-overview-page .bloom-garden {
+  min-height: clamp(300px, 40svh, 372px);
+}
+
+.notebook-overview-page .notebook-page-footer {
+  margin-top: auto;
+  padding-top: 6px;
+}
+
+.bloom-garden::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: block;
+  height: auto;
+  background:
+    radial-gradient(circle at 13% 19%, rgba(255, 239, 153, 0.96) 0 1px, transparent 3px),
+    radial-gradient(circle at 26% 34%, rgba(255, 211, 77, 0.9) 0 2px, transparent 5px),
+    radial-gradient(circle at 41% 21%, rgba(255, 247, 198, 0.9) 0 1px, transparent 4px),
+    radial-gradient(circle at 58% 38%, rgba(255, 220, 91, 0.86) 0 2px, transparent 5px),
+    radial-gradient(circle at 74% 18%, rgba(255, 242, 174, 0.92) 0 1px, transparent 4px),
+    radial-gradient(circle at 88% 34%, rgba(255, 213, 72, 0.88) 0 2px, transparent 5px),
+    radial-gradient(circle at 18% 61%, rgba(255, 230, 108, 0.74) 0 1px, transparent 4px),
+    radial-gradient(circle at 49% 66%, rgba(255, 244, 190, 0.82) 0 2px, transparent 6px),
+    radial-gradient(circle at 81% 58%, rgba(255, 222, 98, 0.78) 0 1px, transparent 4px);
+  mix-blend-mode: screen;
+  opacity: 0.62;
+  pointer-events: none;
+  animation: gardenGoldTwinkle 3.8s ease-in-out infinite;
+}
+
+.bloom-garden.is-blooming::after {
+  opacity: 0.95;
+  animation-duration: 1.45s;
+}
+
+.garden-photo-seat {
+  filter:
+    drop-shadow(0 14px 18px rgba(16, 73, 30, 0.18))
+    drop-shadow(0 0 18px rgba(255, 232, 142, 0.14));
+}
+
+.garden-photo-seat img {
+  border-radius: 50% 50% 34% 34% / 42% 42% 28% 28%;
+  filter: saturate(0.78) contrast(0.9) brightness(1.12) sepia(0.12);
+  mix-blend-mode: soft-light;
+  -webkit-mask-image: radial-gradient(ellipse at 50% 42%, #000 0 38%, rgba(0, 0, 0, 0.68) 53%, rgba(0, 0, 0, 0.2) 66%, transparent 79%);
+  mask-image: radial-gradient(ellipse at 50% 42%, #000 0 38%, rgba(0, 0, 0, 0.68) 53%, rgba(0, 0, 0, 0.2) 66%, transparent 79%);
+}
+
+.garden-photo-seat img.has-photo {
+  opacity: 0.78;
+  transform: translateY(0) scale(1);
+}
+
+.garden-photo-seat::before {
+  inset: 26px 8px 10px;
+  background:
+    radial-gradient(ellipse at 50% 44%, rgba(255, 248, 211, 0.16), transparent 54%),
+    radial-gradient(ellipse at 50% 78%, rgba(28, 95, 38, 0.5), transparent 58%);
+}
+
+.garden-photo-seat::after {
+  right: -28px;
+  bottom: -20px;
+  left: -28px;
+  z-index: 4;
+  display: block;
+  height: 76px;
+  background:
+    linear-gradient(180deg, transparent 0, rgba(34, 110, 44, 0.24) 28%, rgba(17, 80, 31, 0.86) 100%),
+    radial-gradient(circle at 18% 42%, rgba(255, 230, 88, 0.72) 0 3px, transparent 4px),
+    radial-gradient(circle at 62% 34%, rgba(255, 240, 176, 0.62) 0 2px, transparent 4px),
+    repeating-linear-gradient(83deg, rgba(25, 95, 35, 0.92) 0 4px, transparent 4px 12px),
+    repeating-linear-gradient(105deg, rgba(146, 184, 78, 0.64) 0 3px, transparent 3px 14px);
+}
+
+.garden-photo-seat img.has-photo + span {
+  background: rgba(31, 87, 36, 0.58);
+}
+
+.offering-lamp-page.notebook-page {
+  gap: 10px;
+  padding-bottom: max(58px, env(safe-area-inset-bottom));
+}
+
+.offering-lamp-page .section-head {
+  padding: 10px 12px;
+}
+
+.offering-lamp-page .notebook-page-footer {
+  margin-top: 4px;
+  padding-top: 6px;
+}
+
+.offering-lamp-scene {
+  min-height: clamp(570px, calc(100svh - 150px), 710px);
+  padding: 12px 12px 14px;
+  background:
+    radial-gradient(ellipse at 50% 58%, rgba(255, 207, 87, 0.24), transparent 34%),
+    linear-gradient(180deg, #2a0906 0%, #51140c 48%, #170403 100%);
+}
+
+.offering-buddha-wall {
+  top: 12px;
+  right: 12px;
+  left: 12px;
+  height: clamp(210px, 34%, 270px);
+  grid-template-columns: repeat(auto-fit, minmax(98px, 1fr));
+}
+
+.offering-lamp-stage {
+  position: absolute;
+  right: 0;
+  bottom: 116px;
+  left: 0;
+  z-index: 7;
+  height: 52%;
+  overflow: hidden;
+  border-radius: 0 0 8px 8px;
+  background:
+    linear-gradient(180deg, rgba(43, 9, 5, 0.04) 0%, rgba(31, 7, 4, 0.18) 34%, rgba(12, 3, 2, 0.2) 100%),
+    url("assets/offering-lamps-symmetric-real.png") center bottom / cover no-repeat;
+  box-shadow: inset 0 -70px 95px rgba(12, 3, 2, 0.46);
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 13%, #000 100%);
+  mask-image: linear-gradient(180deg, transparent 0, #000 13%, #000 100%);
+}
+
+.offering-lamp-stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 50% 55%, rgba(255, 200, 74, 0.34), transparent 28%),
+    radial-gradient(ellipse at 42% 80%, rgba(255, 143, 34, 0.26), transparent 28%),
+    linear-gradient(180deg, transparent 0 36%, rgba(255, 185, 54, 0.1) 100%);
+  opacity: 0;
+  transition: opacity 0.45s ease;
+}
+
+.offering-lamp-scene.is-lit .offering-lamp-stage::after {
+  opacity: 1;
+}
+
+.offering-lamp {
+  inset: auto 0 116px 0;
+  z-index: 10;
+  width: auto;
+  height: 52%;
+  border-radius: 0 0 8px 8px;
+  transform: none;
+  filter: none;
+}
+
+.offering-lamp > .real-main-lamp,
+.offering-lamp-scene.is-lit .real-main-lamp {
+  display: none;
+}
+
+.offering-lamp-scene::before {
+  background:
+    radial-gradient(ellipse at 50% 61%, rgba(255, 217, 108, 0.18), transparent 26%),
+    linear-gradient(180deg, transparent 0 34%, rgba(23, 5, 3, 0.3) 58%, rgba(18, 4, 3, 0.72) 100%);
+}
+
+.offering-lamp-scene::after {
+  inset: auto 0 106px;
+  z-index: 8;
+  height: 48%;
+  background:
+    radial-gradient(ellipse at 50% 54%, rgba(255, 230, 126, 0.4), transparent 26%),
+    radial-gradient(ellipse at 50% 82%, rgba(255, 142, 31, 0.26), transparent 34%);
+  opacity: 0;
+  transform: translateY(12px);
+  pointer-events: none;
+}
+
+.offering-lamp-scene.is-lit::after {
+  animation: offeringGlowAppear 0.95s cubic-bezier(0.15, 0.82, 0.24, 1) both;
+}
+
+.offering-flame {
+  --x: 50%;
+  --y: 20%;
+  --s: 1;
+  --d: 0s;
+  position: absolute;
+  left: var(--x);
+  bottom: var(--y);
+  z-index: 3;
+  width: calc(14px * var(--s));
+  height: calc(34px * var(--s));
+  border-radius: 56% 44% 54% 46% / 66% 66% 34% 34%;
+  background:
+    radial-gradient(ellipse at 50% 68%, rgba(255, 255, 218, 0.95) 0 20%, rgba(255, 218, 86, 0.86) 21% 42%, transparent 64%),
+    linear-gradient(180deg, #fff8c0 0%, #ffc84c 40%, #ff7d20 72%, rgba(169, 34, 8, 0.1) 100%);
+  opacity: 0;
+  filter:
+    drop-shadow(0 0 6px rgba(255, 206, 78, 0.8))
+    drop-shadow(0 0 16px rgba(255, 139, 34, 0.5));
+  transform: translateX(-50%) scale(0.36) rotate(-3deg);
+  transform-origin: 50% 92%;
+}
+
+.flame-one { --x: 50%; --y: 10%; --s: 1.34; --d: 0.02s; }
+.flame-two { --x: 31%; --y: 22%; --s: 1.08; --d: 0.1s; }
+.flame-three { --x: 69%; --y: 22%; --s: 1.08; --d: 0.1s; }
+.flame-four { --x: 50%; --y: 28%; --s: 0.98; --d: 0.18s; }
+.flame-five { --x: 20%; --y: 34%; --s: 0.86; --d: 0.26s; }
+.flame-six { --x: 80%; --y: 34%; --s: 0.86; --d: 0.26s; }
+.flame-seven { --x: 38%; --y: 43%; --s: 0.74; --d: 0.34s; }
+.flame-eight { --x: 62%; --y: 43%; --s: 0.74; --d: 0.34s; }
+.flame-nine { --x: 50%; --y: 49%; --s: 0.68; --d: 0.42s; }
+.flame-ten { --x: 28%; --y: 56%; --s: 0.56; --d: 0.5s; }
+.flame-eleven { --x: 72%; --y: 56%; --s: 0.56; --d: 0.5s; }
+.flame-twelve { --x: 50%; --y: 61%; --s: 0.52; --d: 0.58s; }
+
+.offering-lamp-scene.is-lit .offering-flame {
+  animation:
+    offeringLampFlameRise 0.8s var(--d) cubic-bezier(0.18, 0.84, 0.22, 1.16) both,
+    offeringLampFlameFlicker 1.6s calc(var(--d) + 0.8s) ease-in-out infinite;
+}
+
+.offering-lamp-panel {
+  right: 12px;
+  bottom: 12px;
+  left: 12px;
+  padding: 11px 12px 10px;
+  gap: 6px;
+}
+
+.offering-lamp-panel strong {
+  font-size: 16px;
+  line-height: 1.42;
+}
+
+.offering-lamp-panel span {
+  font-size: 12px;
+}
+
+@keyframes gardenGoldTwinkle {
+  0%,
+  100% {
+    opacity: 0.5;
+    filter: drop-shadow(0 0 2px rgba(255, 211, 77, 0.3));
+  }
+  50% {
+    opacity: 0.88;
+    filter: drop-shadow(0 0 9px rgba(255, 211, 77, 0.72));
+  }
+}
+
+@keyframes offeringGlowAppear {
+  0% {
+    opacity: 0;
+    transform: translateY(18px) scale(0.97);
+    filter: saturate(0.86) brightness(0.88);
+  }
+  58% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.02);
+    filter: saturate(1.2) brightness(1.12);
+  }
+  100% {
+    opacity: 0.86;
+    transform: translateY(0) scale(1);
+    filter: saturate(1.08) brightness(1.04);
+  }
+}
+
+@keyframes offeringLampFlameRise {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(13px) scale(0.28) rotate(-6deg);
+  }
+  64% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-2px) scale(calc(var(--s) * 1.1)) rotate(2deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(var(--s)) rotate(-2deg);
+  }
+}
+
+@keyframes offeringLampFlameFlicker {
+  0%,
+  100% {
+    opacity: 0.92;
+    transform: translateX(-50%) scale(var(--s)) rotate(-2deg);
+  }
+  45% {
+    opacity: 1;
+    transform: translateX(-50%) scale(calc(var(--s) * 0.92), calc(var(--s) * 1.08)) rotate(4deg);
+  }
+  72% {
+    opacity: 0.86;
+    transform: translateX(-50%) scale(calc(var(--s) * 1.05), calc(var(--s) * 0.96)) rotate(-5deg);
+  }
+}
+
+@media (max-width: 520px) {
+  .notebook-overview-page .focus-strip {
+    grid-template-columns: minmax(0, 1fr) 66px;
+    min-height: 86px;
+    padding: 8px;
+  }
+
+  .notebook-overview-page .focus-lamp img {
+    width: 66px;
+    height: 78px;
+  }
+
+  .notebook-overview-page .buli-title-image {
+    width: min(122px, 42vw);
+  }
+
+  .notebook-overview-page .bloom-garden {
+    min-height: clamp(292px, 43svh, 330px);
+  }
+
+  .garden-photo-seat {
+    bottom: 78px;
+    width: 92px;
+    height: 128px;
+  }
+
+  .garden-photo-seat.self {
+    bottom: 70px;
+    width: 84px;
+    height: 118px;
+  }
+
+  .offering-lamp-scene {
+    min-height: clamp(540px, calc(100svh - 132px), 650px);
+    padding: 10px 9px 12px;
+  }
+
+  .offering-buddha-wall {
+    top: 10px;
+    right: 9px;
+    left: 9px;
+    height: clamp(184px, 32%, 232px);
+    grid-template-columns: repeat(auto-fit, minmax(82px, 1fr));
+    padding: 7px;
+  }
+
+  .offering-lamp-stage,
+  .offering-lamp {
+    bottom: 106px;
+    height: 53%;
+  }
+
+  .offering-lamp-scene::after {
+    bottom: 98px;
+    height: 48%;
+  }
+
+  .offering-flame {
+    width: calc(11px * var(--s));
+    height: calc(28px * var(--s));
+  }
+
+  .offering-lamp-panel {
+    right: 9px;
+    bottom: 9px;
+    left: 9px;
+    padding: 9px;
+  }
+
+  .offering-lamp-panel strong {
+    font-size: 15px;
+  }
+}
+
+/* Buli garden final layout: larger scene, centered title, and real flower overflow. */
+.notebook-overview-page.notebook-page {
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  align-content: stretch;
+  gap: 6px;
+  padding-bottom: max(30px, env(safe-area-inset-bottom));
+  overflow-x: hidden;
+}
+
+.notebook-overview-page .focus-strip {
+  grid-template-columns: minmax(0, 1fr) 74px;
+  min-height: 88px;
+  padding: 8px 10px;
+}
+
+.notebook-overview-page .focus-copy {
+  display: grid;
+  justify-items: center;
+  text-align: center;
+  transform: translateX(-10px);
+}
+
+.notebook-overview-page .focus-title.image-title {
+  justify-content: center;
+  min-height: 52px;
+  margin-top: 3px;
+}
+
+.notebook-overview-page .buli-title-image {
+  width: min(146px, 44vw);
+}
+
+.notebook-overview-page .focus-strip p {
+  margin-top: 2px;
+}
+
+.notebook-overview-page .focus-lamp img {
+  width: 70px;
+  height: 82px;
+}
+
+.notebook-overview-page .bloom-garden {
+  align-self: stretch;
+  min-height: clamp(430px, calc(100svh - 188px), 640px);
+  height: 100%;
+  overflow: visible;
+  background:
+    linear-gradient(180deg, rgba(255, 252, 236, 0.08), rgba(31, 79, 29, 0.1)),
+    url("assets/buli-meadow-before.png") center / cover no-repeat;
+}
+
+.notebook-overview-page .notebook-page-footer {
+  align-self: end;
+  margin-top: 0;
+  padding-top: 0;
+  transform: translateY(10px);
+}
+
+.bloom-real-flowers {
+  position: absolute;
+  inset: -18px -16px -34px;
+  z-index: 4;
+  overflow: visible;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(46px) scale(1.06);
+  transform-origin: center bottom;
+  filter: saturate(0.96) brightness(0.98);
+}
+
+.flower-meadow {
+  position: absolute;
+  display: block;
+  pointer-events: none;
+  background-repeat: no-repeat;
+}
+
+.flower-back {
+  inset: -6% -6% 8%;
+  z-index: 1;
+  background-image: url("assets/buli-flower-wall-crop.jpg");
+  background-position: center 28%;
+  background-size: cover;
+  opacity: 0.5;
+  -webkit-mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.34) 0, rgba(0, 0, 0, 0.12) 38%, transparent 70%);
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.34) 0, rgba(0, 0, 0, 0.12) 38%, transparent 70%);
+}
+
+.flower-mid {
+  right: -10%;
+  bottom: -28px;
+  left: -10%;
+  z-index: 2;
+  height: 58%;
+  background-image: url("assets/buli-real-garden.png");
+  background-position: center bottom;
+  background-size: 124% auto;
+  opacity: 0.88;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, rgba(0, 0, 0, 0.38) 18%, #000 42%, #000 100%);
+  mask-image: linear-gradient(180deg, transparent 0, rgba(0, 0, 0, 0.38) 18%, #000 42%, #000 100%);
+}
+
+.flower-front {
+  right: -24%;
+  bottom: -66px;
+  left: -24%;
+  z-index: 3;
+  height: 58%;
+  background-image: url("assets/buli-flower-wall-crop.jpg");
+  background-position: center 72%;
+  background-size: 118% auto;
+  opacity: 0.98;
+  filter:
+    saturate(1.1)
+    contrast(1.04)
+    drop-shadow(0 -18px 20px rgba(18, 72, 26, 0.18));
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, rgba(0, 0, 0, 0.28) 10%, #000 30%, #000 78%, transparent 100%);
+  mask-image: linear-gradient(180deg, transparent 0, rgba(0, 0, 0, 0.28) 10%, #000 30%, #000 78%, transparent 100%);
+}
+
+.bloom-garden.is-blooming .bloom-real-flowers {
+  animation: realFlowerOverflow 1.26s 0.1s cubic-bezier(0.15, 0.84, 0.22, 1) both;
+}
+
+.bloom-garden.is-blooming .flower-mid {
+  animation: realFlowerBreath 2.8s 1.05s ease-in-out infinite;
+}
+
+.bloom-garden.is-blooming .flower-front {
+  animation: realFlowerFrontSway 3.2s 1.16s ease-in-out infinite;
+}
+
+.garden-photo-seat::after {
+  background:
+    linear-gradient(180deg, transparent 0, rgba(21, 96, 34, 0.12) 24%, rgba(15, 79, 31, 0.58) 100%),
+    url("assets/buli-real-garden.png") center bottom / cover no-repeat;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 24%, #000 100%);
+  mask-image: linear-gradient(180deg, transparent 0, #000 24%, #000 100%);
+}
+
+@keyframes realFlowerOverflow {
+  0% {
+    opacity: 0;
+    transform: translateY(64px) scale(1.1);
+    filter: saturate(0.8) brightness(0.95) blur(1px);
+  }
+  58% {
+    opacity: 1;
+    transform: translateY(-8px) scale(1.015);
+    filter: saturate(1.18) brightness(1.08) blur(0);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: saturate(1.05) brightness(1.02);
+  }
+}
+
+@keyframes realFlowerBreath {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-5px) scale(1.012);
+  }
+}
+
+@keyframes realFlowerFrontSway {
+  0%,
+  100% {
+    transform: translateX(0) translateY(0) scale(1);
+  }
+  45% {
+    transform: translateX(-5px) translateY(-4px) scale(1.018);
+  }
+  76% {
+    transform: translateX(4px) translateY(-2px) scale(1.008);
+  }
+}
+
+@media (max-width: 520px) {
+  .notebook-overview-page.notebook-page {
+    gap: 5px;
+    padding-bottom: max(28px, env(safe-area-inset-bottom));
+  }
+
+  .notebook-overview-page .focus-strip {
+    grid-template-columns: minmax(0, 1fr) 62px;
+    min-height: 78px;
+    padding: 7px 8px;
+  }
+
+  .notebook-overview-page .focus-copy {
+    transform: translateX(-7px);
+  }
+
+  .notebook-overview-page .buli-title-image {
+    width: min(126px, 44vw);
+  }
+
+  .notebook-overview-page .focus-lamp img {
+    width: 62px;
+    height: 72px;
+  }
+
+  .notebook-overview-page .bloom-garden {
+    min-height: clamp(430px, calc(100svh - 164px), 560px);
+  }
+
+  .bloom-real-flowers {
+    inset: -12px -18px -42px;
+  }
+
+  .flower-front {
+    right: -40%;
+    bottom: -72px;
+    left: -40%;
+    height: 55%;
+    background-size: 154% auto;
+  }
+}
+
+/* Flower sea refinement: wide meadow view with same-scale overflow blossoms. */
+.notebook-overview-page .bloom-garden {
+  min-height: clamp(470px, calc(100svh - 170px), 700px);
+  border-color: rgba(121, 173, 91, 0.34);
+  background:
+    radial-gradient(ellipse at 53% 13%, rgba(255, 255, 255, 0.58), rgba(255, 247, 213, 0.2) 18%, transparent 34%),
+    linear-gradient(180deg, #8dddf4 0%, #c8f2ff 27%, #d9f4d3 42%, rgba(119, 188, 74, 0.7) 57%, rgba(37, 109, 42, 0.9) 100%),
+    url("assets/buli-meadow-before.png") center bottom / auto 100% no-repeat;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    inset 0 -120px 150px rgba(19, 86, 33, 0.16),
+    0 18px 36px rgba(64, 47, 23, 0.13);
+}
+
+.notebook-overview-page .bloom-garden::before {
+  inset: 0;
+  z-index: 1;
+  height: auto;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.34) 0%, rgba(255, 250, 222, 0.08) 24%, transparent 40%),
+    radial-gradient(ellipse at 52% 18%, rgba(255, 245, 213, 0.28), transparent 25%),
+    linear-gradient(180deg, transparent 0 46%, rgba(156, 210, 101, 0.16) 58%, rgba(26, 94, 36, 0.12) 100%);
+  filter: none;
+  opacity: 0.72;
+  pointer-events: none;
+}
+
+.notebook-overview-page .bloom-garden::after {
+  inset: -4px -24px -28px;
+  z-index: 4;
+  display: block;
+  height: auto;
+  background:
+    radial-gradient(ellipse at 2% 24%, rgba(255, 207, 228, 0.46) 0 5%, transparent 14%),
+    radial-gradient(ellipse at 97% 23%, rgba(255, 221, 117, 0.42) 0 5%, transparent 14%),
+    radial-gradient(ellipse at 4% 72%, rgba(236, 214, 255, 0.4) 0 7%, transparent 18%),
+    radial-gradient(ellipse at 96% 74%, rgba(255, 195, 222, 0.42) 0 7%, transparent 18%),
+    radial-gradient(ellipse at 52% 88%, rgba(255, 255, 255, 0.42) 0 8%, transparent 24%),
+    radial-gradient(circle at 12% 56%, rgba(255, 247, 211, 0.66) 0 1px, transparent 3px),
+    radial-gradient(circle at 24% 48%, rgba(255, 198, 222, 0.48) 0 2px, transparent 5px),
+    radial-gradient(circle at 40% 58%, rgba(255, 235, 110, 0.52) 0 2px, transparent 5px),
+    radial-gradient(circle at 58% 51%, rgba(255, 255, 255, 0.6) 0 1px, transparent 4px),
+    radial-gradient(circle at 73% 59%, rgba(238, 202, 255, 0.48) 0 2px, transparent 5px),
+    radial-gradient(circle at 88% 47%, rgba(255, 237, 132, 0.5) 0 2px, transparent 5px);
+  mix-blend-mode: screen;
+  opacity: 0.54;
+  pointer-events: none;
+  -webkit-mask-image:
+    linear-gradient(180deg, transparent 0, #000 18%, #000 88%, transparent 100%),
+    linear-gradient(90deg, #000 0 11%, rgba(0, 0, 0, 0.48) 18%, transparent 32% 68%, rgba(0, 0, 0, 0.48) 82%, #000 100%);
+  mask-image:
+    linear-gradient(180deg, transparent 0, #000 18%, #000 88%, transparent 100%),
+    linear-gradient(90deg, #000 0 11%, rgba(0, 0, 0, 0.48) 18%, transparent 32% 68%, rgba(0, 0, 0, 0.48) 82%, #000 100%);
+  -webkit-mask-composite: source-over;
+  mask-composite: add;
+  animation: gardenGoldTwinkle 4.6s ease-in-out infinite;
+}
+
+.notebook-overview-page .bloom-garden.is-blooming::after {
+  opacity: 0.62;
+}
+
+.notebook-overview-page .bloom-field {
+  inset: 0;
+  top: 0;
+  z-index: 2;
+  display: block;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 245, 221, 0.02) 28%, rgba(26, 94, 36, 0.08) 100%),
+    radial-gradient(ellipse at 50% 43%, rgba(255, 207, 221, 0.16), transparent 31%),
+    url("assets/buli-real-garden.png") center bottom / auto 116% no-repeat;
+  mix-blend-mode: normal;
+  opacity: 0;
+  transform: translateY(24px) scale(1.02);
+  transform-origin: center bottom;
+  filter: saturate(1.05) brightness(1.02);
+}
+
+.notebook-overview-page .bloom-field::before {
+  content: "";
+  position: absolute;
+  inset: 13% -24px 4%;
+  z-index: 1;
+  display: block;
+  background:
+    radial-gradient(ellipse at 18% 23%, rgba(255, 248, 221, 0.44) 0 8%, transparent 21%),
+    radial-gradient(ellipse at 47% 29%, rgba(255, 205, 227, 0.34) 0 7%, transparent 21%),
+    radial-gradient(ellipse at 76% 22%, rgba(255, 230, 118, 0.36) 0 7%, transparent 20%),
+    radial-gradient(circle at 7% 56%, rgba(255, 255, 255, 0.66) 0 2px, transparent 4px),
+    radial-gradient(circle at 16% 46%, rgba(255, 205, 226, 0.56) 0 2px, transparent 5px),
+    radial-gradient(circle at 25% 62%, rgba(255, 232, 89, 0.58) 0 2px, transparent 5px),
+    radial-gradient(circle at 36% 50%, rgba(255, 255, 255, 0.56) 0 2px, transparent 4px),
+    radial-gradient(circle at 48% 64%, rgba(255, 196, 224, 0.5) 0 2px, transparent 5px),
+    radial-gradient(circle at 61% 54%, rgba(221, 209, 255, 0.5) 0 2px, transparent 5px),
+    radial-gradient(circle at 72% 66%, rgba(255, 244, 162, 0.54) 0 2px, transparent 5px),
+    radial-gradient(circle at 84% 48%, rgba(255, 255, 255, 0.56) 0 2px, transparent 4px),
+    radial-gradient(circle at 93% 60%, rgba(255, 201, 225, 0.52) 0 2px, transparent 5px);
+  opacity: 0.72;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, rgba(0, 0, 0, 0.4) 8%, #000 34%, #000 82%, transparent 100%);
+  mask-image: linear-gradient(180deg, transparent 0, rgba(0, 0, 0, 0.4) 8%, #000 34%, #000 82%, transparent 100%);
+}
+
+.notebook-overview-page .bloom-field::after {
+  content: "";
+  position: absolute;
+  right: -10%;
+  bottom: -10px;
+  left: -10%;
+  z-index: 2;
+  display: block;
+  height: 34%;
+  background: url("assets/buli-real-garden.png") center bottom / 96% auto no-repeat;
+  opacity: 0.7;
+  filter: saturate(1.05) brightness(1.02);
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, rgba(0, 0, 0, 0.52) 22%, #000 72%, transparent 100%);
+  mask-image: linear-gradient(180deg, transparent 0, rgba(0, 0, 0, 0.52) 22%, #000 72%, transparent 100%);
+}
+
+.notebook-overview-page .bloom-garden.is-blooming .bloom-field::before,
+.notebook-overview-page .bloom-garden.is-blooming .bloom-field::after {
+  display: block;
+}
+
+.notebook-overview-page .bloom-garden.is-blooming .bloom-field::before {
+  animation: distantFlowerSway 5.4s 1.1s ease-in-out infinite;
+  transform-origin: center bottom;
+}
+
+.notebook-overview-page .bloom-garden.is-blooming .bloom-field::after {
+  animation: lowFlowerSway 4.8s 1.2s ease-in-out infinite;
+  transform-origin: center bottom;
+}
+
+.bloom-real-flowers {
+  inset: -12px -42px -38px;
+  z-index: 4;
+  overflow: visible;
+  opacity: 0;
+  transform: translateY(44px) scale(1);
+  filter: saturate(1.03) brightness(1.02);
+}
+
+.bloom-real-flowers::before {
+  content: "";
+  position: absolute;
+  inset: -40% -10px 14%;
+  z-index: 4;
+  background:
+    radial-gradient(ellipse at 4% 22%, rgba(255, 244, 202, 0.54) 0 5%, transparent 14%),
+    radial-gradient(ellipse at 13% 31%, rgba(255, 192, 219, 0.46) 0 7%, transparent 18%),
+    radial-gradient(ellipse at 87% 24%, rgba(255, 221, 106, 0.48) 0 7%, transparent 18%),
+    radial-gradient(ellipse at 96% 36%, rgba(238, 211, 255, 0.42) 0 6%, transparent 16%),
+    radial-gradient(circle at 10% 56%, rgba(255, 255, 255, 0.74) 0 2px, transparent 4px),
+    radial-gradient(circle at 20% 45%, rgba(255, 205, 227, 0.68) 0 2px, transparent 5px),
+    radial-gradient(circle at 33% 63%, rgba(255, 229, 80, 0.62) 0 2px, transparent 5px),
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.64) 0 2px, transparent 4px),
+    radial-gradient(circle at 65% 66%, rgba(236, 213, 255, 0.58) 0 2px, transparent 5px),
+    radial-gradient(circle at 79% 48%, rgba(255, 231, 104, 0.58) 0 2px, transparent 5px),
+    radial-gradient(circle at 91% 58%, rgba(255, 208, 229, 0.62) 0 2px, transparent 5px);
+  mix-blend-mode: screen;
+  opacity: 0.58;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, rgba(0, 0, 0, 0.44) 16%, #000 46%, rgba(0, 0, 0, 0.52) 76%, transparent 100%);
+  mask-image: linear-gradient(180deg, transparent 0, rgba(0, 0, 0, 0.44) 16%, #000 46%, rgba(0, 0, 0, 0.52) 76%, transparent 100%);
+}
+
+.bloom-real-flowers::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: url("assets/buli-flower-edge-overflow.png") center bottom / 100% 100% no-repeat;
+  opacity: 0.9;
+  filter: saturate(1.08) brightness(1.04);
+  pointer-events: none;
+}
+
+.flower-back {
+  display: none;
+  inset: -28% -24px 36%;
+  z-index: 1;
+  background-image: url("assets/buli-real-garden.png");
+  background-position: center bottom;
+  background-size: auto 106%;
+  opacity: 0.34;
+  filter: blur(0.8px) saturate(1.12) brightness(1.06);
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, rgba(0, 0, 0, 0.2) 22%, rgba(0, 0, 0, 0.52) 54%, transparent 100%);
+  mask-image: linear-gradient(180deg, transparent 0, rgba(0, 0, 0, 0.2) 22%, rgba(0, 0, 0, 0.52) 54%, transparent 100%);
+}
+
+.flower-mid {
+  display: none;
+  right: -32px;
+  bottom: -12px;
+  left: -32px;
+  z-index: 2;
+  height: 66%;
+  background-image: url("assets/buli-real-garden.png");
+  background-position: center bottom;
+  background-size: auto 105%;
+  opacity: 0.42;
+  filter: blur(0.45px) saturate(1.08) brightness(1.03);
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, rgba(0, 0, 0, 0.18) 24%, rgba(0, 0, 0, 0.52) 54%, rgba(0, 0, 0, 0.36) 76%, transparent 100%);
+  mask-image: linear-gradient(180deg, transparent 0, rgba(0, 0, 0, 0.18) 24%, rgba(0, 0, 0, 0.52) 54%, rgba(0, 0, 0, 0.36) 76%, transparent 100%);
+}
+
+.flower-front {
+  display: none;
+  right: -28px;
+  bottom: -28px;
+  left: -28px;
+  z-index: 3;
+  height: 32%;
+  background-image: url("assets/buli-real-garden.png");
+  background-position: center bottom;
+  background-size: 112% auto;
+  opacity: 0.76;
+  filter:
+    blur(0.25px)
+    saturate(1.08)
+    brightness(1.04)
+    drop-shadow(0 -12px 18px rgba(20, 79, 30, 0.12));
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, rgba(0, 0, 0, 0.32) 16%, #000 58%, transparent 100%);
+  mask-image: linear-gradient(180deg, transparent 0, rgba(0, 0, 0, 0.32) 16%, #000 58%, transparent 100%);
+}
+
+.garden-photo-seat::after {
+  content: none;
+  display: none;
+  background: none;
+}
+
+.bloom-garden.is-blooming .flower-back {
+  animation: rearFlowerSway 5.8s 1.08s ease-in-out infinite;
+}
+
+.bloom-garden.is-blooming .bloom-real-flowers::after {
+  animation: sideFlowerSway 6.4s 1.2s ease-in-out infinite;
+  transform-origin: center bottom;
+}
+
+.bloom-garden.is-blooming .bloom-real-flowers::before {
+  animation: bridgeFlowerSway 5.2s 1.16s ease-in-out infinite;
+  transform-origin: center bottom;
+}
+
+@keyframes distantFlowerSway {
+  0%,
+  100% {
+    transform: translateX(0) skewX(0deg);
+  }
+  45% {
+    transform: translateX(-3px) skewX(-0.35deg);
+  }
+  72% {
+    transform: translateX(2px) skewX(0.22deg);
+  }
+}
+
+@keyframes lowFlowerSway {
+  0%,
+  100% {
+    transform: translateX(0) translateY(0) scale(1);
+  }
+  50% {
+    transform: translateX(4px) translateY(-2px) scale(1.006);
+  }
+}
+
+@keyframes rearFlowerSway {
+  0%,
+  100% {
+    transform: translateX(0) translateY(0) scale(1);
+  }
+  50% {
+    transform: translateX(-4px) translateY(-2px) scale(1.01);
+  }
+}
+
+@keyframes bridgeFlowerSway {
+  0%,
+  100% {
+    transform: translateX(0) translateY(0);
+  }
+  50% {
+    transform: translateX(-3px) translateY(-1px);
+  }
+}
+
+@keyframes sideFlowerSway {
+  0%,
+  100% {
+    transform: translateX(0) rotate(0deg);
+  }
+  48% {
+    transform: translateX(5px) rotate(0.2deg);
+  }
+  76% {
+    transform: translateX(-3px) rotate(-0.12deg);
+  }
+}
+
+@media (max-width: 520px) {
+  .notebook-overview-page .bloom-garden {
+    min-height: clamp(470px, calc(100svh - 150px), 610px);
+    background-size: auto 100%, auto, auto 100%;
+  }
+
+  .notebook-overview-page .bloom-field {
+    background-size: auto, auto, auto 118%;
+  }
+
+  .notebook-overview-page .bloom-field::after {
+    right: -14%;
+    left: -14%;
+    height: 30%;
+    background-size: 116% auto;
+  }
+
+  .bloom-real-flowers {
+    inset: 49% -12% -34px;
+  }
+
+  .bloom-real-flowers::after {
+    inset: -118% -10% 0;
+    background-size: 108% auto, 108% auto;
+    opacity: 0.42;
+  }
+
+  .flower-back {
+    inset: -16% 2% 49%;
+    background-size: 112% auto;
+  }
+
+  .flower-mid {
+    right: -6%;
+    bottom: -12px;
+    left: -6%;
+    height: 42%;
+    background-size: 106% auto;
+  }
+
+  .flower-front {
+    right: -7%;
+    bottom: -24px;
+    left: -7%;
+    height: 21%;
+    background-size: 98% auto;
+  }
+}
+
+/* Unified compact page footer controls. */
+.notebook-page,
+.journey-cover.notebook-page,
+.note-toc.note-toc-feature.notebook-page,
+.flyleaf-page.notebook-page,
+.notebook-overview-page.notebook-page,
+.offering-lamp-page.notebook-page,
+.editor-card.notebook-page,
+.back-cover.notebook-page {
+  padding-bottom: max(44px, env(safe-area-inset-bottom));
+}
+
+.notebook-page-footer,
+.event-pages .notebook-page-footer,
+.color-pages .notebook-page-footer,
+.journey-cover .notebook-page-footer,
+.back-cover .notebook-page-footer,
+.offering-lamp-page .notebook-page-footer,
+.notebook-overview-page .notebook-page-footer {
+  position: absolute;
+  right: auto;
+  bottom: max(5px, env(safe-area-inset-bottom));
+  left: 50%;
+  z-index: 80;
+  display: grid;
+  grid-template-columns: repeat(4, 30px);
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  width: max-content;
+  max-width: calc(100% - 22px);
+  margin: 0;
+  padding: 3px 6px;
+  border: 1px solid rgba(216, 154, 50, 0.18);
+  border-radius: 999px;
+  background: rgba(255, 253, 247, 0.56);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.46),
+    0 8px 18px rgba(64, 47, 23, 0.12);
+  transform: translateX(-50%);
+  backdrop-filter: blur(10px);
+  pointer-events: none;
+}
+
+.notebook-page-button,
+.notebook-page-status,
+.event-pages .notebook-page-button,
+.color-pages .notebook-page-button,
+.journey-cover .notebook-page-footer .notebook-page-button.toc,
+.journey-cover .notebook-page-footer .notebook-page-button.next,
+.back-cover .notebook-page-footer .notebook-page-button.toc,
+.back-cover .notebook-page-footer .notebook-page-button.prev,
+.offering-lamp-page .notebook-page-button {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  min-width: 0;
+  padding: 0;
+  border: 1px solid rgba(216, 154, 50, 0.24);
+  border-radius: 999px;
+  background:
+    linear-gradient(145deg, rgba(255, 237, 165, 0.24), transparent 44%),
+    rgba(255, 253, 247, 0.86);
+  color: #7a4c18;
+  font-size: 20px;
+  font-weight: 950;
+  line-height: 1;
+  box-shadow: none;
+  pointer-events: auto;
+}
+
+.notebook-page-button.prev,
+.notebook-page:not(.journey-cover):not(.back-cover) .notebook-page-button.prev,
+.back-cover .notebook-page-footer .notebook-page-button.prev {
+  grid-column: 1;
+}
+
+.notebook-page-button.toc,
+.event-pages .notebook-page-button.toc,
+.color-pages .notebook-page-button.toc,
+.journey-cover .notebook-page-footer .notebook-page-button.toc,
+.back-cover .notebook-page-footer .notebook-page-button.toc,
+.offering-lamp-page .notebook-page-button.toc {
+  grid-column: 2;
+  color: #9d2e1b;
+  font-size: 16px;
+}
+
+.notebook-page-button.next,
+.notebook-page:not(.journey-cover):not(.back-cover) .notebook-page-button.next,
+.journey-cover .notebook-page-footer .notebook-page-button.next {
+  grid-column: 4;
+  justify-self: center;
+}
+
+.notebook-page-status,
+.event-pages .notebook-page-status,
+.color-pages .notebook-page-status,
+.journey-cover .notebook-page-footer .notebook-page-status,
+.back-cover .notebook-page-footer .notebook-page-status {
+  grid-column: 3;
+  grid-row: 1;
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  min-width: 0;
+  padding: 0 0 1px;
+  border-color: rgba(45, 86, 124, 0.26);
+  color: #27577c;
+  font-size: 11px;
+  font-weight: 950;
+  text-align: center;
+  pointer-events: none;
+}
+
+.notebook-page-status::after {
+  content: "";
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 6px;
+  height: 6px;
+  border-radius: 1px;
+  background: linear-gradient(135deg, transparent 0 48%, rgba(45, 86, 124, 0.28) 50% 100%);
+}
+
+.journey-cover .notebook-page-footer .notebook-page-button.prev,
+.journey-cover .notebook-page-footer .notebook-page-status,
+.back-cover .notebook-page-footer .notebook-page-status,
+.back-cover .notebook-page-footer .notebook-page-button.next,
+.notebook-page-footer.is-toc-page .notebook-page-button.toc {
+  display: grid;
+}
+
+.notebook-page-button:disabled,
+.notebook-page-footer.is-toc-page .notebook-page-button.toc {
+  cursor: default;
+  opacity: 0.32;
+  pointer-events: none;
+}
+
+/* Flyleaf 1 layout polish. */
+.teaching-page.notebook-page {
+  grid-template-rows: auto minmax(126px, 34vh) auto;
+  align-content: center;
+  gap: clamp(12px, 2.6vh, 20px);
+  padding: max(20px, env(safe-area-inset-top)) 20px max(48px, env(safe-area-inset-bottom));
+}
+
+.teaching-page .flyleaf-kicker {
+  justify-self: start;
+  margin-left: 2px;
+}
+
+.teaching-image-frame {
+  align-self: end;
+  width: min(88%, 368px);
+  margin: 0 auto;
+  padding: 6px;
+  transform: translateY(2px);
+}
+
+.teaching-image-frame img {
+  aspect-ratio: 500 / 304;
+  object-fit: cover;
+  object-position: center;
+}
+
+.teaching-signboard {
+  align-self: start;
+  width: min(100%, 430px);
+  min-height: clamp(164px, 28vh, 214px);
+  margin: 0 auto;
+  padding: clamp(12px, 2.1vh, 18px) 18px clamp(14px, 2.4vh, 20px);
+}
+
+.signboard-title-art {
+  width: min(96%, 350px);
+}
+
+.signboard-tibetan {
+  max-width: 92%;
+  font-size: clamp(13px, 2.3vw, 16px);
+}
+
+@media (max-width: 520px) {
+  .notebook-page-footer,
+  .event-pages .notebook-page-footer,
+  .color-pages .notebook-page-footer,
+  .journey-cover .notebook-page-footer,
+  .back-cover .notebook-page-footer,
+  .offering-lamp-page .notebook-page-footer,
+  .notebook-overview-page .notebook-page-footer {
+    grid-template-columns: repeat(4, 28px);
+    gap: 4px;
+    padding: 3px 5px;
+  }
+
+  .notebook-page-button,
+  .notebook-page-status,
+  .event-pages .notebook-page-button,
+  .color-pages .notebook-page-button,
+  .journey-cover .notebook-page-footer .notebook-page-button.toc,
+  .journey-cover .notebook-page-footer .notebook-page-button.next,
+  .back-cover .notebook-page-footer .notebook-page-button.toc,
+  .back-cover .notebook-page-footer .notebook-page-button.prev,
+  .offering-lamp-page .notebook-page-button {
+    width: 28px;
+    height: 28px;
+    font-size: 18px;
+  }
+
+  .notebook-page-button.toc,
+  .event-pages .notebook-page-button.toc,
+  .color-pages .notebook-page-button.toc,
+  .journey-cover .notebook-page-footer .notebook-page-button.toc,
+  .back-cover .notebook-page-footer .notebook-page-button.toc,
+  .offering-lamp-page .notebook-page-button.toc {
+    font-size: 15px;
+  }
+
+  .notebook-page-status,
+  .event-pages .notebook-page-status,
+  .color-pages .notebook-page-status,
+  .journey-cover .notebook-page-footer .notebook-page-status,
+  .back-cover .notebook-page-footer .notebook-page-status {
+    width: 28px;
+    height: 28px;
+    font-size: 10px;
+  }
+
+  .teaching-page.notebook-page {
+    grid-template-rows: auto minmax(104px, 28vh) auto;
+    gap: 11px;
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  .teaching-image-frame {
+    width: min(92%, 330px);
+  }
+
+  .teaching-signboard {
+    min-height: clamp(152px, 26vh, 190px);
+    padding-right: 14px;
+    padding-left: 14px;
+  }
+
+  .signboard-title-art {
+    width: min(98%, 312px);
+  }
+}
+
+/* Extra-compact footer and elongated offering layout. */
+.notebook-page,
+.journey-cover.notebook-page,
+.note-toc.note-toc-feature.notebook-page,
+.flyleaf-page.notebook-page,
+.notebook-overview-page.notebook-page,
+.offering-lamp-page.notebook-page,
+.editor-card.notebook-page,
+.back-cover.notebook-page {
+  padding-bottom: max(32px, env(safe-area-inset-bottom));
+}
+
+.notebook-page-footer,
+.event-pages .notebook-page-footer,
+.color-pages .notebook-page-footer,
+.journey-cover .notebook-page-footer,
+.back-cover .notebook-page-footer,
+.offering-lamp-page .notebook-page-footer,
+.notebook-overview-page .notebook-page-footer {
+  bottom: max(2px, env(safe-area-inset-bottom));
+  grid-template-columns: repeat(4, 22px);
+  gap: 3px;
+  padding: 2px 4px;
+  border-color: rgba(216, 154, 50, 0.12);
+  background: rgba(255, 253, 247, 0.42);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.38),
+    0 5px 12px rgba(64, 47, 23, 0.08);
+}
+
+.notebook-page-button,
+.notebook-page-status,
+.event-pages .notebook-page-button,
+.color-pages .notebook-page-button,
+.journey-cover .notebook-page-footer .notebook-page-button.toc,
+.journey-cover .notebook-page-footer .notebook-page-button.next,
+.back-cover .notebook-page-footer .notebook-page-button.toc,
+.back-cover .notebook-page-footer .notebook-page-button.prev,
+.offering-lamp-page .notebook-page-button {
+  width: 22px;
+  height: 22px;
+  border-color: rgba(216, 154, 50, 0.18);
+  font-size: 15px;
+  background: rgba(255, 253, 247, 0.72);
+}
+
+.notebook-page-button.toc,
+.event-pages .notebook-page-button.toc,
+.color-pages .notebook-page-button.toc,
+.journey-cover .notebook-page-footer .notebook-page-button.toc,
+.back-cover .notebook-page-footer .notebook-page-button.toc,
+.offering-lamp-page .notebook-page-button.toc {
+  font-size: 12px;
+}
+
+.notebook-page-status,
+.event-pages .notebook-page-status,
+.color-pages .notebook-page-status,
+.journey-cover .notebook-page-footer .notebook-page-status,
+.back-cover .notebook-page-footer .notebook-page-status {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  font-size: 9px;
+  background: rgba(255, 253, 247, 0.66);
+}
+
+.notebook-page-status::after {
+  top: 4px;
+  right: 4px;
+  width: 4px;
+  height: 4px;
+}
+
+.offering-lamp-page.notebook-page {
+  gap: 8px;
+  padding-bottom: max(34px, env(safe-area-inset-bottom));
+}
+
+.offering-lamp-scene {
+  min-height: clamp(1020px, 156svh, 1320px);
+  padding: 14px 12px 18px;
+  background:
+    radial-gradient(ellipse at 50% 42%, rgba(255, 207, 87, 0.18), transparent 32%),
+    linear-gradient(180deg, #2a0906 0%, #48110a 46%, #160403 100%);
+}
+
+.offering-buddha-wall {
+  top: 14px;
+  right: 12px;
+  left: 12px;
+  z-index: 6;
+  height: clamp(360px, 39%, 500px);
+  grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
+}
+
+.offering-lamp-stage {
+  top: clamp(470px, 48%, 610px);
+  right: 5%;
+  bottom: auto;
+  left: 5%;
+  z-index: 5;
+  height: clamp(270px, 30%, 360px);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(43, 9, 5, 0.02) 0%, rgba(31, 7, 4, 0.12) 38%, rgba(12, 3, 2, 0.16) 100%),
+    url("assets/offering-lamps-symmetric-real.png") center bottom / contain no-repeat;
+  box-shadow: inset 0 -38px 68px rgba(12, 3, 2, 0.34);
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 8%, #000 100%);
+  mask-image: linear-gradient(180deg, transparent 0, #000 8%, #000 100%);
+}
+
+.offering-lamp {
+  top: clamp(470px, 48%, 610px);
+  right: 5%;
+  bottom: auto;
+  left: 5%;
+  z-index: 9;
+  width: auto;
+  height: clamp(270px, 30%, 360px);
+}
+
+.offering-lamp-scene::before {
+  z-index: 4;
+  background:
+    linear-gradient(180deg, transparent 0 40%, rgba(23, 5, 3, 0.18) 66%, rgba(18, 4, 3, 0.58) 100%);
+}
+
+.offering-lamp-scene::after {
+  top: clamp(470px, 48%, 610px);
+  right: 5%;
+  bottom: auto;
+  left: 5%;
+  z-index: 8;
+  height: clamp(270px, 30%, 360px);
+  border-radius: 8px;
+}
+
+.offering-lamp-panel {
+  right: 12px;
+  bottom: 14px;
+  left: 12px;
+  z-index: 12;
+  max-width: 420px;
+  padding: 9px 10px;
+}
+
+.offering-buddha-controls {
+  gap: 6px;
+}
+
+.offering-buddha-upload,
+.offering-buddha-reset,
+.offering-lamp-action {
+  min-height: 32px;
+  padding: 7px 10px;
+  font-size: 12px;
+}
+
+.offering-flame {
+  width: calc(9px * var(--s));
+  height: calc(24px * var(--s));
+}
+
+.flame-one { --x: 50%; --y: 8%; --s: 1.08; --d: 0.02s; }
+.flame-two { --x: 38%; --y: 13%; --s: 0.95; --d: 0.05s; }
+.flame-three { --x: 62%; --y: 13%; --s: 0.95; --d: 0.05s; }
+.flame-four { --x: 28%; --y: 19%; --s: 0.82; --d: 0.08s; }
+.flame-five { --x: 50%; --y: 20%; --s: 0.84; --d: 0.1s; }
+.flame-six { --x: 72%; --y: 19%; --s: 0.82; --d: 0.08s; }
+.flame-seven { --x: 20%; --y: 27%; --s: 0.74; --d: 0.14s; }
+.flame-eight { --x: 36%; --y: 28%; --s: 0.76; --d: 0.16s; }
+.flame-nine { --x: 50%; --y: 29%; --s: 0.78; --d: 0.18s; }
+.flame-ten { --x: 64%; --y: 28%; --s: 0.76; --d: 0.16s; }
+.flame-eleven { --x: 80%; --y: 27%; --s: 0.74; --d: 0.14s; }
+.flame-twelve { --x: 14%; --y: 38%; --s: 0.66; --d: 0.22s; }
+.flame-thirteen { --x: 27%; --y: 39%; --s: 0.68; --d: 0.24s; }
+.flame-fourteen { --x: 39%; --y: 40%; --s: 0.68; --d: 0.26s; }
+.flame-fifteen { --x: 50%; --y: 41%; --s: 0.7; --d: 0.28s; }
+.flame-sixteen { --x: 61%; --y: 40%; --s: 0.68; --d: 0.26s; }
+.flame-seventeen { --x: 73%; --y: 39%; --s: 0.68; --d: 0.24s; }
+.flame-eighteen { --x: 86%; --y: 38%; --s: 0.66; --d: 0.22s; }
+.flame-nineteen { --x: 18%; --y: 51%; --s: 0.58; --d: 0.32s; }
+.flame-twenty { --x: 31%; --y: 52%; --s: 0.58; --d: 0.34s; }
+.flame-twenty-one { --x: 44%; --y: 53%; --s: 0.6; --d: 0.36s; }
+.flame-twenty-two { --x: 56%; --y: 53%; --s: 0.6; --d: 0.36s; }
+.flame-twenty-three { --x: 69%; --y: 52%; --s: 0.58; --d: 0.34s; }
+.flame-twenty-four { --x: 82%; --y: 51%; --s: 0.58; --d: 0.32s; }
+.flame-twenty-five { --x: 25%; --y: 64%; --s: 0.5; --d: 0.42s; }
+.flame-twenty-six { --x: 38%; --y: 65%; --s: 0.5; --d: 0.44s; }
+.flame-twenty-seven { --x: 50%; --y: 66%; --s: 0.52; --d: 0.46s; }
+.flame-twenty-eight { --x: 62%; --y: 65%; --s: 0.5; --d: 0.44s; }
+.flame-twenty-nine { --x: 75%; --y: 64%; --s: 0.5; --d: 0.42s; }
+.flame-thirty { --x: 50%; --y: 76%; --s: 0.46; --d: 0.52s; }
+
+@media (max-width: 520px) {
+  .notebook-page,
+  .journey-cover.notebook-page,
+  .note-toc.note-toc-feature.notebook-page,
+  .flyleaf-page.notebook-page,
+  .notebook-overview-page.notebook-page,
+  .offering-lamp-page.notebook-page,
+  .editor-card.notebook-page,
+  .back-cover.notebook-page {
+    padding-bottom: max(30px, env(safe-area-inset-bottom));
+  }
+
+  .notebook-page-footer,
+  .event-pages .notebook-page-footer,
+  .color-pages .notebook-page-footer,
+  .journey-cover .notebook-page-footer,
+  .back-cover .notebook-page-footer,
+  .offering-lamp-page .notebook-page-footer,
+  .notebook-overview-page .notebook-page-footer {
+    grid-template-columns: repeat(4, 20px);
+    gap: 2px;
+    padding: 2px 3px;
+  }
+
+  .notebook-page-button,
+  .notebook-page-status,
+  .event-pages .notebook-page-button,
+  .color-pages .notebook-page-button,
+  .journey-cover .notebook-page-footer .notebook-page-button.toc,
+  .journey-cover .notebook-page-footer .notebook-page-button.next,
+  .back-cover .notebook-page-footer .notebook-page-button.toc,
+  .back-cover .notebook-page-footer .notebook-page-button.prev,
+  .offering-lamp-page .notebook-page-button {
+    width: 20px;
+    height: 20px;
+    font-size: 14px;
+  }
+
+  .notebook-page-status,
+  .event-pages .notebook-page-status,
+  .color-pages .notebook-page-status,
+  .journey-cover .notebook-page-footer .notebook-page-status,
+  .back-cover .notebook-page-footer .notebook-page-status {
+    width: 20px;
+    height: 20px;
+    font-size: 8px;
+  }
+
+  .offering-lamp-scene {
+    min-height: clamp(980px, 156svh, 1200px);
+  }
+
+  .offering-buddha-wall {
+    height: clamp(340px, 38%, 460px);
+    grid-template-columns: repeat(auto-fit, minmax(86px, 1fr));
+  }
+
+  .offering-lamp-stage,
+  .offering-lamp,
+  .offering-lamp-scene::after {
+    top: clamp(440px, 47%, 560px);
+    right: 4%;
+    left: 4%;
+    height: clamp(238px, 28%, 330px);
+  }
+
+  .offering-flame {
+    width: calc(7px * var(--s));
+    height: calc(19px * var(--s));
+  }
+}
+
+.ppt-project-editor {
+  grid-template-columns: 1fr 1fr;
+}
+
+.ppt-project-editor button {
+  grid-column: 1 / -1;
+  min-width: 92px;
+}
+
+.ppt-note-editor select {
+  grid-column: 1 / -1;
+}
+
+.ppt-note-editor select[multiple] {
+  height: auto;
+  min-height: 92px;
+  padding: 8px;
+}
+
+.ppt-note-editor select[multiple] option {
+  padding: 6px 8px;
+  border-radius: 6px;
+}
+
+.ppt-note-editor textarea {
+  grid-column: 1 / -1;
+  min-height: 118px;
+  padding: 12px;
+  resize: vertical;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.9);
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1.7;
+}
+
+.ppt-attachment-button {
+  position: relative;
+  display: grid;
+  grid-column: 1 / -1;
+  place-items: center;
+  min-height: 40px;
+  overflow: hidden;
+  border: 1px dashed rgba(198, 40, 42, 0.28);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--red);
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.ppt-attachment-button input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.ppt-attachment-link {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  max-width: 100%;
+  min-height: 32px;
+  padding: 0 12px;
+  overflow-wrap: anywhere;
+  border: 1px solid rgba(49, 90, 140, 0.18);
+  border-radius: 999px;
+  background: rgba(49, 90, 140, 0.08);
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.ppt-attachment-link:hover {
+  border-color: rgba(198, 40, 42, 0.25);
+  color: var(--red);
+}
+
+.ppt-note-editor button {
+  grid-column: 1 / -1;
+}
+
 .milestone-note {
   overflow: hidden;
   border: 1px solid rgba(234, 223, 208, 0.94);
@@ -1716,19 +5730,30 @@ svg {
   background: var(--paper-soft);
 }
 
+.teaching-quote-form input,
+.teaching-quote-form textarea {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.86);
+}
+
+.teaching-quote-form input {
+  height: 40px;
+  padding: 0 12px;
+  font-size: 13px;
+  font-weight: 850;
+}
+
 .teaching-quote-form textarea {
   min-height: 92px;
   padding: 12px;
   resize: vertical;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  color: var(--ink);
   font-family: var(--hand-font);
   font-size: 20px;
   font-weight: 500;
   font-style: normal;
   line-height: 1.65;
-  background: rgba(255, 255, 255, 0.86);
 }
 
 .teaching-quote-form button,
@@ -1795,6 +5820,24 @@ svg {
   text-shadow: 0.22px 0 rgba(74, 64, 56, 0.32);
 }
 
+.teaching-teacher-label {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  min-height: 26px;
+  align-items: center;
+  margin-bottom: 8px;
+  padding: 0 10px;
+  overflow-wrap: anywhere;
+  border-radius: 999px;
+  background: rgba(49, 90, 140, 0.1);
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 950;
+}
+
 .teaching-quote:nth-child(3n + 1) {
   border-left: 7px solid var(--red);
 }
@@ -1807,15 +5850,27 @@ svg {
   border-left: 7px solid var(--gold);
 }
 
-.teaching-delete-button {
+.teaching-quote-actions {
   position: absolute;
   z-index: 2;
   right: 12px;
   bottom: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.teaching-delete-button {
   min-height: 28px;
   padding: 0 12px;
   background: rgba(198, 40, 42, 0.1);
   color: var(--red);
+}
+
+.teaching-delete-button.secondary {
+  background: rgba(49, 90, 140, 0.1);
+  color: var(--blue);
 }
 
 .teaching-manager {
@@ -2367,6 +6422,19 @@ select {
   scroll-snap-align: start;
 }
 
+.page-theme-select {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  min-height: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+
 .page-theme-option.active {
   border-color: var(--red);
 }
@@ -2394,6 +6462,71 @@ select {
   bottom: 10px;
   font-size: 13px;
   font-weight: 950;
+}
+
+.page-theme-delete {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  min-width: 30px;
+  height: 26px;
+  padding: 0 8px;
+  border: 1px solid rgba(255, 255, 255, 0.48);
+  border-radius: 999px;
+  background: rgba(198, 40, 42, 0.9);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 950;
+  box-shadow: 0 8px 16px rgba(45, 12, 8, 0.22);
+}
+
+.page-theme-option.page-theme-plain {
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.64), transparent 32%),
+    repeating-linear-gradient(92deg, rgba(104, 82, 54, 0.06) 0 1px, transparent 1px 18px),
+    linear-gradient(180deg, #fbf5e8, #efe1c7);
+  color: var(--blue);
+}
+
+.page-theme-option.page-theme-plain::after,
+.page-theme-option.page-theme-add::after {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 249, 231, 0.52));
+}
+
+.page-theme-option.page-theme-add {
+  display: grid;
+  place-items: center;
+  border-color: rgba(198, 40, 42, 0.28);
+  border-style: dashed;
+  background:
+    radial-gradient(circle at 50% 36%, rgba(255, 222, 137, 0.34), transparent 32%),
+    rgba(255, 253, 247, 0.96);
+  color: var(--red);
+  cursor: pointer;
+}
+
+.page-theme-option.page-theme-add input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.page-theme-option.page-theme-add span {
+  position: relative;
+  inset: auto;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.76);
+  box-shadow: 0 8px 16px rgba(64, 47, 23, 0.08);
 }
 
 .memo-calendar-picker {
@@ -2442,11 +6575,11 @@ select {
 
 .memo-calendar-picker::after {
   bottom: 10px;
-  background-image: url("assets/page-night-lights.jpg");
-  background-position: center 60%;
-  background-size: 150%;
-  opacity: 0.66;
-  filter: saturate(0.96) contrast(0.94) brightness(1.08);
+  background-image: url("assets/calendar-dharma-wheel.jpg");
+  background-position: center 46%;
+  background-size: 152%;
+  opacity: 0.72;
+  filter: saturate(1.08) contrast(0.98) brightness(1.02);
 }
 
 .memo-calendar-decor {
@@ -2485,10 +6618,10 @@ select {
 }
 
 .memo-calendar-decor .night {
-  background-image: url("assets/page-night-lights.jpg");
-  background-position: center 58%;
-  background-size: 142%;
-  filter: saturate(0.98) contrast(0.94) brightness(1.06);
+  background-image: url("assets/calendar-dharma-wheel.jpg");
+  background-position: center 46%;
+  background-size: 138%;
+  filter: saturate(1.08) contrast(0.98) brightness(1.02);
 }
 
 .memo-calendar-picker strong {
@@ -2615,6 +6748,24 @@ select {
 .editor-form > * {
   position: relative;
   z-index: 1;
+}
+
+.editor-form.page-wallpaper {
+  background:
+    radial-gradient(circle at 16% 18%, rgba(122, 98, 62, 0.055) 0 1px, transparent 2px),
+    repeating-linear-gradient(92deg, rgba(104, 82, 54, 0.038) 0 1px, transparent 1px 18px),
+    linear-gradient(180deg, rgba(255, 251, 235, 0.18), rgba(246, 237, 214, 0.36) 48%, rgba(235, 222, 194, 0.5)),
+    var(--page-wallpaper-image) center top / cover no-repeat,
+    linear-gradient(180deg, #f8f1df, #f3e8ce 48%, #eadbbd);
+}
+
+.editor-form.page-plain {
+  background:
+    radial-gradient(circle at 16% 18%, rgba(122, 98, 62, 0.07) 0 1px, transparent 2px),
+    radial-gradient(circle at 80% 64%, rgba(255, 255, 255, 0.52) 0 2px, transparent 4px),
+    repeating-linear-gradient(92deg, rgba(104, 82, 54, 0.045) 0 1px, transparent 1px 18px),
+    repeating-linear-gradient(0deg, rgba(92, 72, 46, 0.035) 0 1px, transparent 1px 34px),
+    linear-gradient(180deg, #f8f1df, #f3e8ce 48%, #eadbbd);
 }
 
 .editor-form.page-sky {
@@ -2766,8 +6917,8 @@ textarea::placeholder {
   z-index: 1;
 }
 
-.memo-calendar:not(.tibetan)::before,
-.memo-calendar:not(.tibetan)::after {
+.memo-calendar::before,
+.memo-calendar::after {
   content: "";
   position: absolute;
   z-index: 0;
@@ -2783,20 +6934,20 @@ textarea::placeholder {
   mask-image: radial-gradient(ellipse at center, #000 20%, rgba(0, 0, 0, 0.42) 58%, transparent 100%);
 }
 
-.memo-calendar:not(.tibetan)::before {
+.memo-calendar::before {
   left: -24px;
   background-image: url("assets/page-sky-rainbow.jpg");
   background-position: center 22%;
   background-size: 190%;
 }
 
-.memo-calendar:not(.tibetan)::after {
+.memo-calendar::after {
   right: -24px;
-  background-image: url("assets/page-night-lights.jpg");
-  background-position: center 58%;
-  background-size: 185%;
-  opacity: 0.16;
-  filter: saturate(0.76) contrast(0.86) brightness(1.12) sepia(0.08) blur(0.35px);
+  background-image: url("assets/calendar-dharma-wheel.jpg");
+  background-position: center 46%;
+  background-size: 165%;
+  opacity: 0.18;
+  filter: saturate(1.02) contrast(0.94) brightness(1.04) sepia(0.02) blur(0.35px);
 }
 
 .memo-calendar-head {
@@ -3267,5 +7418,2125 @@ textarea:focus,
   .handwriting-line {
     transform: none !important;
     width: 100%;
+  }
+}
+
+/* Offering page scroll access. */
+.offering-lamp-page.notebook-page {
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  align-content: start;
+  padding-bottom: max(36px, env(safe-area-inset-bottom));
+}
+
+.offering-lamp-scene {
+  min-height: clamp(860px, 122svh, 1080px);
+  padding-bottom: clamp(126px, 17svh, 168px);
+  overflow: hidden;
+  touch-action: pan-y;
+}
+
+.offering-lamp-panel {
+  right: 12px;
+  bottom: max(42px, env(safe-area-inset-bottom));
+  left: 12px;
+}
+
+@media (max-width: 520px) {
+  .offering-lamp-page.notebook-page {
+    padding-bottom: max(34px, env(safe-area-inset-bottom));
+  }
+
+  .offering-lamp-scene {
+    min-height: clamp(820px, 126svh, 1020px);
+    padding-bottom: 136px;
+  }
+
+  .offering-lamp-panel {
+    bottom: max(36px, env(safe-area-inset-bottom));
+  }
+}
+
+/* Final offering composition pass. */
+.offering-lamp-page.notebook-page {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding-bottom: max(18px, env(safe-area-inset-bottom));
+  touch-action: pan-y;
+}
+
+.offering-lamp-page .notebook-page-footer {
+  position: relative !important;
+  inset: auto !important;
+  z-index: 2;
+  grid-template-columns: repeat(4, 22px);
+  gap: 3px;
+  width: max-content;
+  margin: 8px auto 0;
+  padding: 2px 4px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 253, 247, 0.56);
+  box-shadow: 0 6px 14px rgba(64, 47, 23, 0.08);
+}
+
+.offering-lamp-scene {
+  position: relative;
+  isolation: isolate;
+  min-height: clamp(930px, 132svh, 1220px);
+  padding: 14px clamp(10px, 2.6vw, 18px) clamp(144px, 17svh, 188px);
+  overflow: hidden;
+  border-color: rgba(171, 111, 43, 0.24);
+  background:
+    radial-gradient(ellipse at 50% 43%, rgba(255, 216, 116, 0.2), transparent 34%),
+    radial-gradient(ellipse at 50% 78%, rgba(255, 148, 37, 0.2), transparent 46%),
+    linear-gradient(180deg, #2b0906 0%, #46100a 44%, #170403 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 228, 148, 0.14),
+    inset 0 -180px 220px rgba(12, 3, 2, 0.7),
+    0 18px 34px rgba(64, 47, 23, 0.18);
+}
+
+.offering-buddha-wall {
+  top: 16px;
+  right: clamp(12px, 3vw, 26px);
+  left: clamp(12px, 3vw, 26px);
+  z-index: 4;
+  height: clamp(300px, 37%, 470px);
+  border-color: rgba(255, 220, 126, 0.2);
+  background: rgba(35, 9, 6, 0.2);
+  box-shadow:
+    inset 0 -58px 72px rgba(34, 7, 4, 0.34),
+    0 12px 34px rgba(16, 4, 3, 0.22);
+  -webkit-mask-image: linear-gradient(180deg, #000 0 82%, rgba(0, 0, 0, 0.58) 93%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 0 82%, rgba(0, 0, 0, 0.58) 93%, transparent 100%);
+}
+
+.offering-lamp-stage,
+.offering-lamp {
+  top: auto;
+  right: -8%;
+  bottom: clamp(132px, 16svh, 176px);
+  left: -8%;
+  height: clamp(430px, 54svh, 600px);
+  border-radius: 0;
+}
+
+.offering-lamp-stage {
+  z-index: 7;
+  background:
+    linear-gradient(180deg, rgba(42, 9, 5, 0) 0%, rgba(31, 7, 4, 0.08) 34%, rgba(13, 3, 2, 0.32) 100%),
+    url("assets/offering-lamps-symmetric-real.png") center bottom / cover no-repeat;
+  box-shadow: none;
+  opacity: 1;
+  filter: none;
+  -webkit-mask-image:
+    linear-gradient(180deg, transparent 0, rgba(0, 0, 0, 0.28) 7%, #000 19%, #000 100%);
+  mask-image:
+    linear-gradient(180deg, transparent 0, rgba(0, 0, 0, 0.28) 7%, #000 19%, #000 100%);
+}
+
+.offering-lamp-stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 50% 50%, rgba(255, 199, 71, 0.08), transparent 42%),
+    linear-gradient(90deg, rgba(22, 4, 3, 0.34), transparent 18% 82%, rgba(22, 4, 3, 0.34));
+}
+
+.offering-lamp-stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  background: url("assets/offering-lamps-symmetric-lit.png") center bottom / cover no-repeat;
+  mix-blend-mode: normal;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.42s ease;
+}
+
+.offering-lamp-scene.is-lit .offering-lamp-stage::after {
+  opacity: 1;
+}
+
+.offering-lamp {
+  z-index: 13;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  filter: none;
+  cursor: pointer;
+  touch-action: pan-y manipulation;
+}
+
+.offering-lamp > span,
+.offering-lamp::before {
+  display: none !important;
+}
+
+.offering-lamp:focus-visible {
+  outline: 2px solid rgba(255, 230, 142, 0.84);
+  outline-offset: -16px;
+}
+
+.offering-lamp-scene::before {
+  z-index: 6;
+  background:
+    linear-gradient(180deg, transparent 0 36%, rgba(43, 10, 6, 0.12) 50%, rgba(18, 4, 3, 0.68) 100%);
+}
+
+.offering-lamp-scene::after {
+  top: auto;
+  right: -8%;
+  bottom: clamp(132px, 16svh, 176px);
+  left: -8%;
+  z-index: 10;
+  height: clamp(430px, 54svh, 600px);
+  border-radius: 0;
+  background:
+    radial-gradient(ellipse at 50% 53%, rgba(255, 235, 151, 0.28), transparent 34%),
+    linear-gradient(180deg, transparent 0 52%, rgba(255, 145, 30, 0.18) 100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.offering-lamp-scene.is-lit {
+  background:
+    radial-gradient(ellipse at 50% 43%, rgba(255, 216, 116, 0.2), transparent 34%),
+    radial-gradient(ellipse at 50% 78%, rgba(255, 148, 37, 0.2), transparent 46%),
+    linear-gradient(180deg, #2b0906 0%, #46100a 44%, #170403 100%);
+}
+
+.offering-lamp-scene.is-lit::after {
+  opacity: 1;
+}
+
+.offering-flame {
+  display: none !important;
+  z-index: 15;
+  width: calc(8px * var(--s));
+  height: calc(22px * var(--s));
+}
+
+.offering-lamp-panel {
+  right: clamp(12px, 3.4vw, 30px);
+  bottom: clamp(16px, 2.4svh, 30px);
+  left: clamp(12px, 3.4vw, 30px);
+  z-index: 25;
+  max-width: 520px;
+  margin: 0 auto;
+  border-color: rgba(255, 222, 134, 0.28);
+  background:
+    linear-gradient(135deg, rgba(255, 247, 214, 0.9), rgba(255, 232, 158, 0.72)),
+    rgba(92, 30, 13, 0.4);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    0 14px 34px rgba(17, 5, 4, 0.28);
+  backdrop-filter: blur(14px);
+}
+
+.offering-lamp-panel {
+  border-color: rgba(255, 218, 116, 0.42);
+  background:
+    linear-gradient(135deg, rgba(139, 20, 27, 0.94), rgba(96, 10, 17, 0.92)),
+    #8b141b;
+  color: #ffe9ac;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 229, 139, 0.28),
+    0 16px 36px rgba(31, 5, 6, 0.38);
+}
+
+.offering-lamp-panel strong {
+  color: #fff4cd;
+}
+
+.offering-lamp-panel span {
+  color: rgba(255, 238, 183, 0.9);
+}
+
+.offering-buddha-upload,
+.offering-buddha-reset,
+.offering-lamp-action {
+  border-color: rgba(255, 224, 130, 0.44);
+  background:
+    linear-gradient(180deg, rgba(255, 229, 145, 0.2), rgba(255, 207, 87, 0.08)),
+    rgba(102, 8, 15, 0.82);
+  color: #fff0bd;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 244, 207, 0.22),
+    0 8px 18px rgba(37, 5, 6, 0.24);
+}
+
+.offering-lamp-action {
+  background:
+    linear-gradient(180deg, rgba(255, 220, 113, 0.96), rgba(226, 159, 43, 0.94));
+  color: #641018;
+}
+
+.offering-lamp-scene.is-lit .offering-lamp-stage {
+  background:
+    linear-gradient(180deg, rgba(42, 9, 5, 0) 0%, rgba(31, 7, 4, 0.08) 34%, rgba(13, 3, 2, 0.32) 100%),
+    url("assets/offering-lamps-symmetric-lit.png") center bottom / cover no-repeat;
+}
+
+.offering-lamp-stage::after,
+.offering-lamp-scene::after {
+  display: none !important;
+}
+
+.offering-lamp,
+.offering-lamp::before,
+.offering-lamp::after {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+@media (max-width: 520px) {
+  .offering-lamp-page .notebook-page-footer {
+    grid-template-columns: repeat(4, 20px);
+    margin-top: 6px;
+  }
+
+  .offering-lamp-scene {
+    min-height: clamp(840px, 132svh, 1060px);
+    padding-bottom: 136px;
+  }
+
+  .offering-buddha-wall {
+    top: 12px;
+    height: clamp(260px, 36%, 400px);
+  }
+
+  .offering-lamp-stage,
+  .offering-lamp,
+  .offering-lamp-scene::after {
+    right: -18%;
+    bottom: 128px;
+    left: -18%;
+    height: clamp(360px, 50svh, 500px);
+  }
+
+  .offering-lamp-panel {
+    bottom: 14px;
+  }
+}
+
+/* Mobile cover pass: make the front and back feel like full notebook boards. */
+.journey-cover.notebook-page,
+.back-cover.notebook-page {
+  isolation: isolate;
+  display: block;
+  min-height: 100%;
+  padding: 0;
+  overflow: hidden;
+  background: var(--orange);
+  box-shadow:
+    inset 15px 0 24px rgba(73, 43, 12, 0.2),
+    inset -1px 0 0 rgba(255, 236, 166, 0.24);
+}
+
+.journey-cover.notebook-page::before,
+.back-cover.notebook-page::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  z-index: 1;
+  width: clamp(38px, 12vw, 72px);
+  background:
+    linear-gradient(90deg, rgba(46, 22, 5, 0.36), rgba(108, 55, 11, 0.18) 36%, rgba(255, 204, 91, 0.08) 64%, transparent),
+    linear-gradient(90deg, rgba(255, 226, 134, 0.08), transparent 36%);
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+.cover-image,
+.back-cover img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  max-height: none;
+  border-radius: 0;
+  object-fit: cover;
+  object-position: 22% center;
+  box-shadow: none;
+}
+
+.back-cover img {
+  object-position: 18% center;
+}
+
+.journey-cover .notebook-page-footer,
+.back-cover .notebook-page-footer {
+  position: absolute !important;
+  inset: auto auto max(18px, env(safe-area-inset-bottom)) auto !important;
+  z-index: 4;
+  display: grid;
+  grid-template-columns: 54px 54px;
+  gap: 10px;
+  width: auto;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  transform: none;
+  backdrop-filter: none;
+  pointer-events: none;
+}
+
+.journey-cover .notebook-page-footer {
+  right: 18px !important;
+}
+
+.back-cover .notebook-page-footer {
+  left: 18px !important;
+}
+
+.journey-cover .notebook-page-footer .notebook-page-button,
+.back-cover .notebook-page-footer .notebook-page-button {
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  border: 1px solid rgba(255, 232, 152, 0.58);
+  border-radius: 999px;
+  background:
+    linear-gradient(145deg, rgba(255, 246, 194, 0.66), rgba(255, 203, 78, 0.18)),
+    rgba(116, 35, 19, 0.86);
+  color: #ffe89a;
+  font-size: 28px;
+  font-weight: 950;
+  line-height: 1;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    0 16px 34px rgba(72, 35, 9, 0.3);
+  pointer-events: auto;
+}
+
+.journey-cover .notebook-page-footer .notebook-page-button.prev,
+.journey-cover .notebook-page-footer .notebook-page-status,
+.back-cover .notebook-page-footer .notebook-page-status,
+.back-cover .notebook-page-footer .notebook-page-button.next {
+  display: none;
+}
+
+.journey-cover .notebook-page-footer .notebook-page-button.toc {
+  grid-column: 1;
+  width: 42px;
+  height: 42px;
+  align-self: center;
+  font-size: 16px;
+  opacity: 0.86;
+}
+
+.journey-cover .notebook-page-footer .notebook-page-button.next {
+  grid-column: 2;
+}
+
+.back-cover .notebook-page-footer .notebook-page-button.prev {
+  grid-column: 1;
+}
+
+.back-cover .notebook-page-footer .notebook-page-button.toc {
+  grid-column: 2;
+  width: 42px;
+  height: 42px;
+  align-self: center;
+  font-size: 16px;
+  opacity: 0.86;
+}
+
+@media (max-width: 520px) {
+  .app-shell {
+    width: 100vw;
+    max-width: 430px;
+    height: 100dvh;
+    min-height: 100dvh;
+  }
+
+  .journey-cover.notebook-page,
+  .back-cover.notebook-page {
+    height: 100dvh;
+    max-height: 100dvh;
+    padding: 0;
+  }
+
+  .journey-cover::after,
+  .back-cover.notebook-page::after {
+    width: 86px;
+    height: 86px;
+  }
+
+  .cover-image,
+  .back-cover img {
+    object-position: 20% center;
+  }
+
+  .notebook-overview-page.notebook-page {
+    padding-right: 12px;
+    padding-left: 12px;
+    overflow: hidden;
+  }
+
+  .notebook-overview-page .focus-strip,
+  .notebook-overview-page .bloom-garden {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .notebook-overview-page .bloom-garden {
+    overflow: visible;
+    background-size: cover, cover, cover;
+    background-position: center top, center center, center bottom;
+  }
+
+  .notebook-overview-page .bloom-field {
+    background-size: cover, cover, auto 118%;
+  }
+
+  .notebook-overview-page .bloom-field::before {
+    right: -18px;
+    left: -18px;
+  }
+
+  .notebook-overview-page .bloom-field::after {
+    right: -22px;
+    bottom: 0;
+    left: -22px;
+    height: 36%;
+    background-size: 122% auto;
+    -webkit-mask-image: linear-gradient(180deg, transparent 0, rgba(0, 0, 0, 0.36) 10%, #000 40%, #000 78%, transparent 100%);
+    mask-image: linear-gradient(180deg, transparent 0, rgba(0, 0, 0, 0.36) 10%, #000 40%, #000 78%, transparent 100%);
+  }
+
+  .bloom-real-flowers {
+    inset: 38% -34px -34px;
+    overflow: visible;
+  }
+
+  .bloom-real-flowers::before {
+    inset: -44% -8px 10%;
+  }
+
+  .bloom-real-flowers::after {
+    inset: -126% -42px -4%;
+    background-size: auto, auto, 132% auto, 132% auto;
+    opacity: 0.48;
+  }
+
+  .flower-back {
+    inset: -24% -22px 45%;
+    background-size: 132% auto;
+  }
+
+  .flower-mid {
+    right: -28px;
+    bottom: 0;
+    left: -28px;
+    height: 52%;
+    background-size: 132% auto;
+  }
+
+  .flower-front {
+    right: -30px;
+    bottom: 0;
+    left: -30px;
+    height: 30%;
+    background-size: 128% auto;
+  }
+}
+
+/* Final flower-border polish: use one transparent real-flower asset to avoid visible image seams. */
+.notebook-overview-page .bloom-garden {
+  overflow: visible;
+  background:
+    radial-gradient(ellipse at 52% 12%, rgba(255, 255, 255, 0.42), rgba(255, 246, 213, 0.18) 18%, transparent 34%),
+    linear-gradient(180deg, rgba(203, 241, 251, 0.18) 0%, rgba(228, 249, 214, 0.08) 38%, rgba(37, 109, 42, 0.18) 100%),
+    url("assets/buli-real-garden.png") center bottom / 230% auto no-repeat;
+}
+
+.notebook-overview-page .bloom-field {
+  background-position: center center, center center, center calc(100% - 72px);
+  background-size: cover, cover, 260% auto;
+}
+
+.notebook-overview-page .bloom-field::after {
+  right: -26px;
+  bottom: -8px;
+  left: -26px;
+  height: 42%;
+  background:
+    radial-gradient(ellipse at 8% 26%, rgba(255, 238, 126, 0.48) 0 4%, transparent 13%),
+    radial-gradient(ellipse at 20% 18%, rgba(255, 206, 226, 0.42) 0 4%, transparent 12%),
+    radial-gradient(ellipse at 36% 31%, rgba(255, 255, 255, 0.44) 0 3%, transparent 10%),
+    radial-gradient(ellipse at 58% 22%, rgba(242, 220, 255, 0.36) 0 4%, transparent 12%),
+    radial-gradient(ellipse at 75% 30%, rgba(255, 229, 112, 0.4) 0 4%, transparent 13%),
+    radial-gradient(ellipse at 92% 18%, rgba(255, 203, 225, 0.42) 0 5%, transparent 15%);
+  opacity: 0.72;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, rgba(0, 0, 0, 0.32) 10%, #000 46%, rgba(0, 0, 0, 0.4) 82%, transparent 100%);
+  mask-image: linear-gradient(180deg, transparent 0, rgba(0, 0, 0, 0.32) 10%, #000 46%, rgba(0, 0, 0, 0.4) 82%, transparent 100%);
+}
+
+.bloom-real-flowers {
+  inset: -12px -48px -44px;
+  overflow: visible;
+}
+
+.bloom-real-flowers::after {
+  inset: 0;
+  background: url("assets/buli-flower-edge-overflow.png") center bottom / 100% 100% no-repeat;
+  opacity: 0.9;
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
+.flower-back,
+.flower-mid,
+.flower-front {
+  display: none;
+}
+
+@media (max-width: 520px) {
+  .notebook-overview-page .bloom-garden {
+    background-size: auto, auto, 290% auto;
+  }
+
+  .notebook-overview-page .bloom-field {
+    background-position: center center, center center, center calc(100% - 76px);
+    background-size: cover, cover, 330% auto;
+  }
+
+  .bloom-real-flowers {
+    inset: -10px -46px -42px;
+  }
+}
+
+/* Final mobile lock: keep notebook covers full-screen and page edges complete. */
+@media (max-width: 520px) {
+  .journey-cover.notebook-page,
+  .back-cover.notebook-page {
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+    max-height: 100dvh !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .cover-image,
+  .back-cover img {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    border-radius: 0 !important;
+    object-fit: cover !important;
+    object-position: 16% center !important;
+    box-shadow: none !important;
+  }
+
+  .journey-cover .notebook-page-footer,
+  .back-cover .notebook-page-footer {
+    grid-template-columns: 54px !important;
+  }
+
+  .journey-cover .notebook-page-footer .notebook-page-button.toc,
+  .back-cover .notebook-page-footer .notebook-page-button.toc {
+    display: none !important;
+  }
+
+  .journey-cover .notebook-page-footer .notebook-page-button.next,
+  .back-cover .notebook-page-footer .notebook-page-button.prev {
+    grid-column: 1 !important;
+  }
+
+  .notebook-overview-page.notebook-page {
+    padding-right: 12px !important;
+    padding-left: 12px !important;
+    overflow: hidden !important;
+  }
+
+  .notebook-overview-page .focus-strip,
+  .notebook-overview-page .bloom-garden {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .notebook-overview-page .bloom-garden {
+    overflow: hidden !important;
+    background-size: cover, cover, cover !important;
+    background-position: center top, center center, center bottom !important;
+  }
+
+  .notebook-overview-page .bloom-field {
+    background-size: cover, cover, 245% auto !important;
+  }
+
+  .notebook-overview-page .bloom-field::before,
+  .bloom-real-flowers::before {
+    right: 0 !important;
+    left: 0 !important;
+  }
+
+  .notebook-overview-page .bloom-field::after {
+    right: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    background-size: 108% auto !important;
+  }
+
+  .bloom-real-flowers {
+    inset: 49% 0 0 !important;
+    overflow: hidden !important;
+  }
+
+  .bloom-real-flowers::after {
+    inset: -116% 0 0 !important;
+    background-size: 102% auto, 102% auto !important;
+  }
+
+  .flower-back {
+    inset: -12% 0 50% !important;
+    background-size: 104% auto !important;
+  }
+
+  .flower-mid,
+  .flower-front {
+    right: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    background-size: 104% auto !important;
+  }
+}
+
+/* Offering lamp density pass: reveal more real lamps from the same source image. */
+.offering-lamp-scene {
+  min-height: clamp(1040px, 150svh, 1360px) !important;
+  padding-bottom: clamp(122px, 15svh, 158px) !important;
+}
+
+.offering-lamp-stage,
+.offering-lamp {
+  right: -14% !important;
+  bottom: clamp(104px, 13svh, 144px) !important;
+  left: -14% !important;
+  height: clamp(700px, 86svh, 940px) !important;
+}
+
+.offering-lamp-stage {
+  background-position: 0 0, center bottom !important;
+  background-repeat: no-repeat, no-repeat !important;
+  background-size: auto, cover !important;
+}
+
+.offering-lamp-scene.is-lit .offering-lamp-stage {
+  background-position: 0 0, center bottom !important;
+  background-repeat: no-repeat, no-repeat !important;
+  background-size: auto, cover !important;
+}
+
+@media (max-width: 520px) {
+  .offering-lamp-scene {
+    min-height: clamp(960px, 148svh, 1220px) !important;
+    padding-bottom: 126px !important;
+  }
+
+  .offering-lamp-stage,
+  .offering-lamp {
+    right: -16% !important;
+    bottom: 116px !important;
+    left: -16% !important;
+    height: clamp(660px, 84svh, 840px) !important;
+  }
+}
+
+/* Offering Buddha wall separation: keep images above the lamp field. */
+.offering-buddha-wall {
+  top: 6px !important;
+  height: clamp(220px, 27%, 320px) !important;
+  z-index: 8 !important;
+  -webkit-mask-image: linear-gradient(180deg, #000 0 88%, rgba(0, 0, 0, 0.72) 96%, transparent 100%) !important;
+  mask-image: linear-gradient(180deg, #000 0 88%, rgba(0, 0, 0, 0.72) 96%, transparent 100%) !important;
+}
+
+.offering-lamp-stage,
+.offering-lamp {
+  bottom: clamp(78px, 10svh, 116px) !important;
+  height: clamp(610px, 74svh, 820px) !important;
+}
+
+@media (max-width: 520px) {
+  .offering-buddha-wall {
+    top: 6px !important;
+    height: clamp(205px, 26%, 275px) !important;
+  }
+
+  .offering-lamp-stage,
+  .offering-lamp {
+    bottom: 98px !important;
+    height: clamp(540px, 70svh, 700px) !important;
+  }
+}
+
+/* Offering horizontal framing: show more side lamps from the real image. */
+.offering-lamp-stage,
+.offering-lamp {
+  right: 0 !important;
+  left: 0 !important;
+}
+
+.offering-lamp-stage {
+  background-position: 0 0, center bottom !important;
+  background-size: auto, 100% auto !important;
+}
+
+.offering-lamp-scene.is-lit .offering-lamp-stage {
+  background-position: 0 0, center bottom !important;
+  background-size: auto, 100% auto !important;
+}
+
+@media (max-width: 520px) {
+  .offering-lamp-stage,
+  .offering-lamp {
+    right: 0 !important;
+    left: 0 !important;
+  }
+}
+
+/* Offering repeat action feedback. */
+.offering-lamp-panel,
+.offering-lamp-action {
+  pointer-events: auto !important;
+}
+
+.offering-lamp-action {
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+}
+
+.offering-lamp-action.is-offering-press {
+  transform: translateY(1px) scale(0.98);
+  filter: brightness(1.08) saturate(1.08);
+}
+
+.offering-lamp-scene.is-offering-pulse .offering-lamp-stage {
+  animation: offeringRepeatPulse 0.72s ease both;
+}
+
+@keyframes offeringRepeatPulse {
+  0% {
+    filter: brightness(1) saturate(1);
+  }
+  42% {
+    filter:
+      brightness(1.22)
+      saturate(1.18)
+      drop-shadow(0 0 18px rgba(255, 185, 57, 0.22));
+  }
+  100% {
+    filter: brightness(1) saturate(1);
+  }
+}
+
+/* Bloom flower sea edge finish: remove frame gaps and break pasted image seams. */
+.notebook-overview-page.notebook-page {
+  overflow-x: visible !important;
+}
+
+.notebook-overview-page .bloom-garden {
+  isolation: isolate;
+  overflow: visible !important;
+  width: calc(100% + clamp(20px, 6vw, 34px)) !important;
+  max-width: none !important;
+  margin-right: calc(clamp(10px, 3vw, 17px) * -1) !important;
+  margin-left: calc(clamp(10px, 3vw, 17px) * -1) !important;
+  border-color: rgba(129, 177, 91, 0.32) !important;
+  background:
+    radial-gradient(ellipse at 52% 10%, rgba(255, 255, 255, 0.42), rgba(255, 246, 213, 0.14) 19%, transparent 35%),
+    linear-gradient(180deg, rgba(203, 241, 251, 0.12) 0%, rgba(234, 250, 218, 0.07) 36%, rgba(35, 105, 42, 0.16) 100%),
+    url("assets/buli-real-garden.png") center calc(100% - 8px) / 250% auto no-repeat !important;
+}
+
+.notebook-overview-page .bloom-field {
+  background-position: center center, center 46%, center calc(100% - 74px) !important;
+  background-size: cover, cover, 292% auto !important;
+}
+
+.notebook-overview-page .bloom-field::before {
+  right: -42px !important;
+  left: -42px !important;
+  display: block !important;
+  background:
+    radial-gradient(circle at 8% 42%, rgba(255, 255, 255, 0.58) 0 2px, transparent 5px),
+    radial-gradient(circle at 15% 29%, rgba(255, 216, 230, 0.58) 0 3px, transparent 7px),
+    radial-gradient(circle at 25% 48%, rgba(255, 238, 119, 0.5) 0 3px, transparent 7px),
+    radial-gradient(circle at 38% 34%, rgba(226, 211, 255, 0.42) 0 2px, transparent 6px),
+    radial-gradient(circle at 51% 50%, rgba(255, 255, 255, 0.52) 0 2px, transparent 5px),
+    radial-gradient(circle at 64% 32%, rgba(255, 213, 228, 0.5) 0 3px, transparent 7px),
+    radial-gradient(circle at 76% 49%, rgba(255, 238, 118, 0.52) 0 3px, transparent 7px),
+    radial-gradient(circle at 90% 35%, rgba(255, 255, 255, 0.54) 0 2px, transparent 5px),
+    linear-gradient(180deg, transparent 0%, rgba(255, 248, 220, 0.12) 34%, rgba(38, 105, 37, 0.14) 100%) !important;
+  opacity: 0.56 !important;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, rgba(0, 0, 0, 0.34) 14%, #000 54%, rgba(0, 0, 0, 0.38) 84%, transparent 100%) !important;
+  mask-image: linear-gradient(180deg, transparent 0, rgba(0, 0, 0, 0.34) 14%, #000 54%, rgba(0, 0, 0, 0.38) 84%, transparent 100%) !important;
+}
+
+.notebook-overview-page .bloom-field::after {
+  right: -54px !important;
+  bottom: -30px !important;
+  left: -54px !important;
+  display: block !important;
+  height: 39% !important;
+  background:
+    linear-gradient(180deg, transparent 0%, rgba(245, 247, 214, 0.2) 18%, rgba(31, 105, 38, 0.04) 100%),
+    url("assets/buli-real-garden.png") center bottom / 134% auto no-repeat !important;
+  opacity: 0.48 !important;
+  filter: saturate(1.05) brightness(1.02) !important;
+  clip-path: polygon(0 16%, 7% 8%, 15% 17%, 24% 9%, 34% 20%, 45% 10%, 56% 19%, 66% 8%, 77% 17%, 88% 10%, 100% 18%, 100% 100%, 0 100%) !important;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, rgba(0, 0, 0, 0.5) 18%, #000 70%, transparent 100%) !important;
+  mask-image: linear-gradient(180deg, transparent 0, rgba(0, 0, 0, 0.5) 18%, #000 70%, transparent 100%) !important;
+}
+
+.bloom-real-flowers {
+  inset: -26px -58px -62px !important;
+  z-index: 4 !important;
+  overflow: visible !important;
+}
+
+.bloom-real-flowers::before {
+  inset: 2% 6% 17% !important;
+  z-index: 1 !important;
+  display: block !important;
+  background:
+    radial-gradient(ellipse at 4% 48%, rgba(255, 215, 230, 0.48) 0 6%, transparent 17%),
+    radial-gradient(ellipse at 96% 44%, rgba(255, 229, 128, 0.44) 0 6%, transparent 17%),
+    radial-gradient(ellipse at 10% 78%, rgba(236, 218, 255, 0.36) 0 8%, transparent 20%),
+    radial-gradient(ellipse at 91% 78%, rgba(255, 204, 225, 0.38) 0 8%, transparent 20%),
+    radial-gradient(circle at 18% 63%, rgba(255, 255, 255, 0.62) 0 2px, transparent 5px),
+    radial-gradient(circle at 34% 72%, rgba(255, 232, 115, 0.52) 0 2px, transparent 6px),
+    radial-gradient(circle at 66% 68%, rgba(255, 255, 255, 0.58) 0 2px, transparent 5px),
+    radial-gradient(circle at 82% 60%, rgba(255, 210, 228, 0.55) 0 2px, transparent 6px) !important;
+  opacity: 0.52 !important;
+  mix-blend-mode: screen !important;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, rgba(0, 0, 0, 0.38) 16%, #000 54%, transparent 100%) !important;
+  mask-image: linear-gradient(180deg, transparent 0, rgba(0, 0, 0, 0.38) 16%, #000 54%, transparent 100%) !important;
+}
+
+.bloom-real-flowers::after {
+  inset: 0 !important;
+  z-index: 2 !important;
+  background: url("assets/buli-flower-edge-overflow.png") center bottom / 100% 100% no-repeat !important;
+  opacity: 0.72 !important;
+  -webkit-mask-image: none !important;
+  mask-image: none !important;
+}
+
+.flower-back,
+.flower-mid,
+.flower-front {
+  display: none !important;
+}
+
+.garden-photo-seat::after {
+  content: none !important;
+  display: none !important;
+}
+
+.bloom-garden.is-blooming .bloom-real-flowers::before {
+  animation: bridgeFlowerSway 5.4s 0.8s ease-in-out infinite !important;
+}
+
+.bloom-garden.is-blooming .bloom-real-flowers::after {
+  animation: sideFlowerSway 6.2s 0.8s ease-in-out infinite !important;
+}
+
+@media (max-width: 520px) {
+  .notebook-overview-page.notebook-page {
+    overflow-x: visible !important;
+  }
+
+  .notebook-overview-page .bloom-garden {
+    width: calc(100% + 28px) !important;
+    margin-right: -14px !important;
+    margin-left: -14px !important;
+    background-position: center top, center center, center calc(100% - 8px) !important;
+    background-size: auto, auto, 312% auto !important;
+  }
+
+  .notebook-overview-page .bloom-field {
+    background-position: center center, center 44%, center calc(100% - 84px) !important;
+    background-size: cover, cover, 372% auto !important;
+  }
+
+  .notebook-overview-page .bloom-field::before {
+    right: -32px !important;
+    left: -32px !important;
+  }
+
+  .notebook-overview-page .bloom-field::after {
+    right: -42px !important;
+    bottom: -26px !important;
+    left: -42px !important;
+    height: 40% !important;
+    background-size: auto, 148% auto !important;
+  }
+
+  .bloom-real-flowers {
+    inset: -22px -48px -58px !important;
+  }
+}
+
+/* Bloom seam lock: the transparent overflow asset now owns the lower edge. */
+.notebook-overview-page .bloom-garden {
+  border-bottom-color: transparent !important;
+}
+
+.notebook-overview-page .bloom-field::after {
+  background: none !important;
+  opacity: 0 !important;
+}
+
+.notebook-overview-page .notebook-page-footer {
+  position: relative !important;
+  z-index: 12 !important;
+  overflow: visible !important;
+  margin-top: -34px !important;
+  padding-top: 30px !important;
+  background: transparent !important;
+}
+
+.notebook-overview-page .notebook-page-footer::before {
+  content: "";
+  position: absolute;
+  inset: -132px -42px -22px;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, transparent 0%, rgba(238, 247, 217, 0.18) 38%, rgba(255, 253, 244, 0.62) 100%),
+    url("assets/buli-flower-edge-overflow.png") center bottom / 100% 100% no-repeat;
+  opacity: 0.82;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, rgba(0, 0, 0, 0.52) 18%, #000 72%, rgba(0, 0, 0, 0.78) 100%);
+  mask-image: linear-gradient(180deg, transparent 0, rgba(0, 0, 0, 0.52) 18%, #000 72%, rgba(0, 0, 0, 0.78) 100%);
+}
+
+.notebook-overview-page .notebook-page-footer > * {
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 520px) {
+  .notebook-overview-page .notebook-page-footer {
+    margin-top: -38px !important;
+    padding-top: 32px !important;
+  }
+
+  .notebook-overview-page .notebook-page-footer::before {
+    inset: -142px -52px -24px;
+  }
+}
+
+/* Bloom full-frame lock: keep the entire view covered by meadow and let controls float. */
+.notebook-overview-page,
+.notebook-overview-page.notebook-page {
+  display: grid !important;
+  grid-template-rows: auto minmax(0, 1fr) !important;
+  align-content: stretch !important;
+  gap: 6px !important;
+  padding-bottom: 0 !important;
+  overflow: hidden !important;
+  background:
+    linear-gradient(180deg, rgba(255, 253, 247, 0.84) 0 19%, rgba(255, 253, 247, 0.12) 34%, transparent 52%),
+    url("assets/buli-real-garden.png") center bottom / 330% auto no-repeat,
+    #eaf5dc !important;
+}
+
+.notebook-overview-page .bloom-garden {
+  align-self: stretch !important;
+  min-height: 0 !important;
+  height: auto !important;
+  margin-bottom: 0 !important;
+  border-bottom-width: 0 !important;
+  border-radius: 8px 8px 0 0 !important;
+  --meadow-mid-y: 46%;
+  --meadow-mid-y-sway: 47%;
+  --meadow-bottom-y: calc(100% - 74px);
+  --meadow-bottom-y-sway: calc(100% - 68px);
+}
+
+.notebook-overview-page .bloom-field {
+  background-position: center center, center var(--meadow-mid-y), center var(--meadow-bottom-y) !important;
+}
+
+.notebook-overview-page .notebook-page-footer {
+  position: absolute !important;
+  right: 50% !important;
+  bottom: max(8px, env(safe-area-inset-bottom)) !important;
+  left: auto !important;
+  z-index: 18 !important;
+  width: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border-top: 0 !important;
+  background: transparent !important;
+  transform: translateX(50%) !important;
+}
+
+.notebook-overview-page .notebook-page-footer::before {
+  content: none !important;
+  display: none !important;
+}
+
+.notebook-overview-page .bloom-button {
+  bottom: max(64px, calc(env(safe-area-inset-bottom) + 58px)) !important;
+}
+
+.notebook-overview-page .garden-photo-seat {
+  right: auto !important;
+  left: 11% !important;
+  bottom: max(108px, calc(env(safe-area-inset-bottom) + 102px)) !important;
+}
+
+.notebook-overview-page .garden-photo-seat.self {
+  left: auto !important;
+  right: 10% !important;
+  bottom: max(132px, calc(env(safe-area-inset-bottom) + 126px)) !important;
+}
+
+.bloom-real-flowers {
+  opacity: 1 !important;
+  transform: translateY(0) scale(1) !important;
+}
+
+.notebook-overview-page .bloom-garden.is-blooming .bloom-field {
+  animation:
+    flowerFieldAppear 1.25s cubic-bezier(0.16, 0.86, 0.24, 1) both,
+    flowerSeaImageSway 7.2s 1.25s ease-in-out infinite !important;
+}
+
+.notebook-overview-page .bloom-field::before {
+  animation: distantFlowerSway 5.8s ease-in-out infinite !important;
+  transform-origin: center bottom !important;
+}
+
+.bloom-real-flowers::before {
+  animation: bridgeFlowerSway 5.6s ease-in-out infinite !important;
+  transform-origin: center bottom !important;
+}
+
+.bloom-real-flowers::after {
+  animation: sideFlowerSway 6.4s ease-in-out infinite !important;
+  transform-origin: center bottom !important;
+}
+
+@keyframes flowerSeaImageSway {
+  0%,
+  100% {
+    background-position: center center, center var(--meadow-mid-y), center var(--meadow-bottom-y);
+  }
+  46% {
+    background-position: calc(50% + 5px) center, calc(50% - 4px) var(--meadow-mid-y-sway), calc(50% + 7px) var(--meadow-bottom-y-sway);
+  }
+  74% {
+    background-position: calc(50% - 3px) center, calc(50% + 3px) var(--meadow-mid-y), calc(50% - 5px) var(--meadow-bottom-y);
+  }
+}
+
+@media (max-width: 520px) {
+  .notebook-overview-page,
+  .notebook-overview-page.notebook-page {
+    padding-bottom: 0 !important;
+    background-size: auto, 390% auto, auto !important;
+  }
+
+  .notebook-overview-page .bloom-garden {
+    --meadow-mid-y: 44%;
+    --meadow-mid-y-sway: 45%;
+    --meadow-bottom-y: calc(100% - 84px);
+    --meadow-bottom-y-sway: calc(100% - 77px);
+    min-height: 0 !important;
+  }
+
+  .notebook-overview-page .bloom-button {
+    right: 16px !important;
+    bottom: max(66px, calc(env(safe-area-inset-bottom) + 60px)) !important;
+  }
+
+  .notebook-overview-page .garden-photo-seat {
+    right: auto !important;
+    left: 8% !important;
+    bottom: max(112px, calc(env(safe-area-inset-bottom) + 106px)) !important;
+  }
+
+  .notebook-overview-page .garden-photo-seat.self {
+    left: auto !important;
+    right: 10% !important;
+    bottom: max(126px, calc(env(safe-area-inset-bottom) + 120px)) !important;
+  }
+}
+
+/* Bloom interaction state: before click is grass, after click flowers emerge and sway. */
+.notebook-overview-page,
+.notebook-overview-page.notebook-page {
+  background:
+    linear-gradient(180deg, rgba(255, 253, 247, 0.84) 0 18%, rgba(255, 253, 247, 0.18) 32%, transparent 52%),
+    url("assets/buli-meadow-before.png") center bottom / 320% auto no-repeat,
+    #dfeec5 !important;
+}
+
+.notebook-overview-page .bloom-garden {
+  background:
+    radial-gradient(ellipse at 51% 12%, rgba(255, 255, 255, 0.42), rgba(255, 246, 213, 0.1) 18%, transparent 34%),
+    linear-gradient(180deg, rgba(209, 242, 246, 0.08) 0%, rgba(225, 245, 206, 0.06) 38%, rgba(40, 112, 45, 0.1) 100%),
+    url("assets/buli-meadow-before.png") center center / cover no-repeat !important;
+}
+
+.notebook-overview-page .bloom-garden::after {
+  opacity: 0 !important;
+  animation: none !important;
+}
+
+.notebook-overview-page .bloom-field {
+  opacity: 0 !important;
+  transform: translateY(34px) scale(1.055) !important;
+  transform-origin: center bottom !important;
+  animation: none !important;
+  pointer-events: none !important;
+}
+
+.notebook-overview-page .bloom-field::before {
+  opacity: 0 !important;
+  transform: translateY(20px) scaleY(0.92) !important;
+  animation: none !important;
+}
+
+.bloom-real-flowers {
+  opacity: 0 !important;
+  transform: translateY(58px) scale(1.045) !important;
+  transform-origin: center bottom !important;
+  animation: none !important;
+}
+
+.bloom-real-flowers::before,
+.bloom-real-flowers::after {
+  animation: none !important;
+}
+
+.notebook-overview-page .bloom-garden.is-blooming {
+  background:
+    radial-gradient(ellipse at 51% 12%, rgba(255, 255, 255, 0.34), rgba(255, 246, 213, 0.1) 18%, transparent 34%),
+    linear-gradient(180deg, rgba(209, 242, 246, 0.06) 0%, rgba(225, 245, 206, 0.04) 38%, rgba(40, 112, 45, 0.06) 100%),
+    url("assets/buli-meadow-before.png") center center / cover no-repeat !important;
+}
+
+.notebook-overview-page .bloom-garden.is-blooming::after {
+  opacity: 0.62 !important;
+  animation: gardenGoldTwinkle 4.6s 1s ease-in-out infinite !important;
+}
+
+.notebook-overview-page .bloom-garden.is-blooming .bloom-field {
+  opacity: 1 !important;
+  animation:
+    flowerFieldAppear 1.18s cubic-bezier(0.16, 0.86, 0.24, 1) both,
+    flowerSeaImageSway 7.2s 1.18s ease-in-out infinite !important;
+}
+
+.notebook-overview-page .bloom-garden.is-blooming .bloom-field::before {
+  opacity: 0.56 !important;
+  animation:
+    distantFlowerRise 1.34s 0.2s cubic-bezier(0.18, 0.82, 0.24, 1) both,
+    distantFlowerSway 5.8s 1.48s ease-in-out infinite !important;
+}
+
+.notebook-overview-page .bloom-garden.is-blooming .bloom-real-flowers {
+  opacity: 1 !important;
+  animation: bloomEdgeGroupAppear 1.34s 0.36s cubic-bezier(0.16, 0.86, 0.24, 1) both !important;
+}
+
+.notebook-overview-page .bloom-garden.is-blooming .bloom-real-flowers::before {
+  animation: bridgeFlowerSway 5.6s 1.66s ease-in-out infinite !important;
+}
+
+.notebook-overview-page .bloom-garden.is-blooming .bloom-real-flowers::after {
+  animation: sideFlowerSway 6.4s 1.66s ease-in-out infinite !important;
+}
+
+@keyframes distantFlowerRise {
+  0% {
+    opacity: 0;
+    transform: translateY(24px) scaleY(0.88);
+  }
+  60% {
+    opacity: 0.68;
+    transform: translateY(-2px) scaleY(1.02);
+  }
+  100% {
+    opacity: 0.56;
+    transform: translateY(0) scaleY(1);
+  }
+}
+
+@keyframes bloomEdgeGroupAppear {
+  0% {
+    opacity: 0;
+    transform: translateY(72px) scale(1.06);
+    filter: saturate(0.82) brightness(0.96) blur(1px);
+  }
+  62% {
+    opacity: 1;
+    transform: translateY(-5px) scale(1.012);
+    filter: saturate(1.14) brightness(1.06) blur(0);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: saturate(1.05) brightness(1.02);
+  }
+}
+
+@media (max-width: 520px) {
+  .notebook-overview-page,
+  .notebook-overview-page.notebook-page {
+    background-size: auto, 370% auto, auto !important;
+  }
+
+  .notebook-overview-page .bloom-garden,
+  .notebook-overview-page .bloom-garden.is-blooming {
+    background-size: auto, auto, cover !important;
+  }
+}
+
+@property --bloom-opacity {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+
+@property --bloom-y {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 34px;
+}
+
+@property --bloom-scale {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 1.055;
+}
+
+@property --flower-main-x {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0px;
+}
+
+@property --flower-mid-x {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0px;
+}
+
+@property --flower-bottom-x {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0px;
+}
+
+@property --distant-opacity {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+
+@property --distant-x {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0px;
+}
+
+@property --distant-y {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 20px;
+}
+
+@property --distant-scale {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0.92;
+}
+
+@property --edge-opacity {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+
+@property --edge-y {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 58px;
+}
+
+@property --edge-scale {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 1.045;
+}
+
+.notebook-overview-page .bloom-field {
+  --bloom-opacity: 0;
+  --bloom-y: 34px;
+  --bloom-scale: 1.055;
+  --flower-main-x: 0px;
+  --flower-mid-x: 0px;
+  --flower-bottom-x: 0px;
+  opacity: var(--bloom-opacity) !important;
+  transform: translateY(var(--bloom-y)) scale(var(--bloom-scale)) !important;
+  background-position:
+    calc(50% + var(--flower-main-x)) center,
+    calc(50% + var(--flower-mid-x)) var(--meadow-mid-y),
+    calc(50% + var(--flower-bottom-x)) var(--meadow-bottom-y) !important;
+}
+
+.notebook-overview-page .bloom-field::before {
+  --distant-opacity: 0;
+  --distant-x: 0px;
+  --distant-y: 20px;
+  --distant-scale: 0.92;
+  opacity: var(--distant-opacity) !important;
+  transform: translateX(var(--distant-x)) translateY(var(--distant-y)) scaleY(var(--distant-scale)) !important;
+}
+
+.bloom-real-flowers {
+  --edge-opacity: 0;
+  --edge-y: 58px;
+  --edge-scale: 1.045;
+  opacity: var(--edge-opacity) !important;
+  transform: translateY(var(--edge-y)) scale(var(--edge-scale)) !important;
+}
+
+.notebook-overview-page .bloom-garden.is-blooming .bloom-field {
+  animation:
+    flowerFieldRevealVars 1.18s cubic-bezier(0.16, 0.86, 0.24, 1) both,
+    flowerSeaImageSwayVars 7.2s 1.18s ease-in-out infinite !important;
+}
+
+.notebook-overview-page .bloom-garden.is-blooming .bloom-field::before {
+  animation:
+    distantFlowerRiseVars 1.34s 0.2s cubic-bezier(0.18, 0.82, 0.24, 1) both,
+    distantFlowerSwayVars 5.8s 1.48s ease-in-out infinite !important;
+}
+
+.notebook-overview-page .bloom-garden.is-blooming .bloom-real-flowers {
+  animation: bloomEdgeGroupAppearVars 1.34s 0.36s cubic-bezier(0.16, 0.86, 0.24, 1) both !important;
+}
+
+@keyframes flowerFieldRevealVars {
+  0% {
+    --bloom-opacity: 0;
+    --bloom-y: 34px;
+    --bloom-scale: 1.055;
+  }
+  55% {
+    --bloom-opacity: 1;
+    --bloom-y: -3px;
+    --bloom-scale: 1.01;
+  }
+  100% {
+    --bloom-opacity: 1;
+    --bloom-y: 0px;
+    --bloom-scale: 1;
+  }
+}
+
+@keyframes flowerSeaImageSwayVars {
+  0%,
+  100% {
+    --flower-main-x: 0px;
+    --flower-mid-x: 0px;
+    --flower-bottom-x: 0px;
+  }
+  46% {
+    --flower-main-x: 5px;
+    --flower-mid-x: -4px;
+    --flower-bottom-x: 7px;
+  }
+  74% {
+    --flower-main-x: -3px;
+    --flower-mid-x: 3px;
+    --flower-bottom-x: -5px;
+  }
+}
+
+@keyframes distantFlowerRiseVars {
+  0% {
+    --distant-opacity: 0;
+    --distant-x: 0px;
+    --distant-y: 24px;
+    --distant-scale: 0.88;
+  }
+  60% {
+    --distant-opacity: 0.68;
+    --distant-x: 0px;
+    --distant-y: -2px;
+    --distant-scale: 1.02;
+  }
+  100% {
+    --distant-opacity: 0.56;
+    --distant-x: 0px;
+    --distant-y: 0px;
+    --distant-scale: 1;
+  }
+}
+
+@keyframes distantFlowerSwayVars {
+  0%,
+  100% {
+    --distant-x: 0px;
+    --distant-y: 0px;
+    --distant-scale: 1;
+  }
+  45% {
+    --distant-x: -3px;
+    --distant-y: -1px;
+    --distant-scale: 1.006;
+  }
+  72% {
+    --distant-x: 2px;
+    --distant-y: 0px;
+    --distant-scale: 1;
+  }
+}
+
+@keyframes bloomEdgeGroupAppearVars {
+  0% {
+    --edge-opacity: 0;
+    --edge-y: 72px;
+    --edge-scale: 1.06;
+  }
+  62% {
+    --edge-opacity: 1;
+    --edge-y: -5px;
+    --edge-scale: 1.012;
+  }
+  100% {
+    --edge-opacity: 1;
+    --edge-y: 0px;
+    --edge-scale: 1;
+  }
+}
+
+/* Flower density pass: richer middle blooms and a real-flower lower bed after bloom. */
+@property --lower-opacity {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+
+@property --lower-x {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0px;
+}
+
+@property --lower-y {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 34px;
+}
+
+@property --lower-scale {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 1.035;
+}
+
+.notebook-overview-page .bloom-field {
+  background-size: cover, cover, 246% auto !important;
+}
+
+.notebook-overview-page .bloom-field::before {
+  background:
+    radial-gradient(circle at 7% 36%, rgba(255, 255, 255, 0.7) 0 2px, transparent 5px),
+    radial-gradient(circle at 13% 48%, rgba(255, 216, 230, 0.68) 0 3px, transparent 7px),
+    radial-gradient(circle at 21% 32%, rgba(255, 236, 111, 0.58) 0 3px, transparent 7px),
+    radial-gradient(circle at 29% 52%, rgba(226, 211, 255, 0.56) 0 2px, transparent 6px),
+    radial-gradient(circle at 38% 39%, rgba(255, 255, 255, 0.62) 0 2px, transparent 5px),
+    radial-gradient(circle at 47% 57%, rgba(255, 212, 230, 0.58) 0 3px, transparent 7px),
+    radial-gradient(circle at 55% 35%, rgba(255, 239, 125, 0.56) 0 3px, transparent 7px),
+    radial-gradient(circle at 64% 51%, rgba(225, 213, 255, 0.5) 0 2px, transparent 6px),
+    radial-gradient(circle at 73% 37%, rgba(255, 255, 255, 0.62) 0 2px, transparent 5px),
+    radial-gradient(circle at 82% 54%, rgba(255, 213, 228, 0.6) 0 3px, transparent 7px),
+    radial-gradient(circle at 91% 39%, rgba(255, 238, 118, 0.56) 0 3px, transparent 7px),
+    linear-gradient(180deg, transparent 0%, rgba(255, 248, 220, 0.14) 30%, rgba(38, 105, 37, 0.12) 100%) !important;
+}
+
+.notebook-overview-page .bloom-field::after {
+  --lower-opacity: 0;
+  --lower-x: 0px;
+  --lower-y: 34px;
+  --lower-scale: 1.035;
+  top: auto !important;
+  right: -44px !important;
+  bottom: -36px !important;
+  left: -44px !important;
+  display: block !important;
+  height: 45% !important;
+  background:
+    radial-gradient(circle at 9% 35%, rgba(255, 220, 232, 0.58) 0 8%, transparent 18%),
+    radial-gradient(circle at 23% 48%, rgba(255, 240, 124, 0.46) 0 7%, transparent 16%),
+    radial-gradient(circle at 41% 40%, rgba(255, 255, 255, 0.48) 0 6%, transparent 15%),
+    radial-gradient(circle at 62% 46%, rgba(225, 213, 255, 0.42) 0 7%, transparent 17%),
+    radial-gradient(circle at 82% 34%, rgba(255, 214, 229, 0.52) 0 8%, transparent 18%),
+    url("assets/buli-real-garden.png") center bottom / 126% auto no-repeat !important;
+  opacity: var(--lower-opacity) !important;
+  transform: translateX(var(--lower-x)) translateY(var(--lower-y)) scale(var(--lower-scale)) !important;
+  transform-origin: center bottom !important;
+  filter: saturate(1.12) brightness(1.04) !important;
+  clip-path: polygon(0 21%, 7% 10%, 16% 18%, 25% 9%, 36% 20%, 47% 12%, 58% 19%, 69% 8%, 80% 18%, 91% 11%, 100% 20%, 100% 100%, 0 100%) !important;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, rgba(0, 0, 0, 0.38) 11%, #000 38%, #000 84%, rgba(0, 0, 0, 0.72) 100%) !important;
+  mask-image: linear-gradient(180deg, transparent 0, rgba(0, 0, 0, 0.38) 11%, #000 38%, #000 84%, rgba(0, 0, 0, 0.72) 100%) !important;
+}
+
+.notebook-overview-page .bloom-garden.is-blooming .bloom-field::after {
+  animation:
+    lowerFlowerBedRevealVars 1.18s 0.46s cubic-bezier(0.16, 0.86, 0.24, 1) both,
+    lowerFlowerBedSwayVars 5.9s 1.64s ease-in-out infinite !important;
+}
+
+@keyframes distantFlowerRiseVars {
+  0% {
+    --distant-opacity: 0;
+    --distant-x: 0px;
+    --distant-y: 24px;
+    --distant-scale: 0.88;
+  }
+  60% {
+    --distant-opacity: 0.82;
+    --distant-x: 0px;
+    --distant-y: -2px;
+    --distant-scale: 1.02;
+  }
+  100% {
+    --distant-opacity: 0.74;
+    --distant-x: 0px;
+    --distant-y: 0px;
+    --distant-scale: 1;
+  }
+}
+
+@keyframes lowerFlowerBedRevealVars {
+  0% {
+    --lower-opacity: 0;
+    --lower-x: 0px;
+    --lower-y: 42px;
+    --lower-scale: 1.055;
+  }
+  64% {
+    --lower-opacity: 0.86;
+    --lower-x: 0px;
+    --lower-y: -4px;
+    --lower-scale: 1.012;
+  }
+  100% {
+    --lower-opacity: 0.8;
+    --lower-x: 0px;
+    --lower-y: 0px;
+    --lower-scale: 1;
+  }
+}
+
+@keyframes lowerFlowerBedSwayVars {
+  0%,
+  100% {
+    --lower-opacity: 0.8;
+    --lower-x: 0px;
+    --lower-y: 0px;
+    --lower-scale: 1;
+  }
+  48% {
+    --lower-opacity: 0.86;
+    --lower-x: 4px;
+    --lower-y: -2px;
+    --lower-scale: 1.006;
+  }
+  76% {
+    --lower-opacity: 0.82;
+    --lower-x: -3px;
+    --lower-y: -1px;
+    --lower-scale: 1.003;
+  }
+}
+
+@media (max-width: 520px) {
+  .notebook-overview-page .bloom-field {
+    background-size: cover, cover, 300% auto !important;
+  }
+
+  .notebook-overview-page .bloom-field::after {
+    right: -36px !important;
+    bottom: -36px !important;
+    left: -36px !important;
+    height: 47% !important;
+    background-size: auto, auto, auto, auto, auto, 146% auto !important;
+  }
+}
+
+/* Offering final image pass: use one matched lamp pair and a stronger repeat-offering cue. */
+.offering-lamp-stage {
+  transform-origin: 50% 76%;
+  background-image:
+    linear-gradient(180deg, rgba(42, 9, 5, 0) 0%, rgba(31, 7, 4, 0.08) 34%, rgba(13, 3, 2, 0.32) 100%),
+    url("assets/offering-lamps-final-real-v1.png") !important;
+  background-position: 0 0, center bottom !important;
+  background-repeat: no-repeat, no-repeat !important;
+  background-size: auto, 100% auto !important;
+}
+
+.offering-lamp-scene.is-lit .offering-lamp-stage {
+  background-image:
+    linear-gradient(180deg, rgba(42, 9, 5, 0) 0%, rgba(31, 7, 4, 0.08) 34%, rgba(13, 3, 2, 0.32) 100%),
+    url("assets/offering-lamps-final-lit-v2.png") !important;
+  background-position: 0 0, center bottom !important;
+  background-repeat: no-repeat, no-repeat !important;
+  background-size: auto, 100% auto !important;
+}
+
+.offering-lamp-scene.is-offering-pulse .offering-lamp-stage {
+  animation: offeringRepeatPulseStrong 0.92s cubic-bezier(0.2, 0.78, 0.22, 1) both !important;
+}
+
+.offering-lamp-scene.is-offering-pulse::after {
+  display: block !important;
+  top: auto !important;
+  right: 0 !important;
+  bottom: clamp(78px, 10svh, 116px) !important;
+  left: 0 !important;
+  z-index: 20 !important;
+  height: clamp(610px, 74svh, 820px) !important;
+  border-radius: 0 !important;
+  background:
+    radial-gradient(ellipse at 50% 70%, rgba(255, 226, 130, 0.46), rgba(255, 167, 56, 0.18) 30%, transparent 56%),
+    radial-gradient(ellipse at 50% 58%, rgba(255, 246, 201, 0.24), transparent 36%) !important;
+  mix-blend-mode: screen;
+  pointer-events: none !important;
+  animation: offeringLightBloom 0.92s ease both !important;
+}
+
+.offering-lamp-scene.is-offering-pulse .offering-lamp-panel {
+  animation: offeringPanelPulse 0.82s ease both;
+}
+
+.offering-lamp-action.is-offering-press {
+  transform: translateY(1px) scale(0.96) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 250, 214, 0.5),
+    0 0 0 2px rgba(255, 230, 136, 0.28),
+    0 14px 26px rgba(89, 17, 8, 0.32) !important;
+  filter: brightness(1.12) saturate(1.12) !important;
+}
+
+@keyframes offeringRepeatPulseStrong {
+  0% {
+    transform: scale(1);
+    filter: brightness(1) saturate(1);
+  }
+  34% {
+    transform: scale(1.018);
+    filter:
+      brightness(1.32)
+      saturate(1.24)
+      drop-shadow(0 0 22px rgba(255, 185, 57, 0.3));
+  }
+  62% {
+    transform: scale(1.006);
+    filter:
+      brightness(1.16)
+      saturate(1.12)
+      drop-shadow(0 0 12px rgba(255, 185, 57, 0.18));
+  }
+  100% {
+    transform: scale(1);
+    filter: brightness(1) saturate(1);
+  }
+}
+
+@keyframes offeringLightBloom {
+  0% {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  32% {
+    opacity: 0.74;
+    transform: scale(1.03);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes offeringPanelPulse {
+  0%,
+  100% {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 229, 139, 0.28),
+      0 16px 36px rgba(31, 5, 6, 0.38);
+  }
+  38% {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 245, 201, 0.44),
+      0 0 0 2px rgba(255, 226, 122, 0.24),
+      0 20px 44px rgba(76, 11, 6, 0.42);
+  }
+}
+
+@media (max-width: 520px) {
+  .offering-lamp-scene.is-offering-pulse::after {
+    bottom: 98px !important;
+    height: clamp(540px, 70svh, 700px) !important;
+  }
+}
+
+/* Bloom controls composition: keep the action small and let the two photo seats sit together. */
+.notebook-overview-page .bloom-button {
+  right: clamp(10px, 4vw, 18px) !important;
+  bottom: max(48px, calc(env(safe-area-inset-bottom) + 42px)) !important;
+  min-width: 98px !important;
+  min-height: 34px !important;
+  padding: 6px 13px !important;
+  font-size: 13px !important;
+  line-height: 1.05 !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    0 8px 16px rgba(24, 68, 28, 0.22) !important;
+}
+
+.notebook-overview-page .garden-photo-seat.teacher {
+  right: auto !important;
+  left: 9% !important;
+  bottom: max(114px, calc(env(safe-area-inset-bottom) + 108px)) !important;
+}
+
+.notebook-overview-page .garden-photo-seat.self {
+  right: auto !important;
+  left: calc(9% + 86px) !important;
+  bottom: max(96px, calc(env(safe-area-inset-bottom) + 90px)) !important;
+  width: 92px !important;
+  height: 126px !important;
+  transform: rotate(-1.5deg) !important;
+}
+
+@media (max-width: 520px) {
+  .notebook-overview-page .bloom-button {
+    right: 14px !important;
+    bottom: max(46px, calc(env(safe-area-inset-bottom) + 40px)) !important;
+    min-width: 96px !important;
+    min-height: 34px !important;
+    padding: 6px 12px !important;
+    font-size: 12.5px !important;
+  }
+
+  .notebook-overview-page .garden-photo-seat.teacher {
+    left: 7% !important;
+    bottom: max(112px, calc(env(safe-area-inset-bottom) + 106px)) !important;
+    width: 98px !important;
+    height: 134px !important;
+  }
+
+  .notebook-overview-page .garden-photo-seat.self {
+    left: calc(7% + 74px) !important;
+    bottom: max(94px, calc(env(safe-area-inset-bottom) + 88px)) !important;
+    width: 86px !important;
+    height: 118px !important;
+  }
+}
+
+/* Bloom seated composition: move the two photo seats toward center and dock the action by the toolbar. */
+.notebook-overview-page .bloom-button {
+  right: clamp(8px, 3vw, 14px) !important;
+  bottom: max(11px, calc(env(safe-area-inset-bottom) + 9px)) !important;
+  min-width: 86px !important;
+  min-height: 30px !important;
+  padding: 5px 10px !important;
+  font-size: 12px !important;
+}
+
+.notebook-overview-page .garden-photo-seat.teacher {
+  left: 26% !important;
+  bottom: max(114px, calc(env(safe-area-inset-bottom) + 108px)) !important;
+}
+
+.notebook-overview-page .garden-photo-seat.self {
+  left: calc(26% + 78px) !important;
+  right: auto !important;
+  bottom: max(96px, calc(env(safe-area-inset-bottom) + 90px)) !important;
+}
+
+@media (max-width: 520px) {
+  .notebook-overview-page .bloom-button {
+    right: 9px !important;
+    bottom: max(10px, calc(env(safe-area-inset-bottom) + 8px)) !important;
+    min-width: 84px !important;
+    min-height: 30px !important;
+    padding: 5px 9px !important;
+    font-size: 11.5px !important;
+  }
+
+  .notebook-overview-page .garden-photo-seat.teacher {
+    left: 25% !important;
+    bottom: max(112px, calc(env(safe-area-inset-bottom) + 106px)) !important;
+  }
+
+  .notebook-overview-page .garden-photo-seat.self {
+    left: calc(25% + 72px) !important;
+    bottom: max(92px, calc(env(safe-area-inset-bottom) + 86px)) !important;
+  }
+}
+
+/* Final page toolbar dock: keep the active footer in its page viewport, without fixed positioning. */
+.notebook-page > .notebook-page-footer {
+  position: absolute !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: max(8px, env(safe-area-inset-bottom)) !important;
+  left: 50% !important;
+  width: max-content !important;
+  max-width: calc(100% - 24px) !important;
+  margin: 0 !important;
+  transform: translate(-50%, var(--notebook-page-scroll-y, 0px)) !important;
+  z-index: 120 !important;
+  display: none !important;
+}
+
+.notebook-page > .notebook-page-footer.is-current {
+  display: grid !important;
+}
+
+/* Huashu design pass: lower event/color footers while reserving content space. */
+.event-pages.notebook-page,
+.color-pages.notebook-page {
+  padding-bottom: max(44px, calc(env(safe-area-inset-bottom) + 38px)) !important;
+}
+
+.event-pages.notebook-page > .notebook-page-footer,
+.color-pages.notebook-page > .notebook-page-footer {
+  bottom: max(0px, env(safe-area-inset-bottom)) !important;
+  border-color: rgba(167, 103, 30, 0.16) !important;
+  background:
+    linear-gradient(180deg, rgba(255, 253, 247, 0.78), rgba(255, 247, 224, 0.62)),
+    rgba(255, 253, 247, 0.72) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    0 4px 10px rgba(64, 47, 23, 0.08) !important;
+}
+
+.event-pages .event-strip,
+.color-pages .page-strip {
+  padding-bottom: 30px !important;
+  scroll-padding-bottom: 30px;
+}
+
+/* Huashu design pass: flyleaf 1 becomes a calmer hand-bound title plate. */
+.teaching-page.notebook-page {
+  grid-template-rows: auto minmax(146px, 31svh) minmax(184px, auto) !important;
+  align-content: center !important;
+  gap: clamp(10px, 1.8svh, 16px) !important;
+  padding:
+    max(18px, env(safe-area-inset-top))
+    clamp(16px, 4.2vw, 24px)
+    max(66px, calc(env(safe-area-inset-bottom) + 58px)) !important;
+  background:
+    linear-gradient(90deg, rgba(111, 31, 22, 0.1), transparent 16%, transparent 84%, rgba(111, 31, 22, 0.08)),
+    linear-gradient(180deg, rgba(255, 252, 244, 0.96), rgba(243, 224, 190, 0.98)),
+    #f5e6c7 !important;
+}
+
+.teaching-page.notebook-page::before {
+  top: clamp(18px, 4svh, 28px) !important;
+  right: clamp(20px, 5vw, 30px) !important;
+  left: clamp(20px, 5vw, 30px) !important;
+  height: 1px !important;
+  background:
+    linear-gradient(90deg, transparent, rgba(134, 84, 28, 0.44) 16%, rgba(205, 168, 81, 0.6) 50%, rgba(134, 84, 28, 0.44) 84%, transparent) !important;
+}
+
+.teaching-page.notebook-page::after {
+  right: clamp(20px, 5vw, 30px) !important;
+  bottom: clamp(42px, 8svh, 72px) !important;
+  left: clamp(20px, 5vw, 30px) !important;
+  height: 1px !important;
+  background:
+    linear-gradient(90deg, transparent, rgba(134, 84, 28, 0.34) 18%, rgba(205, 168, 81, 0.48) 50%, rgba(134, 84, 28, 0.34) 82%, transparent) !important;
+}
+
+.teaching-page .flyleaf-kicker {
+  justify-self: center !important;
+  max-width: min(100%, 340px);
+  margin: 0 !important;
+  padding: 5px 10px;
+  border: 1px solid rgba(135, 45, 24, 0.14);
+  background: rgba(255, 250, 233, 0.58);
+  color: rgba(76, 52, 30, 0.66);
+  font-size: 11px;
+  line-height: 1.2;
+  text-align: center;
+  text-wrap: pretty;
+}
+
+.teaching-image-frame {
+  position: relative;
+  align-self: end !important;
+  width: min(91%, 372px) !important;
+  margin: 0 auto !important;
+  padding: 8px 8px 13px !important;
+  border: 1px solid rgba(111, 31, 22, 0.34) !important;
+  border-radius: 3px !important;
+  background:
+    linear-gradient(180deg, rgba(255, 250, 230, 0.98), rgba(231, 187, 96, 0.58)),
+    rgba(255, 247, 221, 0.94) !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.62),
+    0 14px 26px rgba(80, 49, 19, 0.16) !important;
+  transform: none !important;
+}
+
+.teaching-image-frame::before {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border: 1px solid rgba(255, 248, 205, 0.58);
+  pointer-events: none;
+}
+
+.teaching-image-frame::after {
+  content: "";
+  position: absolute;
+  right: 24%;
+  bottom: 5px;
+  left: 24%;
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(116, 35, 19, 0.22);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.34);
+}
+
+.teaching-image-frame img {
+  border-color: rgba(72, 24, 18, 0.42) !important;
+  filter: saturate(1.04) contrast(1.02);
+}
+
+.teaching-signboard {
+  position: relative;
+  width: min(100%, 414px) !important;
+  min-height: clamp(188px, 30svh, 232px) !important;
+  margin: 0 auto !important;
+  padding: clamp(15px, 2.2svh, 20px) clamp(18px, 5vw, 26px) clamp(17px, 2.6svh, 22px) !important;
+  border: 1px solid rgba(238, 204, 111, 0.82) !important;
+  border-radius: 2px !important;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.08), transparent 20%, transparent 80%, rgba(255, 255, 255, 0.08)),
+    repeating-linear-gradient(90deg, transparent 0 18px, rgba(255, 232, 142, 0.04) 18px 19px),
+    linear-gradient(180deg, #193d6a 0%, #0d2b52 56%, #082342 100%) !important;
+  box-shadow:
+    inset 0 0 0 3px rgba(201, 159, 60, 0.62),
+    inset 0 0 0 5px rgba(22, 58, 96, 0.9),
+    inset 0 -12px 18px rgba(0, 0, 0, 0.18),
+    0 18px 30px rgba(70, 44, 18, 0.18) !important;
+}
+
+.teaching-signboard::before,
+.teaching-signboard::after {
+  top: 12px !important;
+  bottom: 12px !important;
+  width: 2px !important;
+  background:
+    linear-gradient(180deg, transparent, rgba(245, 220, 136, 0.78) 22%, rgba(245, 220, 136, 0.48) 50%, rgba(245, 220, 136, 0.78) 78%, transparent) !important;
+}
+
+.teaching-signboard::before {
+  left: 12px !important;
+}
+
+.teaching-signboard::after {
+  right: 12px !important;
+}
+
+.signboard-tibetan {
+  max-width: 94% !important;
+  margin: 0 auto !important;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(245, 220, 136, 0.26);
+  color: rgba(250, 227, 151, 0.88) !important;
+  font-size: clamp(12px, 2.1vw, 15px) !important;
+  line-height: 1.38 !important;
+  text-wrap: pretty;
+}
+
+.signboard-title-art {
+  width: min(96%, 362px) !important;
+  filter:
+    drop-shadow(0 1px 0 rgba(255, 242, 188, 0.44))
+    drop-shadow(0 4px 5px rgba(76, 42, 9, 0.28))
+    drop-shadow(0 10px 12px rgba(0, 0, 0, 0.18)) !important;
+}
+
+.leaf-thread {
+  display: block !important;
+  width: min(58%, 230px);
+  height: 10px;
+  margin-top: -4px;
+  border-top: 1px solid rgba(145, 48, 24, 0.24);
+  border-radius: 50%;
+  opacity: 0.72;
+}
+
+@media (max-width: 520px) {
+  .event-pages.notebook-page,
+  .color-pages.notebook-page {
+    padding-bottom: max(46px, calc(env(safe-area-inset-bottom) + 40px)) !important;
+  }
+
+  .event-pages .event-strip,
+  .color-pages .page-strip {
+    padding-bottom: 32px !important;
+    scroll-padding-bottom: 32px;
+  }
+
+  .teaching-page.notebook-page {
+    grid-template-rows: auto minmax(130px, 28svh) minmax(178px, auto) !important;
+    gap: 10px !important;
+    padding-right: 15px !important;
+    padding-left: 15px !important;
+  }
+
+  .teaching-image-frame {
+    width: min(93%, 342px) !important;
+    padding: 7px 7px 12px !important;
+  }
+
+  .teaching-signboard {
+    width: min(100%, 388px) !important;
+    min-height: clamp(174px, 28svh, 210px) !important;
+    padding-right: 16px !important;
+    padding-left: 16px !important;
+  }
+
+  .signboard-title-art {
+    width: min(98%, 326px) !important;
   }
 }

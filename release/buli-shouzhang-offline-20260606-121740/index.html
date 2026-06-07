@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#f4a000" />
+    <meta name="application-name" content="不离手账" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="不离手账" />
+    <meta name="msapplication-TileColor" content="#f4a000" />
+    <title>不离手账</title>
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon-64.png" />
+    <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
+    <link rel="preload" as="image" href="assets/cover-home-final.png" fetchpriority="high" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="journey-cover" aria-label="笔记本封面">
+        <img class="cover-image" src="assets/cover-home-final.png" alt="诸事圆满笔记本封面" loading="eager" decoding="async" fetchpriority="high" />
+        <span class="visually-hidden" id="todayLine"></span>
+      </header>
+
+      <section class="note-toc note-toc-feature" aria-label="笔记目录">
+        <div class="note-toc-actions" aria-label="目录操作">
+          <button class="toc-action-button primary" id="newNoteButton" type="button" title="新建笔记" aria-label="新建笔记">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M5 12h14"></path>
+              <path d="M12 5v14"></path>
+            </svg>
+            <span>新建笔记</span>
+          </button>
+          <button class="toc-action-button" id="exportButton" type="button" title="导出笔记" aria-label="导出笔记">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <path d="M7 10l5 5 5-5"></path>
+              <path d="M12 15V3"></path>
+            </svg>
+            <span>导出笔记</span>
+          </button>
+          <button class="toc-action-button install-action" id="installButton" type="button" title="安装到手机" aria-label="安装到手机">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 3v10"></path>
+              <path d="m8 9 4 4 4-4"></path>
+              <path d="M5 15v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"></path>
+            </svg>
+            <span>安装到手机</span>
+          </button>
+        </div>
+        <div class="note-toc-body" id="noteToc"></div>
+      </section>
+
+      <section class="front-matter" aria-label="笔记本扉页">
+        <article class="flyleaf-page teaching-page">
+          <span class="flyleaf-kicker">གདམས་ངག · 扉页一</span>
+          <div class="teaching-signboard" aria-label="莫舍己道，勿扰他心">
+            <p class="signboard-tibetan">རང་གི་ལམ་མ་འདོར། གཞན་གྱི་སེམས་མ་དཀྲུགས།</p>
+            <h2>
+              <img class="signboard-title-art" src="assets/flyleaf-signboard-title.png" alt="" aria-hidden="true" loading="eager" decoding="async" fetchpriority="high" />
+              <span>莫舍己道</span>
+              <span>勿扰他心</span>
+            </h2>
+          </div>
+          <div class="leaf-thread" aria-hidden="true"></div>
+        </article>
+
+        <article class="flyleaf-page message-page">
+          <span class="flyleaf-kicker">དྲན་གསོ། · 扉页二</span>
+          <blockquote class="handwritten-note">
+            <img class="handwriting-note-art" src="assets/flyleaf-message-handwriting.png" alt="" aria-hidden="true" loading="eager" decoding="async" fetchpriority="high" />
+            <p class="handwriting-text">
+              <span class="handwriting-line">今天是个特别的日子。</span>
+              <span class="handwriting-line">我爱这世上所有生命，</span>
+              <span class="handwriting-line">但最惦记的还是那些曾一起并肩学修，</span>
+              <span class="handwriting-line">如今天各一方的你们。</span>
+              <span class="handwriting-line">不管在哪儿，都要好好的哦～</span>
+            </p>
+          </blockquote>
+          <figure>
+            <img src="assets/flyleaf-weibo-teaching.jpg" alt="索达吉堪布文字截图" loading="lazy" decoding="async" fetchpriority="low" />
+            <figcaption>文字摘录自所给图片</figcaption>
+          </figure>
+        </article>
+      </section>
+
+      <main class="app-main">
+        <section class="notebook-overview-page">
+        <section class="focus-strip">
+          <div class="focus-copy">
+            <span class="eyebrow">ད་ལྟའི་བརྗོད་གཞི། 当前主题</span>
+            <h2 class="focus-title image-title" id="focusPerson" aria-label="不离">
+              <img class="buli-title-image" src="assets/buli-gold-title.png" alt="" aria-hidden="true" loading="lazy" decoding="async" fetchpriority="low" />
+            </h2>
+            <p id="focusMeta">ཟིན་བྲིས། 0 篇笔记</p>
+          </div>
+          <figure class="focus-lamp">
+            <img src="assets/oil-lamp.jpg" alt="油灯照片" loading="lazy" decoding="async" fetchpriority="low" />
+          </figure>
+        </section>
+
+        <form class="module-editor overview-gallery-editor" data-module-form="focusGallery">
+          <input name="title" type="text" placeholder="ཁ་བྱང་ 相册标题" autocomplete="off" />
+          <input name="subtitle" type="text" placeholder="སྡེ་ཚན། 小标题" autocomplete="off" />
+          <label class="module-file-button">
+            <input name="image" type="file" accept="image/*" />
+            <span>选择图片</span>
+          </label>
+          <button type="submit">加入相册</button>
+        </form>
+
+        <section class="photo-film" id="focusGallery" aria-label="不离相册"></section>
+
+        <section class="stats-ribbon" aria-label="笔记统计">
+          <div>
+            <strong id="totalCount">0</strong>
+            <span>篇笔记</span>
+          </div>
+          <div>
+            <strong id="personCount">0</strong>
+            <span>位人物</span>
+          </div>
+          <div>
+            <strong id="tagCount">0</strong>
+            <span>个标签</span>
+          </div>
+        </section>
+        </section>
+
+        <section class="portrait-pages" aria-label="法相庄严彩页">
+          <div class="section-head">
+            <div>
+              <span class="eyebrow">སྐུ་པར། Portrait Inserts</span>
+              <h2>སྐུ་མདངས། 法相庄严</h2>
+            </div>
+          </div>
+          <form class="module-editor" data-module-form="portraits">
+            <input name="title" type="text" placeholder="ཁ་བྱང་ 标题" autocomplete="off" />
+            <input name="subtitle" type="text" placeholder="སྡེ་ཚན། 小标题" autocomplete="off" />
+            <label class="module-file-button">
+              <input name="image" type="file" accept="image/*" />
+              <span>选择图片</span>
+            </label>
+            <button type="submit">加入法相</button>
+          </form>
+          <div class="portrait-grid" id="portraitGrid"></div>
+        </section>
+
+        <section class="event-pages" aria-label="岁月锚点便签">
+          <div class="section-head">
+            <div>
+              <span class="eyebrow">ལོ་རྒྱུས། Milestones</span>
+              <h2>ལོ་ཟླའི་གནད། 岁月锚点</h2>
+            </div>
+          </div>
+          <form class="module-editor milestone-editor" data-module-form="milestones">
+            <input name="subtitle" type="text" placeholder="ལོ། 年份 / 锚点" autocomplete="off" />
+            <input name="title" type="text" placeholder="ཁ་བྱང་། 标题" autocomplete="off" />
+            <textarea name="body" placeholder="ཟིན་བྲིས། 便签内容"></textarea>
+            <button type="submit">加入锚点</button>
+          </form>
+          <div class="event-strip milestone-strip" id="milestoneStrip"></div>
+        </section>
+
+        <section class="academy-gallery" aria-label="家乡风光装饰彩页">
+          <div class="section-head">
+            <div>
+              <span class="eyebrow">བླ་རུང་། Larung Views</span>
+              <h2>ཕ་ཡུལ་མཛེས་སྡུག 家乡风光</h2>
+            </div>
+          </div>
+          <form class="module-editor" data-module-form="academy">
+            <input name="title" type="text" placeholder="ཁ་བྱང་ 标题" autocomplete="off" />
+            <input name="subtitle" type="text" placeholder="སྡེ་ཚན། 小标题" autocomplete="off" />
+            <label class="module-file-button">
+              <input name="image" type="file" accept="image/*" />
+              <span>选择图片</span>
+            </label>
+            <button type="submit">加入风光</button>
+          </form>
+          <div class="academy-mosaic" id="academyMosaic"></div>
+        </section>
+
+        <section class="color-pages" aria-label="笔记本彩页">
+          <div class="section-head">
+            <div>
+              <span class="eyebrow">ཚོན་ལྡན་ཤོག་ངོས། Color Inserts</span>
+              <h2>ཚོན་ལྡན་ཤོག་ངོས། 彩页</h2>
+            </div>
+          </div>
+          <form class="module-editor" data-module-form="colorPages">
+            <input name="title" type="text" placeholder="ཁ་བྱང་ 标题" autocomplete="off" />
+            <input name="subtitle" type="text" placeholder="སྡེ་ཚན། 小标题" autocomplete="off" />
+            <label class="module-file-button">
+              <input name="image" type="file" accept="image/*" />
+              <span>选择图片</span>
+            </label>
+            <button type="submit">加入彩页</button>
+          </form>
+          <div class="page-strip" id="colorPageStrip"></div>
+        </section>
+
+        <section class="practice-counter-page" aria-label="修行计数模块">
+          <div class="section-head">
+            <div>
+              <span class="eyebrow">སྔོན་འགྲོ། Practice Counter</span>
+              <h2>五加行计数</h2>
+            </div>
+          </div>
+          <form class="module-editor practice-counter-editor" id="practiceCounterForm">
+            <input name="title" type="text" placeholder="功课名称，如莲师心咒" autocomplete="off" />
+            <input name="target" type="number" min="1" step="1" placeholder="目标数量" />
+            <input name="step" type="number" min="1" step="1" placeholder="每次增加，如 108" />
+            <button type="submit">加入计数</button>
+          </form>
+          <div class="practice-summary" id="practiceSummary"></div>
+          <div class="practice-counter-grid" id="practiceCounterGrid"></div>
+        </section>
+
+        <section class="ppt-organizer-page" aria-label="PPT整理模块">
+          <div class="section-head">
+            <div>
+              <span class="eyebrow">སློབ་ཁྲིད། PPT Organizer</span>
+              <h2>课堂笔记整理</h2>
+            </div>
+          </div>
+          <form class="module-editor ppt-note-editor" id="pptNoteForm">
+            <input name="title" type="text" placeholder="课程 / 主题" autocomplete="off" />
+            <input name="subtitle" type="text" placeholder="课次 / 页码 / 日期" autocomplete="off" />
+            <textarea name="body" placeholder="要点一&#10;要点二&#10;疑问 / 待复习"></textarea>
+            <button type="submit">加入整理</button>
+          </form>
+          <div class="ppt-note-list" id="pptNoteList"></div>
+        </section>
+
+        <section class="notebook-index-page">
+        <label class="search-box" for="searchInput">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.3-4.3"></path>
+          </svg>
+          <input id="searchInput" type="search" placeholder="搜索地点、主题、正文" autocomplete="off" />
+        </label>
+
+        <nav class="type-filter" aria-label="笔记类型">
+          <button class="type-button active" data-filter="all" type="button">ཚང་མ། 全部</button>
+          <button class="type-button" data-filter="diary" type="button">ཉིན་ཐོ། 日记</button>
+          <button class="type-button" data-filter="reading" type="button">ཀློག་ཐོ། 读书</button>
+          <button class="type-button" data-filter="memo" type="button">དྲན་ཐོ། 备忘</button>
+          <button class="type-button" data-filter="timeline" type="button">གདམས་ངག 教言</button>
+        </nav>
+
+        <section class="section-head">
+          <div>
+            <span class="eyebrow">Notebook Index</span>
+            <h2 id="listTitle">ཚང་མ། 全部笔记</h2>
+          </div>
+          <select id="sortSelect" title="排序">
+            <option value="updated">ཉེ་ཆར་བསྒྱུར། 最近编辑</option>
+            <option value="dateDesc">གསར་ནས་རྙིང་། 日期从新到旧</option>
+            <option value="dateAsc">རྙིང་ནས་གསར། 日期从旧到新</option>
+            <option value="title">ཁ་བྱང་། 标题</option>
+          </select>
+        </section>
+
+        <section class="note-list" id="noteList" aria-label="笔记列表"></section>
+        </section>
+
+        <section class="editor-card" aria-label="笔记编辑器">
+          <div class="editor-toolbar">
+            <div class="segmented" role="tablist" aria-label="视图">
+              <button class="segment active" id="writeViewButton" type="button">འབྲི། 书写</button>
+              <button class="segment" id="timelineViewButton" type="button">གདམས་ངག 教言</button>
+            </div>
+            <div class="editor-actions">
+              <span class="save-state" id="saveState">已保存</span>
+              <button class="round-button small primary" id="editorNewNoteButton" type="button" title="新增笔记" aria-label="新增笔记">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M5 12h14"></path>
+                  <path d="M12 5v14"></path>
+                </svg>
+              </button>
+              <button class="round-button small" id="pinButton" type="button" title="置顶" aria-label="置顶">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 17v5"></path>
+                  <path d="M5 17h14"></path>
+                  <path d="M12 3 8 7v4l-3 3v3h14v-3l-3-3V7z"></path>
+                </svg>
+              </button>
+              <button class="round-button small danger" id="deleteButton" type="button" title="删除笔记" aria-label="删除笔记">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M3 6h18"></path>
+                  <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+                  <path d="M10 11v6"></path>
+                  <path d="M14 11v6"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <section class="page-theme-picker" aria-label="空白页样式">
+            <button class="page-theme-option active" data-page-theme="sky" type="button">
+              <img src="assets/page-sky-rainbow.jpg" alt="霓映虚空空白页预览" loading="lazy" decoding="async" fetchpriority="low" />
+              <span>འཇའ་ཚོན། 霓映虚空</span>
+            </button>
+            <button class="page-theme-option" data-page-theme="night" type="button">
+              <img src="assets/page-night-lights.jpg" alt="万灯垂寰空白页预览" loading="lazy" decoding="async" fetchpriority="low" />
+              <span>སྒྲོན་མེ། 万灯垂寰</span>
+            </button>
+            <button class="page-theme-option" data-page-theme="kindness1" type="button">
+              <img src="assets/blank-page-kindness-01.jpg" alt="山路塔城空白页预览" loading="lazy" decoding="async" fetchpriority="low" />
+              <span>ལམ་བཟང་། 善意山路</span>
+            </button>
+            <button class="page-theme-option" data-page-theme="kindness2" type="button">
+              <img src="assets/blank-page-kindness-02.jpg" alt="安乐花朵空白页预览" loading="lazy" decoding="async" fetchpriority="low" />
+              <span>མེ་ཏོག 安乐花朵</span>
+            </button>
+            <button class="page-theme-option" data-page-theme="kindness3" type="button">
+              <img src="assets/blank-page-kindness-03.jpg" alt="暖心经幡空白页预览" loading="lazy" decoding="async" fetchpriority="low" />
+              <span>དར་ལྕོག 暖心经幡</span>
+            </button>
+            <button class="page-theme-option" data-page-theme="kindness4" type="button">
+              <img src="assets/blank-page-kindness-04.jpg" alt="光明空白页预览" loading="lazy" decoding="async" fetchpriority="low" />
+              <span>འོད་སྣང་། 光明</span>
+            </button>
+            <button class="page-theme-option" data-page-theme="kindness5" type="button">
+              <img src="assets/blank-page-kindness-05.jpg" alt="晴空经幡空白页预览" loading="lazy" decoding="async" fetchpriority="low" />
+              <span>ནམ་མཁའ། 晴空经幡</span>
+            </button>
+          </section>
+
+          <section class="memo-calendar-picker hidden" id="memoCalendarPicker" aria-label="备忘日历类型">
+            <div>
+              <span class="eyebrow">དྲན་ཐོའི་ལོ་ཐོ། Memo Calendar</span>
+              <strong id="memoCalendarTitle">公历日历</strong>
+            </div>
+            <div class="calendar-mode-buttons">
+              <button class="calendar-mode-button active" data-calendar-mode="gregorian" type="button">སྤྱི་ལོ། 公历日历</button>
+              <button class="calendar-mode-button" data-calendar-mode="tibetan" type="button">བོད་ཟླ། 藏历日历</button>
+            </div>
+            <div class="memo-calendar-decor" id="memoCalendarDecor" aria-hidden="true">
+              <span class="sky"></span>
+              <span class="night"></span>
+            </div>
+          </section>
+
+          <form class="editor-form" id="editorForm">
+            <input id="noteTitle" class="title-input" type="text" placeholder="ཁ་བྱང་ / 标题" autocomplete="off" />
+            <div class="meta-grid">
+              <label>
+                <span>རིགས། 类型</span>
+                <select id="noteType">
+                  <option value="diary">ཉིན་ཐོ། 日记</option>
+                  <option value="reading">ཀློག་ཐོ། 读书笔记</option>
+                  <option value="memo">དྲན་ཐོ། 备忘录</option>
+                  <option value="timeline">གདམས་ངག 教言摘录</option>
+                </select>
+              </label>
+              <label>
+                <span>ཟླ་ཚེས། 日期</span>
+                <input id="noteDate" type="date" />
+              </label>
+              <label>
+                <span>སྐྱེས་བུ། 人物</span>
+                <input id="notePerson" type="text" placeholder="" autocomplete="off" />
+              </label>
+              <label>
+                <span>གནས། 地点 / 来源</span>
+                <input id="noteSource" type="text" placeholder="色达、五台山、书名或讲记" autocomplete="off" />
+              </label>
+            </div>
+            <label class="tags-field">
+              <span>མཚོན་རྟགས། 标签</span>
+              <input id="noteTags" type="text" placeholder="信心, 弘法, 色达, 读书摘录" autocomplete="off" />
+            </label>
+            <section class="memo-calendar hidden" id="memoCalendarPreview" aria-label="备忘日历页"></section>
+            <section class="note-image-panel" aria-label="笔记图片">
+              <div class="note-image-head">
+                <span>འདྲ་པར། 插入图片</span>
+                <label class="note-image-button">
+                  <input id="noteImageInput" type="file" accept="image/*" multiple />
+                  <span>选择图片</span>
+                </label>
+              </div>
+              <div class="note-image-grid" id="noteImageGrid"></div>
+            </section>
+            <textarea id="noteBody" placeholder="ཟིན་བྲིས། 记录传记片段、读书摘录、今日感想或待办。"></textarea>
+            <div class="page-decoration" id="pageDecoration" aria-hidden="true"></div>
+          </form>
+
+          <div class="timeline-view hidden teaching-manager" id="timelineView" aria-label="教言摘录管理"></div>
+        </section>
+
+        <footer class="back-cover" aria-label="笔记本尾页">
+          <img src="assets/back-cover-garuda-larung.png" alt="靠近我温暖你笔记本尾页" loading="lazy" decoding="async" fetchpriority="low" />
+        </footer>
+      </main>
+    </div>
+
+    <template id="noteCardTemplate">
+      <article class="note-card">
+        <button type="button" class="note-card-button">
+          <div class="note-card-top">
+            <span class="type-pill"></span>
+            <span class="note-date"></span>
+          </div>
+          <h3></h3>
+          <p></p>
+          <div class="note-card-bottom">
+            <span class="person-chip"></span>
+            <span class="pin-chip hidden">置顶</span>
+          </div>
+        </button>
+      </article>
+    </template>
+
+    <script src="app.js"></script>
+  </body>
+</html>

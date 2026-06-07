@@ -56,6 +56,9 @@
       <section class="front-matter" aria-label="笔记本扉页">
         <article class="flyleaf-page teaching-page">
           <span class="flyleaf-kicker">གདམས་ངག · 扉页一</span>
+          <figure class="teaching-image-frame">
+            <img src="assets/flyleaf-protection-eyes.jpg" alt="护法眼坛城图案" loading="eager" decoding="async" fetchpriority="high" />
+          </figure>
           <div class="teaching-signboard" aria-label="莫舍己道，勿扰他心">
             <p class="signboard-tibetan">རང་གི་ལམ་མ་འདོར། གཞན་གྱི་སེམས་མ་དཀྲུགས།</p>
             <h2>
@@ -101,50 +104,38 @@
           </figure>
         </section>
 
-        <section class="photo-film" aria-label="喇荣五明佛学院风景">
-          <div class="photo-card large">
-            <img src="assets/larung-real-panorama.jpg" alt="喇荣五明佛学院夜色全景" loading="lazy" decoding="async" fetchpriority="low" />
-            <div>
-              <span>LARUNG GAR</span>
-              <strong>夜色山谷</strong>
-            </div>
+        <section class="bloom-garden" id="bloomGarden" aria-label="遍地开花">
+          <div class="bloom-sky" aria-hidden="true">
+            <span class="cloud cloud-one"></span>
+            <span class="cloud cloud-two"></span>
+            <span class="halo"></span>
           </div>
-          <div class="photo-card">
-            <img src="assets/larung-real-lights.jpg" alt="喇荣五明佛学院灯火红屋" loading="lazy" decoding="async" fetchpriority="low" />
-            <div>
-              <span>LIGHTS</span>
-              <strong>灯火红屋</strong>
-            </div>
+          <div class="garden-companions" aria-label="花园合影照片位">
+            <label class="garden-photo-seat teacher">
+              <input data-bloom-photo-input="teacher" type="file" accept="image/*" />
+              <img id="bloomTeacherPhoto" alt="上师照片" />
+              <span>上师照片</span>
+            </label>
+            <label class="garden-photo-seat self">
+              <input data-bloom-photo-input="self" type="file" accept="image/*" />
+              <img id="bloomSelfPhoto" alt="自己照片" />
+              <span>自己照片</span>
+            </label>
           </div>
-          <div class="photo-card">
-            <img src="assets/larung-real-snow.jpg" alt="喇荣五明佛学院雪景" loading="lazy" decoding="async" fetchpriority="low" />
-            <div>
-              <span>SNOW</span>
-              <strong>雪落山坡</strong>
-            </div>
+          <div class="bloom-field" aria-hidden="true"></div>
+          <div class="bloom-real-flowers" aria-hidden="true">
+            <span class="flower-meadow flower-back"></span>
+            <span class="flower-meadow flower-mid"></span>
+            <span class="flower-meadow flower-front"></span>
           </div>
-        </section>
-
-        <section class="stats-ribbon" aria-label="笔记统计">
-          <div>
-            <strong id="totalCount">0</strong>
-            <span>篇笔记</span>
-          </div>
-          <div>
-            <strong id="personCount">0</strong>
-            <span>位人物</span>
-          </div>
-          <div>
-            <strong id="tagCount">0</strong>
-            <span>个标签</span>
-          </div>
+          <button class="bloom-button" id="bloomGardenButton" type="button">遍地花开</button>
         </section>
         </section>
 
         <section class="portrait-pages" aria-label="法相庄严彩页">
           <div class="section-head">
             <div>
-              <span class="eyebrow">སྐུ་པར། Portrait Inserts</span>
+              <span class="eyebrow">སྐུ་པར། 法相彩页</span>
               <h2>སྐུ་མདངས། 法相庄严</h2>
             </div>
           </div>
@@ -160,10 +151,77 @@
           <div class="portrait-grid" id="portraitGrid"></div>
         </section>
 
+        <section class="offering-lamp-page" aria-label="供灯页面">
+          <div class="section-head">
+            <div>
+              <span class="eyebrow">མཆོད་མེ། 供灯</span>
+              <h2>供灯</h2>
+            </div>
+          </div>
+          <div class="offering-lamp-scene" id="offeringLampScene">
+            <div class="offering-buddha-wall" id="offeringBuddhaWall" aria-label="佛像相片背景墙"></div>
+            <div class="offering-lamp-stage" aria-hidden="true">
+              <span class="offering-flame flame-one"></span>
+              <span class="offering-flame flame-two"></span>
+              <span class="offering-flame flame-three"></span>
+              <span class="offering-flame flame-four"></span>
+              <span class="offering-flame flame-five"></span>
+              <span class="offering-flame flame-six"></span>
+              <span class="offering-flame flame-seven"></span>
+              <span class="offering-flame flame-eight"></span>
+              <span class="offering-flame flame-nine"></span>
+              <span class="offering-flame flame-ten"></span>
+              <span class="offering-flame flame-eleven"></span>
+              <span class="offering-flame flame-twelve"></span>
+              <span class="offering-flame flame-thirteen"></span>
+              <span class="offering-flame flame-fourteen"></span>
+              <span class="offering-flame flame-fifteen"></span>
+              <span class="offering-flame flame-sixteen"></span>
+              <span class="offering-flame flame-seventeen"></span>
+              <span class="offering-flame flame-eighteen"></span>
+              <span class="offering-flame flame-nineteen"></span>
+              <span class="offering-flame flame-twenty"></span>
+              <span class="offering-flame flame-twenty-one"></span>
+              <span class="offering-flame flame-twenty-two"></span>
+              <span class="offering-flame flame-twenty-three"></span>
+              <span class="offering-flame flame-twenty-four"></span>
+              <span class="offering-flame flame-twenty-five"></span>
+              <span class="offering-flame flame-twenty-six"></span>
+              <span class="offering-flame flame-twenty-seven"></span>
+              <span class="offering-flame flame-twenty-eight"></span>
+              <span class="offering-flame flame-twenty-nine"></span>
+              <span class="offering-flame flame-thirty"></span>
+            </div>
+            <button class="offering-lamp" id="offeringLampButton" type="button" aria-label="供灯">
+              <span class="real-main-lamp" aria-hidden="true"></span>
+              <span class="lamp-aura" aria-hidden="true"></span>
+              <span class="lamp-flame" aria-hidden="true"></span>
+              <span class="lamp-wick" aria-hidden="true"></span>
+              <span class="lamp-bowl" aria-hidden="true">
+                <span class="lamp-oil"></span>
+              </span>
+              <span class="lamp-stem" aria-hidden="true"></span>
+              <span class="lamp-base" aria-hidden="true"></span>
+            </button>
+            <div class="offering-lamp-panel">
+              <strong id="offeringLampStatus">愿以此灯，照破无明。</strong>
+              <span id="offeringLampMeta">轻触供灯，点亮灯火。</span>
+              <div class="offering-buddha-controls">
+                <label class="offering-buddha-upload">
+                  <input id="offeringBuddhaInput" type="file" accept="image/*" multiple />
+                  <span>添加佛像</span>
+                </label>
+                <button class="offering-buddha-reset" id="offeringBuddhaReset" type="button">更改图像</button>
+              </div>
+              <button class="offering-lamp-action" id="offeringLampAction" type="button">供灯</button>
+            </div>
+          </div>
+        </section>
+
         <section class="event-pages" aria-label="岁月锚点便签">
           <div class="section-head">
             <div>
-              <span class="eyebrow">ལོ་རྒྱུས། Milestones</span>
+              <span class="eyebrow">ལོ་རྒྱུས། 岁月锚点</span>
               <h2>ལོ་ཟླའི་གནད། 岁月锚点</h2>
             </div>
           </div>
@@ -179,7 +237,7 @@
         <section class="academy-gallery" aria-label="家乡风光装饰彩页">
           <div class="section-head">
             <div>
-              <span class="eyebrow">བླ་རུང་། Larung Views</span>
+              <span class="eyebrow">བླ་རུང་། 家乡风光</span>
               <h2>ཕ་ཡུལ་མཛེས་སྡུག 家乡风光</h2>
             </div>
           </div>
@@ -198,7 +256,7 @@
         <section class="color-pages" aria-label="笔记本彩页">
           <div class="section-head">
             <div>
-              <span class="eyebrow">ཚོན་ལྡན་ཤོག་ངོས། Color Inserts</span>
+              <span class="eyebrow">ཚོན་ལྡན་ཤོག་ངོས། 彩页</span>
               <h2>ཚོན་ལྡན་ཤོག་ངོས། 彩页</h2>
             </div>
           </div>
@@ -212,6 +270,54 @@
             <button type="submit">加入彩页</button>
           </form>
           <div class="page-strip" id="colorPageStrip"></div>
+        </section>
+
+        <section class="practice-counter-page" aria-label="功课计数模块">
+          <div class="section-head">
+            <div>
+              <span class="eyebrow">སྔོན་འགྲོ། 功课计数</span>
+              <h2>功课计数</h2>
+            </div>
+          </div>
+          <form class="module-editor practice-counter-editor" id="practiceCounterForm">
+            <input name="title" type="text" placeholder="功课名称，如莲师心咒" autocomplete="off" />
+            <input name="target" type="number" min="1" step="1" placeholder="目标数量" />
+            <input name="step" type="number" min="1" step="1" placeholder="每次增加，如 108" />
+            <button type="submit">加入计数</button>
+          </form>
+          <div class="practice-summary" id="practiceSummary"></div>
+          <div class="practice-counter-grid" id="practiceCounterGrid"></div>
+        </section>
+
+        <section class="ppt-organizer-page" aria-label="课堂整理模块">
+          <div class="section-head">
+            <div>
+              <span class="eyebrow">སློབ་ཁྲིད། 课堂整理</span>
+              <h2>课堂笔记整理</h2>
+            </div>
+          </div>
+          <form class="module-editor ppt-project-editor" id="pptProjectForm">
+            <input name="title" type="text" placeholder="项目名称，如《入行论》第三品" autocomplete="off" />
+            <input name="subtitle" type="text" placeholder="说明 / 课程阶段" autocomplete="off" />
+            <button type="submit">新增项目</button>
+          </form>
+          <div class="ppt-project-tabs" id="pptProjectTabs" aria-label="课堂笔记项目"></div>
+          <form class="module-editor ppt-note-editor" id="pptNoteForm">
+            <input name="title" type="text" placeholder="课程 / 主题" autocomplete="off" />
+            <input name="subtitle" type="text" placeholder="课次 / 页码 / 日期" autocomplete="off" />
+            <select name="projectId" aria-label="标注项目（可多选）" multiple size="3"></select>
+            <textarea name="body" placeholder="要点一&#10;要点二&#10;疑问 / 待复习"></textarea>
+            <label class="ppt-attachment-button">
+              <input
+                name="attachment"
+                type="file"
+                accept=".ppt,.pptx,.doc,.docx,.pdf,.txt,.md,.jpg,.jpeg,.png,.webp,.gif,.bmp,image/*,text/plain,text/markdown,application/pdf,application/msword,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+              />
+              <span>添加附件</span>
+            </label>
+            <button type="submit">加入整理</button>
+          </form>
+          <div class="ppt-note-list" id="pptNoteList"></div>
         </section>
 
         <section class="notebook-index-page">
@@ -233,7 +339,7 @@
 
         <section class="section-head">
           <div>
-            <span class="eyebrow">Notebook Index</span>
+            <span class="eyebrow">笔记索引</span>
             <h2 id="listTitle">ཚང་མ། 全部笔记</h2>
           </div>
           <select id="sortSelect" title="排序">
@@ -255,6 +361,12 @@
             </div>
             <div class="editor-actions">
               <span class="save-state" id="saveState">已保存</span>
+              <button class="round-button small primary" id="editorNewNoteButton" type="button" title="新增笔记" aria-label="新增笔记">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M5 12h14"></path>
+                  <path d="M12 5v14"></path>
+                </svg>
+              </button>
               <button class="round-button small" id="pinButton" type="button" title="置顶" aria-label="置顶">
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M12 17v5"></path>
@@ -274,40 +386,11 @@
             </div>
           </div>
 
-          <section class="page-theme-picker" aria-label="空白页样式">
-            <button class="page-theme-option active" data-page-theme="sky" type="button">
-              <img src="assets/page-sky-rainbow.jpg" alt="霓映虚空空白页预览" loading="lazy" decoding="async" fetchpriority="low" />
-              <span>འཇའ་ཚོན། 霓映虚空</span>
-            </button>
-            <button class="page-theme-option" data-page-theme="night" type="button">
-              <img src="assets/page-night-lights.jpg" alt="万灯垂寰空白页预览" loading="lazy" decoding="async" fetchpriority="low" />
-              <span>སྒྲོན་མེ། 万灯垂寰</span>
-            </button>
-            <button class="page-theme-option" data-page-theme="kindness1" type="button">
-              <img src="assets/blank-page-kindness-01.jpg" alt="山路塔城空白页预览" loading="lazy" decoding="async" fetchpriority="low" />
-              <span>ལམ་བཟང་། 善意山路</span>
-            </button>
-            <button class="page-theme-option" data-page-theme="kindness2" type="button">
-              <img src="assets/blank-page-kindness-02.jpg" alt="安乐花朵空白页预览" loading="lazy" decoding="async" fetchpriority="low" />
-              <span>མེ་ཏོག 安乐花朵</span>
-            </button>
-            <button class="page-theme-option" data-page-theme="kindness3" type="button">
-              <img src="assets/blank-page-kindness-03.jpg" alt="暖心经幡空白页预览" loading="lazy" decoding="async" fetchpriority="low" />
-              <span>དར་ལྕོག 暖心经幡</span>
-            </button>
-            <button class="page-theme-option" data-page-theme="kindness4" type="button">
-              <img src="assets/blank-page-kindness-04.jpg" alt="光明空白页预览" loading="lazy" decoding="async" fetchpriority="low" />
-              <span>འོད་སྣང་། 光明</span>
-            </button>
-            <button class="page-theme-option" data-page-theme="kindness5" type="button">
-              <img src="assets/blank-page-kindness-05.jpg" alt="晴空经幡空白页预览" loading="lazy" decoding="async" fetchpriority="low" />
-              <span>ནམ་མཁའ། 晴空经幡</span>
-            </button>
-          </section>
+          <section class="page-theme-picker" id="pageThemePicker" aria-label="空白页样式"></section>
 
           <section class="memo-calendar-picker hidden" id="memoCalendarPicker" aria-label="备忘日历类型">
             <div>
-              <span class="eyebrow">དྲན་ཐོའི་ལོ་ཐོ། Memo Calendar</span>
+              <span class="eyebrow">དྲན་ཐོའི་ལོ་ཐོ། 备忘日历</span>
               <strong id="memoCalendarTitle">公历日历</strong>
             </div>
             <div class="calendar-mode-buttons">
