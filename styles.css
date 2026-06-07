@@ -10544,3 +10544,61 @@ textarea:focus,
     grid-template-columns: 1fr;
   }
 }
+/* =========================================================
+   Last page only fix
+   Purpose: make the final back cover display completely on Android,
+   like a real notebook cover, without changing other pages/functions.
+   Place this block at the very end of assets/styles.css.
+   ========================================================= */
+.back-cover.notebook-page {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-width: 100% !important;
+  height: 100dvh !important;
+  min-height: 100dvh !important;
+  max-height: 100dvh !important;
+  padding: max(14px, env(safe-area-inset-top)) 14px max(54px, env(safe-area-inset-bottom)) !important;
+  overflow: hidden !important;
+  background: var(--orange) !important;
+}
+
+.back-cover.notebook-page::after {
+  display: none !important;
+}
+
+.back-cover.notebook-page > img {
+  display: block !important;
+  width: auto !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: calc(100dvh - max(76px, env(safe-area-inset-top) + env(safe-area-inset-bottom) + 58px)) !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  object-fit: contain !important;
+  object-position: center center !important;
+  border-radius: var(--radius) !important;
+  box-shadow: var(--shadow) !important;
+}
+
+.back-cover.notebook-page > .notebook-page-footer {
+  position: absolute !important;
+  right: auto !important;
+  bottom: max(2px, env(safe-area-inset-bottom)) !important;
+  left: 50% !important;
+  z-index: 80 !important;
+  transform: translateX(-50%) !important;
+}
+
+@media (max-width: 520px) {
+  .back-cover.notebook-page {
+    padding: max(10px, env(safe-area-inset-top)) 10px max(48px, env(safe-area-inset-bottom)) !important;
+  }
+
+  .back-cover.notebook-page > img {
+    max-width: 100% !important;
+    max-height: calc(100dvh - max(68px, env(safe-area-inset-top) + env(safe-area-inset-bottom) + 50px)) !important;
+  }
+}
