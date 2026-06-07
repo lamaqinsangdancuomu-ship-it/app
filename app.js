@@ -4960,3 +4960,869 @@ async function addPageWallpapers(event) {
     input.value = "";
   }
 }
+/* === Buli Complete Logic Fix: note index, mature templates, classroom pages, offering buttons === */
+(function buliCompleteLogicFix() {
+  if (window.__BULI_COMPLETE_LOGIC_FIX_V1__) return;
+  window.__BULI_COMPLETE_LOGIC_FIX_V1__ = true;
+
+  const $ = (selector, root = document) => root.querySelector(selector);
+  const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
+  const today = () => new Date().toISOString().slice(0, 10);
+  const safeText = (value) => String(value || "").trim();
+  const id = () => (globalThis.crypto?.randomUUID?.() || `buli-${Date.now()}-${Math.random().toString(16).slice(2)}`);
+
+  const NOTE_TEMPLATES_MATURE = {
+    diary: {
+      label: "日课日记",
+      title: "日课日记",
+      sourcePlaceholder: "地点 / 今日因缘",
+      tags: ["日课", "反观", "感恩"],
+      body: `日期：
+天气：
+地点：
+今日心境：
+
+一、今日所历
+记录今天重要的人、事、因缘。
+
+二、今日所感
+记录内心触动、烦恼、欢喜、惭愧、感恩。
+
+三、今日修持
+□ 念诵
+□ 闻法
+□ 供灯
+□ 放生
+□ 忏悔
+□ 回向
+□ 其他：
+
+四、今日反观
+今天我在哪一处起了执著？
+今天我有没有伤害众生？
+今天我有没有生起一念善心？
+
+五、今日感恩
+-
+
+六、明日一愿
+愿我明日：
+-`
+    },
+    reading: {
+      label: "法本读书笔记",
+      title: "法本读书笔记",
+      sourcePlaceholder: "书名 / 法本 / 讲记",
+      tags: ["法本", "读书", "待复习"],
+      body: `书名 / 法本：
+作者 / 译者：
+章节 / 品名：
+页码 / 位置：
+阅读日期：
+
+一、原文摘录
+「」
+
+二、关键词
+#无常  #菩提心  #空性  #出离心
+
+三、我的理解
+这段文字主要说明：
+-
+
+四、与修行的关系
+它提醒我：
+它对治我：
+它可以落实在：
+
+五、疑问与待查
+-
+
+六、复习标记
+□ 需要重读
+□ 需要背诵
+□ 需要请教
+□ 已理解
+□ 已落实`
+    },
+    memo: {
+      label: "备忘录",
+      title: "备忘录",
+      sourcePlaceholder: "地点 / 相关事项",
+      tags: ["备忘", "待办"],
+      body: `事项标题：
+日期：
+提醒时间：
+重要程度：普通 / 重要 / 紧急
+
+一、待办事项
+□ 
+□ 
+□ 
+
+二、所需准备
+-
+
+三、相关联系人 / 地点
+-
+
+四、完成记录
+-`
+    },
+    timeline: {
+      label: "教言摘录",
+      title: "教言摘录",
+      sourcePlaceholder: "上师 / 来源 / 法本 / 开示",
+      tags: ["教言", "闻思", "待落实"],
+      body: `教言标题：
+上师 / 来源：
+法本 / 开示：
+日期：
+
+一、教言原文
+「」
+
+二、关键词
+#菩提心  #无常  #依止上师
+
+三、要义整理
+这句教言的核心是：
+-
+
+四、对我的提醒
+我应当反观：
+-
+
+五、落实方式
+今天可以落实的一件事：
+-
+
+六、回向 / 发愿
+愿以此闻思善根：
+-`
+    }
+  };
+
+  const CLASSROOM_TEMPLATES_MATURE = {
+    index: {
+      label: "索引",
+      title: "闻思修学目录",
+      hint: "自动汇集已保存的闻法、闻思、温习与法本整理。"
+    },
+    outline: {
+      label: "提纲",
+      title: "闻法提纲",
+      status: "capture",
+      tags: "闻法提纲, 待整理",
+      body: `闻法主题：
+法本 / 开示来源：
+上师 / 法师：
+日期：
+
+一、本课主旨
+-
+
+二、前后文脉络
+-
+
+三、主要教言
+1.
+2.
+3.
+
+四、关键词 / 法义名相
+-
+
+五、我当下最受触动之处
+-
+
+六、待请教 / 待查阅
+-`
+    },
+    cornell: {
+      label: "闻思",
+      title: "闻思整理",
+      status: "organizing",
+      tags: "闻思整理, 待复习",
+      body: `闻法主题：
+日期：
+
+【线索 / 提问区】
+- 本课最核心的问题是：
+- 上师反复强调的是：
+- 我还没有真正理解的是：
+
+【闻法记录区】
+1.
+2.
+3.
+
+【关键词】
+-
+
+【思维整理】
+这段法义对治的是：
+我过去的执著点是：
+可以如何落实到日常：
+
+【总结】
+用三句话总结今日闻思：
+1.
+2.
+3.`
+    },
+    review: {
+      label: "温习",
+      title: "温习复习",
+      status: "review",
+      tags: "温习复习, 待背诵",
+      body: `复习主题：
+复习日期：
+
+一、今日应熟记的教言 / 偈颂
+-
+
+二、必须理解的法义
+1.
+2.
+3.
+
+三、容易忘失 / 混淆之处
+-
+
+四、今日反观
+我是否真正用在身语意中：
+-
+
+五、下一步
+□ 重听开示
+□ 背诵原文
+□ 查阅法本
+□ 请教师兄 / 法师
+□ 落实一件善行`
+    },
+    slides: {
+      label: "法本",
+      title: "法本 / 开示整理",
+      status: "organizing",
+      tags: "法本整理, 共修分享",
+      body: `整理标题：
+适用场景：□ 自修  □ 共修  □ 分享  □ 汇报
+
+一、主题标题
+-
+
+二、三段式结构
+第一部分：
+第二部分：
+第三部分：
+
+三、可引用原文 / 教言
+「」
+
+四、相关公案 / 譬喻
+-
+
+五、图片 / 法本资料
+-
+
+六、结尾回向 / 发愿
+-`
+    }
+  };
+
+  const legacyTemplatePhrases = [
+    "今日所见", "心里想记住的一句", "书名 / 讲记", "摘录：", "教言原文", "落到修行",
+    "线索 / 提问：", "笔记区：", "课后总结：", "可整理成课件", "今日三条收获"
+  ];
+
+  function isEmptyOrTemplateText(value) {
+    const text = safeText(value);
+    if (!text) return true;
+    return legacyTemplatePhrases.some((phrase) => text.includes(phrase)) ||
+      Object.values(NOTE_TEMPLATES_MATURE).some((tpl) => safeText(tpl.body) === text) ||
+      Object.values(CLASSROOM_TEMPLATES_MATURE).some((tpl) => safeText(tpl.body) === text);
+  }
+
+  function setSaveMessage(message) {
+    const target = $("#saveState");
+    if (target) target.textContent = message;
+  }
+
+  function applyOrdinaryTemplate(type, options = {}) {
+    const tpl = NOTE_TEMPLATES_MATURE[type] || NOTE_TEMPLATES_MATURE.diary;
+    const note = typeof getActiveNote === "function" ? getActiveNote() : null;
+    if (!note) return;
+    const shouldReplace = options.force || isEmptyOrTemplateText(note.body) || isEmptyOrTemplateText($("#noteBody")?.value);
+    note.type = type;
+    if (!note.title && options.setTitle !== false) note.title = tpl.title;
+    if (!note.source && $("#noteSource")) $("#noteSource").placeholder = tpl.sourcePlaceholder || "";
+    if ((!Array.isArray(note.tags) || !note.tags.length) && Array.isArray(tpl.tags)) note.tags = [...tpl.tags];
+    if (shouldReplace) note.body = tpl.body;
+    note.updatedAt = Date.now();
+    syncOrdinaryFields(note);
+    if (typeof scheduleSave === "function") scheduleSave();
+    if (typeof render === "function") render();
+    renderEnhancedOrdinaryPanels();
+  }
+
+  function syncOrdinaryFields(note) {
+    if (!note) return;
+    const fields = {
+      noteTitle: note.title || "",
+      noteType: note.type || "diary",
+      noteDate: note.date || today(),
+      notePerson: note.person || "",
+      noteSource: note.source || "",
+      noteTags: Array.isArray(note.tags) ? note.tags.join(", ") : "",
+      noteBody: note.body || ""
+    };
+    Object.entries(fields).forEach(([key, value]) => {
+      const el = $(`#${key}`);
+      if (!el) return;
+      el.value = value;
+    });
+  }
+
+  function createManagedNote(type) {
+    const nextType = type || $("#noteType")?.value || (typeof getActiveNote === "function" ? getActiveNote()?.type : "") || "diary";
+    const tpl = NOTE_TEMPLATES_MATURE[nextType] || NOTE_TEMPLATES_MATURE.diary;
+    const note = typeof createNote === "function" ? createNote({ type: nextType }) : null;
+    if (!note) return;
+    note.type = nextType;
+    note.title = tpl.title;
+    note.date = today();
+    note.source = "";
+    note.tags = [...tpl.tags];
+    note.body = tpl.body;
+    note.updatedAt = Date.now();
+    if (typeof selectNote === "function") selectNote(note.id);
+    syncOrdinaryFields(note);
+    if (typeof scheduleSave === "function") scheduleSave();
+    if (typeof scrollToEditor === "function") scrollToEditor();
+    if (typeof render === "function") render();
+    setSaveMessage("已新建一页");
+  }
+
+  function saveCurrentOrdinaryNote() {
+    if (typeof updateActiveNote === "function") updateActiveNote();
+    try {
+      if (typeof state !== "undefined" && Array.isArray(state.notes)) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state.notes));
+      }
+      setSaveMessage("已保存");
+      renderAllEnhanced();
+    } catch (error) {
+      console.warn("Buli save note failed", error);
+      setSaveMessage("保存失败");
+      alert("保存失败。若刚添加了图片，请换较小图片后再试。");
+    }
+  }
+
+  function deleteCurrentOrdinaryNote() {
+    const note = typeof getActiveNote === "function" ? getActiveNote() : null;
+    if (!note) return;
+    if (!confirm(`确定删除「${note.title || "当前笔记"}」吗？删除后不可恢复。`)) return;
+    if (typeof state !== "undefined" && Array.isArray(state.notes)) {
+      state.notes = state.notes.filter((item) => item.id !== note.id);
+      if (!state.notes.length && typeof createNote === "function") createNote({ silent: true, type: "diary" });
+      state.activeId = state.notes[0]?.id;
+      if (typeof scheduleSave === "function") scheduleSave();
+      if (typeof render === "function") render();
+      renderAllEnhanced();
+    } else {
+      $("#deleteButton")?.click();
+    }
+  }
+
+  function returnToIndex() {
+    if (typeof updateActiveNote === "function") updateActiveNote();
+    const indexPage = $(".notebook-index-page") || $(".note-toc-feature");
+    if (typeof scrollToNotebookPage === "function" && indexPage) {
+      scrollToNotebookPage(indexPage);
+    } else if (indexPage) {
+      indexPage.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }
+
+  function enhanceOrdinaryEditor() {
+    const editor = $(".editor-card");
+    const toolbar = $(".editor-toolbar", editor);
+    const form = $("#editorForm");
+    if (!editor || !toolbar || !form || editor.dataset.buliEnhanced === "true") return;
+    editor.dataset.buliEnhanced = "true";
+    editor.classList.add("buli-enhanced-editor");
+
+    const returnBar = document.createElement("section");
+    returnBar.className = "buli-editor-returnbar";
+    returnBar.innerHTML = `
+      <button type="button" class="buli-return-button" data-buli-note-back>‹ 返回索引</button>
+      <div><strong>修行手账 · 笔记编辑</strong><span>新建内容另起一页，保存后自动进入目录</span></div>
+    `;
+    toolbar.before(returnBar);
+    returnBar.querySelector("[data-buli-note-back]")?.addEventListener("click", returnToIndex);
+
+    const actionBar = document.createElement("section");
+    actionBar.className = "buli-editor-actionbar";
+    actionBar.innerHTML = `
+      <button type="button" class="primary" data-buli-note-new>＋ 新建</button>
+      <button type="button" data-buli-note-save>保存</button>
+      <button type="button" data-buli-note-edit>编辑</button>
+      <button type="button" class="danger" data-buli-note-delete>删除</button>
+    `;
+    toolbar.after(actionBar);
+    actionBar.querySelector("[data-buli-note-new]")?.addEventListener("click", () => createManagedNote($("#noteType")?.value || "diary"));
+    actionBar.querySelector("[data-buli-note-save]")?.addEventListener("click", saveCurrentOrdinaryNote);
+    actionBar.querySelector("[data-buli-note-edit]")?.addEventListener("click", () => $("#noteBody")?.focus());
+    actionBar.querySelector("[data-buli-note-delete]")?.addEventListener("click", deleteCurrentOrdinaryNote);
+
+    const typeTabs = document.createElement("nav");
+    typeTabs.className = "buli-note-type-tabs";
+    typeTabs.setAttribute("aria-label", "笔记分类页面");
+    typeTabs.innerHTML = [
+      ["diary", "日记"],
+      ["reading", "读书"],
+      ["memo", "备忘"],
+      ["timeline", "教言"]
+    ].map(([value, label]) => `<button type="button" data-buli-note-type="${value}">${label}</button>`).join("");
+    actionBar.after(typeTabs);
+    typeTabs.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-buli-note-type]");
+      if (!button) return;
+      const type = button.dataset.buliNoteType;
+      const select = $("#noteType");
+      if (select) select.value = type;
+      applyOrdinaryTemplate(type);
+    });
+
+    const panel = document.createElement("section");
+    panel.className = "buli-current-template-panel";
+    panel.id = "buliCurrentTemplatePanel";
+    typeTabs.after(panel);
+
+    $("#noteType")?.addEventListener("change", () => {
+      const type = $("#noteType")?.value || "diary";
+      applyOrdinaryTemplate(type);
+    });
+
+    ["#newNoteButton", "#indexNewNoteButton", "#editorNewNoteButton"].forEach((selector) => {
+      const button = $(selector);
+      if (!button || button.dataset.buliIntercepted === "true") return;
+      button.dataset.buliIntercepted = "true";
+      button.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        createManagedNote($("#noteType")?.value || "diary");
+      }, true);
+    });
+  }
+
+  function renderEnhancedOrdinaryPanels() {
+    const note = typeof getActiveNote === "function" ? getActiveNote() : null;
+    const type = note?.type || $("#noteType")?.value || "diary";
+    const tpl = NOTE_TEMPLATES_MATURE[type] || NOTE_TEMPLATES_MATURE.diary;
+    $$("[data-buli-note-type]").forEach((button) => {
+      button.classList.toggle("active", button.dataset.buliNoteType === type);
+    });
+    const panel = $("#buliCurrentTemplatePanel");
+    if (panel) {
+      panel.innerHTML = `
+        <div class="buli-template-title"><span>${tpl.label}</span><strong>${type === "diary" ? "日课 · 反观 · 发愿" : type === "reading" ? "法本 · 摘录 · 落实" : type === "memo" ? "事项 · 提醒 · 完成" : "教言 · 要义 · 实修"}</strong></div>
+        <p>${type === "diary" ? "适合记录一日因缘、心境、修持、反观与明日善愿。" : type === "reading" ? "适合法本、论典、开示的摘录、理解、疑问和复习。" : type === "memo" ? "适合快速记录待办事项、提醒时间、重要程度与完成情况。" : "适合保存上师教言、来源、关键词、要义整理与落实发愿。"}</p>
+      `;
+    }
+  }
+
+  function noteMatchesQuery(note, query) {
+    if (!query) return true;
+    return [note.title, note.source, note.person, note.body, ...(note.tags || [])].join(" ").toLowerCase().includes(query);
+  }
+
+  function noteIndexGroupLabel(note, mode) {
+    if (mode === "diary") return getTimeGroup(note.date);
+    if (mode === "reading") return safeText(note.source) || extractField(note.body, "书名 / 法本") || "未分类读书";
+    if (mode === "timeline") return (note.tags || [])[0] || extractField(note.body, "关键词") || "未分类教言";
+    if (mode === "memo") {
+      const body = safeText(note.body);
+      if (/已完成|完成记录[^\n]*\S/.test(body)) return "已完成";
+      if (/紧急|重要/.test(body)) return "重要事项";
+      return "今日待办";
+    }
+    return "最近记录";
+  }
+
+  function extractField(body, label) {
+    const lines = String(body || "").split(/\n/);
+    const line = lines.find((item) => item.includes(label));
+    if (!line) return "";
+    return line.split(/[：:]/).slice(1).join("：").trim();
+  }
+
+  function getTimeGroup(date) {
+    const value = safeText(date);
+    if (!value) return "无日期";
+    const now = new Date();
+    const d = new Date(`${value}T00:00:00`);
+    if (Number.isNaN(d.getTime())) return "更早";
+    const diff = Math.floor((new Date(now.toISOString().slice(0, 10)) - d) / 86400000);
+    if (diff <= 0) return "今日";
+    if (diff <= 7) return "本周";
+    if (d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()) return "本月";
+    return "更早";
+  }
+
+  function enhanceUnifiedIndex() {
+    const indexPage = $(".notebook-index-page");
+    if (!indexPage || $("#buliUnifiedIndex")) return;
+    const panel = document.createElement("section");
+    panel.className = "buli-unified-index";
+    panel.id = "buliUnifiedIndex";
+    const command = $(".index-command-panel", indexPage);
+    (command || $(".index-hero", indexPage) || indexPage).after(panel);
+    panel.addEventListener("click", (event) => {
+      const modeButton = event.target.closest("[data-buli-index-mode]");
+      if (modeButton) {
+        indexPage.dataset.buliIndexMode = modeButton.dataset.buliIndexMode;
+        renderUnifiedIndex();
+        return;
+      }
+      const card = event.target.closest("[data-buli-note-open]");
+      if (card) {
+        if (typeof selectNote === "function") selectNote(card.dataset.buliNoteOpen);
+        if (typeof scrollToEditor === "function") scrollToEditor();
+      }
+    });
+  }
+
+  function renderUnifiedIndex() {
+    const panel = $("#buliUnifiedIndex");
+    if (!panel || typeof state === "undefined") return;
+    const indexPage = $(".notebook-index-page");
+    const mode = indexPage?.dataset.buliIndexMode || state.filter || "all";
+    const query = safeText($("#searchInput")?.value || state.query).toLowerCase();
+    const notes = [...(state.notes || [])]
+      .filter((note) => mode === "all" || note.type === mode)
+      .filter((note) => noteMatchesQuery(note, query))
+      .sort((a, b) => (b.updatedAt || b.createdAt || 0) - (a.updatedAt || a.createdAt || 0));
+
+    const modeLabels = {
+      all: "全部索引",
+      diary: "日记目录",
+      reading: "读书目录",
+      memo: "备忘目录",
+      timeline: "教言目录"
+    };
+    const groups = new Map();
+    notes.forEach((note) => {
+      const group = noteIndexGroupLabel(note, mode);
+      if (!groups.has(group)) groups.set(group, []);
+      groups.get(group).push(note);
+    });
+    const tagged = notes.filter((note) => note.tags?.length).length;
+    const withImages = notes.filter((note) => note.images?.length).length;
+    const reviewLike = notes.filter((note) => /复习|背诵|待查|请教/.test([note.body, ...(note.tags || [])].join(" "))).length;
+
+    panel.innerHTML = `
+      <div class="buli-index-heading">
+        <div><span>དཀར་ཆག ། 修行手账索引</span><strong>${modeLabels[mode] || "全部索引"}</strong></div>
+        <small>日记按时间，读书按法本，教言按主题，备忘按状态，闻思按类型与复习状态。</small>
+      </div>
+      <nav class="buli-index-modes" aria-label="索引分类">
+        ${[["all", "全部"], ["diary", "日记"], ["reading", "读书"], ["memo", "备忘"], ["timeline", "教言"]].map(([value, label]) => `<button type="button" class="${value === mode ? "active" : ""}" data-buli-index-mode="${value}">${label}</button>`).join("")}
+      </nav>
+      <div class="buli-index-stats">
+        <span><strong>${notes.length}</strong>当前</span>
+        <span><strong>${tagged}</strong>有标签</span>
+        <span><strong>${reviewLike}</strong>待复习/背诵</span>
+        <span><strong>${withImages}</strong>有图片</span>
+      </div>
+      <div class="buli-index-groups">
+        ${notes.length ? [...groups.entries()].slice(0, 6).map(([group, items]) => `
+          <section class="buli-index-group">
+            <h3>▼ ${group} <small>${items.length} 条</small></h3>
+            ${items.slice(0, 5).map((note, index) => `
+              <article class="buli-index-card" data-buli-note-open="${note.id}">
+                <span>${String(index + 1).padStart(2, "0")}</span>
+                <div><strong>${safeText(note.title) || "未命名笔记"}</strong><small>${typeLabels?.[note.type] || "笔记"} · ${safeText(note.date) || "无日期"}${note.source ? ` · ${note.source}` : ""}</small>${note.tags?.length ? `<em>${note.tags.slice(0, 4).map((tag) => `#${tag}`).join(" ")}</em>` : ""}</div>
+                <b>›</b>
+              </article>
+            `).join("")}
+            ${items.length > 5 ? `<button type="button" class="buli-index-more">查看更多 ${Math.min(20, items.length - 5)} 条</button>` : ""}
+          </section>
+        `).join("") : `<p class="buli-empty-note">暂无匹配内容。点击“新建”开始记录。</p>`}
+      </div>
+    `;
+  }
+
+  function enhanceClassroom() {
+    const page = $(".ppt-organizer-page");
+    const form = $("#pptNoteForm");
+    const commandbar = $(".ppt-note-commandbar", page);
+    if (!page || !form || !commandbar || page.dataset.buliClassroomEnhanced === "true") return;
+    page.dataset.buliClassroomEnhanced = "true";
+    page.classList.add("buli-classroom-enhanced");
+    page.dataset.buliClassroomMode = "index";
+
+    if (typeof PPT_NOTE_TEMPLATES !== "undefined") {
+      PPT_NOTE_TEMPLATES.outline = { label: "闻法提纲", body: CLASSROOM_TEMPLATES_MATURE.outline.body };
+      PPT_NOTE_TEMPLATES.cornell = { label: "闻思整理", body: CLASSROOM_TEMPLATES_MATURE.cornell.body };
+      PPT_NOTE_TEMPLATES.review = { label: "温习复习", body: CLASSROOM_TEMPLATES_MATURE.review.body };
+      PPT_NOTE_TEMPLATES.slides = { label: "法本整理", body: CLASSROOM_TEMPLATES_MATURE.slides.body };
+    }
+
+    const shell = document.createElement("section");
+    shell.className = "buli-classroom-shell";
+    shell.innerHTML = `
+      <div class="buli-classroom-top">
+        <div><span>སློབ་ཁྲིད། 闻思修学</span><strong>课堂笔记系统</strong></div>
+        <small>新建另起一页，保存后进入索引目录</small>
+      </div>
+      <nav class="buli-classroom-tabs" aria-label="课堂笔记页面">
+        <button type="button" class="active" data-buli-classroom-mode="index">索引</button>
+        <button type="button" data-buli-classroom-mode="outline">提纲</button>
+        <button type="button" data-buli-classroom-mode="cornell">闻思</button>
+        <button type="button" data-buli-classroom-mode="review">温习</button>
+        <button type="button" data-buli-classroom-mode="slides">法本</button>
+      </nav>
+      <div class="buli-classroom-actions">
+        <button type="button" class="primary" data-buli-classroom-new>＋ 新建</button>
+        <button type="button" data-buli-classroom-save>保存</button>
+        <button type="button" data-buli-classroom-edit>编辑</button>
+        <button type="button" class="danger" data-buli-classroom-clear>清空草稿</button>
+      </div>
+      <section class="buli-classroom-index" id="buliClassroomIndex"></section>
+      <section class="buli-classroom-current" id="buliClassroomCurrent"></section>
+    `;
+    commandbar.after(shell);
+
+    shell.addEventListener("click", (event) => {
+      const tab = event.target.closest("[data-buli-classroom-mode]");
+      if (tab) {
+        switchClassroomMode(tab.dataset.buliClassroomMode);
+        return;
+      }
+      if (event.target.closest("[data-buli-classroom-new]")) {
+        resetClassroomDraft(true);
+        return;
+      }
+      if (event.target.closest("[data-buli-classroom-save]")) {
+        if (typeof form.requestSubmit === "function") form.requestSubmit();
+        else form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+        return;
+      }
+      if (event.target.closest("[data-buli-classroom-edit]")) {
+        form.elements.body?.focus();
+        return;
+      }
+      if (event.target.closest("[data-buli-classroom-clear]")) {
+        if (confirm("清空当前课堂笔记草稿？已保存的笔记不会删除。")) resetClassroomDraft(false);
+        return;
+      }
+      const open = event.target.closest("[data-buli-ppt-open]");
+      if (open) {
+        const card = document.querySelector(`[data-module-key="pptNotes"][data-module-id="${open.dataset.buliPptOpen}"]`);
+        card?.scrollIntoView({ behavior: "smooth", block: "center" });
+        card?.classList.add("buli-highlight");
+        setTimeout(() => card?.classList.remove("buli-highlight"), 1200);
+      }
+    });
+
+    form.elements.body?.classList.add("buli-classroom-body-input");
+    renderClassroomPanels();
+  }
+
+  function switchClassroomMode(mode) {
+    const page = $(".ppt-organizer-page");
+    if (!page) return;
+    page.dataset.buliClassroomMode = mode;
+    $$("[data-buli-classroom-mode]").forEach((button) => button.classList.toggle("active", button.dataset.buliClassroomMode === mode));
+    if (mode !== "index") applyClassroomTemplate(mode);
+    renderClassroomPanels();
+  }
+
+  function applyClassroomTemplate(mode) {
+    const form = $("#pptNoteForm");
+    const tpl = CLASSROOM_TEMPLATES_MATURE[mode];
+    if (!form || !tpl) return;
+    if (!safeText(form.elements.title.value)) form.elements.title.value = tpl.title;
+    if (form.elements.status && tpl.status) form.elements.status.value = tpl.status;
+    if (form.elements.tags && !safeText(form.elements.tags.value)) form.elements.tags.value = tpl.tags || "";
+    const body = form.elements.body;
+    if (body && isEmptyOrTemplateText(body.value)) body.value = tpl.body;
+    body?.focus();
+  }
+
+  function resetClassroomDraft(applyTemplate = true) {
+    const form = $("#pptNoteForm");
+    if (!form) return;
+    const mode = $(".ppt-organizer-page")?.dataset.buliClassroomMode || "outline";
+    form.reset();
+    if (applyTemplate && mode !== "index") applyClassroomTemplate(mode);
+    form.elements.title?.focus();
+  }
+
+  function renderClassroomPanels() {
+    const page = $(".ppt-organizer-page");
+    const index = $("#buliClassroomIndex");
+    const current = $("#buliClassroomCurrent");
+    if (!page || !index || !current || typeof state === "undefined") return;
+    const mode = page.dataset.buliClassroomMode || "index";
+    $$("[data-buli-classroom-mode]").forEach((button) => button.classList.toggle("active", button.dataset.buliClassroomMode === mode));
+    const allNotes = [...(state.modules?.pptNotes || [])].sort((a, b) => (b.updatedAt || b.createdAt || 0) - (a.updatedAt || a.createdAt || 0));
+    const due = allNotes.filter((note) => typeof isPptReviewDue === "function" && isPptReviewDue(note)).length;
+    const done = allNotes.filter((note) => note.status === "done").length;
+    const attachments = allNotes.filter((note) => note.attachment).length;
+    index.hidden = mode !== "index";
+    current.hidden = mode === "index";
+
+    if (mode === "index") {
+      const groups = new Map();
+      allNotes.forEach((note) => {
+        const group = getTimeGroup(note.reviewDate || new Date(note.updatedAt || note.createdAt || Date.now()).toISOString().slice(0, 10));
+        if (!groups.has(group)) groups.set(group, []);
+        groups.get(group).push(note);
+      });
+      index.innerHTML = `
+        <div class="buli-classroom-summary">
+          <span><strong>${allNotes.length}</strong>全部</span>
+          <span><strong>${due}</strong>待复习</span>
+          <span><strong>${done}</strong>已圆满</span>
+          <span><strong>${attachments}</strong>有附件</span>
+        </div>
+        <div class="buli-classroom-groups">
+          ${allNotes.length ? [...groups.entries()].map(([group, items]) => `
+            <section class="buli-classroom-group">
+              <h3>▼ ${group} <small>${items.length} 条</small></h3>
+              ${items.slice(0, 6).map((note, index) => `
+                <article class="buli-classroom-card" data-buli-ppt-open="${note.id}">
+                  <span>${String(index + 1).padStart(2, "0")}</span>
+                  <div><strong>${safeText(note.title) || "未命名课堂笔记"}</strong><small>${typeof getPptStatusOption === "function" ? getPptStatusOption(note.status).label : note.status || "整理中"} · ${safeText(note.subtitle) || "课堂笔记"}</small>${(note.tags || []).length ? `<em>${(note.tags || []).slice(0, 4).map((tag) => `#${tag}`).join(" ")}</em>` : ""}</div>
+                  <b>›</b>
+                </article>`).join("")}
+            </section>`).join("") : `<p class="buli-empty-note">暂无课堂笔记。可点击“提纲 / 闻思 / 温习 / 法本”新建一页。</p>`}
+        </div>
+      `;
+    } else {
+      const tpl = CLASSROOM_TEMPLATES_MATURE[mode] || CLASSROOM_TEMPLATES_MATURE.outline;
+      current.innerHTML = `
+        <div class="buli-classroom-template-card">
+          <span>${tpl.label}</span>
+          <strong>${tpl.title}</strong>
+          <p>${mode === "outline" ? "听闻开示时抓主旨、脉络、主要教言和待请教问题。" : mode === "cornell" ? "将康奈尔结构转为线索、闻法记录、思维整理和落实。" : mode === "review" ? "适合背诵、温习、查漏补缺和修持落实。" : "适合整理法本资料、共修分享、开示摘录与回向发愿。"}</p>
+        </div>
+        <div class="buli-classroom-keep-template">下方原有“课堂笔记整理模板”继续保留，作为辅助整理区。</div>
+      `;
+    }
+  }
+
+  function patchOfferingControls() {
+    const scene = $("#offeringLampScene") || $(".offering-lamp-page");
+    const input = $("#offeringBuddhaInput");
+    const reset = $("#offeringBuddhaReset");
+    if (!scene || !input || scene.dataset.buliOfferingFixed === "true") return;
+    scene.dataset.buliOfferingFixed = "true";
+    const controls = $(".offering-buddha-controls") || input.closest("div") || scene;
+    const addButton = document.createElement("button");
+    addButton.type = "button";
+    addButton.className = "buli-offering-file-button";
+    addButton.textContent = "添加佛像";
+    controls.prepend(addButton);
+    addButton.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      input.click();
+    });
+    input.addEventListener("change", async (event) => {
+      if (typeof saveOfferingBuddhaFiles === "function") {
+        await saveOfferingBuddhaFiles(event.currentTarget.files, { replace: false });
+      }
+      event.currentTarget.value = "";
+    });
+    if (reset && reset.dataset.buliOfferingIntercepted !== "true") {
+      reset.dataset.buliOfferingIntercepted = "true";
+      reset.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        const picker = document.createElement("input");
+        picker.type = "file";
+        picker.accept = "image/*";
+        picker.multiple = true;
+        picker.style.position = "fixed";
+        picker.style.left = "-9999px";
+        picker.addEventListener("change", async () => {
+          if (typeof saveOfferingBuddhaFiles === "function") await saveOfferingBuddhaFiles(picker.files, { replace: true });
+          picker.remove();
+        }, { once: true });
+        document.body.append(picker);
+        picker.click();
+        setTimeout(() => picker.remove(), 15000);
+      }, true);
+    }
+  }
+
+  function patchNoteTemplateButtons() {
+    if (typeof NOTE_BODY_TEMPLATES !== "undefined") {
+      NOTE_BODY_TEMPLATES.daily = { label: "日课日记", body: NOTE_TEMPLATES_MATURE.diary.body };
+      NOTE_BODY_TEMPLATES.reading = { label: "法本读书笔记", body: NOTE_TEMPLATES_MATURE.reading.body };
+      NOTE_BODY_TEMPLATES.teaching = { label: "教言摘录", body: NOTE_TEMPLATES_MATURE.timeline.body };
+    }
+  }
+
+  function renderAllEnhanced() {
+    try {
+      renderEnhancedOrdinaryPanels();
+      renderUnifiedIndex();
+      renderClassroomPanels();
+    } catch (error) {
+      console.warn("Buli enhanced render failed", error);
+    }
+  }
+
+  function initEnhancements() {
+    patchNoteTemplateButtons();
+    enhanceOrdinaryEditor();
+    enhanceUnifiedIndex();
+    enhanceClassroom();
+    patchOfferingControls();
+    renderAllEnhanced();
+  }
+
+  // Wrap existing render functions so the enhanced UI stays synchronized without removing existing behavior.
+  try {
+    if (typeof render === "function" && !render.__buliWrapped) {
+      const originalRender = render;
+      render = function patchedRender(...args) {
+        const result = originalRender.apply(this, args);
+        setTimeout(renderAllEnhanced, 0);
+        return result;
+      };
+      render.__buliWrapped = true;
+    }
+    if (typeof renderList === "function" && !renderList.__buliWrapped) {
+      const originalRenderList = renderList;
+      renderList = function patchedRenderList(...args) {
+        const result = originalRenderList.apply(this, args);
+        setTimeout(renderUnifiedIndex, 0);
+        return result;
+      };
+      renderList.__buliWrapped = true;
+    }
+    if (typeof renderPptNotes === "function" && !renderPptNotes.__buliWrapped) {
+      const originalRenderPptNotes = renderPptNotes;
+      renderPptNotes = function patchedRenderPptNotes(...args) {
+        const result = originalRenderPptNotes.apply(this, args);
+        setTimeout(renderClassroomPanels, 0);
+        return result;
+      };
+      renderPptNotes.__buliWrapped = true;
+    }
+  } catch (error) {
+    console.warn("Buli wrapper setup failed", error);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initEnhancements, { once: true });
+  } else {
+    setTimeout(initEnhancements, 0);
+  }
+})();
