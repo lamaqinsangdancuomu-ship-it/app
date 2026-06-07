@@ -295,6 +295,7 @@
               <span class="eyebrow">སློབ་ཁྲིད། 课堂整理</span>
               <h2>课堂笔记整理</h2>
             </div>
+            <button class="module-head-action" id="pptExportButton" type="button">导出课堂</button>
           </div>
           <form class="module-editor ppt-project-editor" id="pptProjectForm">
             <input name="title" type="text" placeholder="项目名称，如《入行论》第三品" autocomplete="off" />
@@ -302,11 +303,44 @@
             <button type="submit">新增项目</button>
           </form>
           <div class="ppt-project-tabs" id="pptProjectTabs" aria-label="课堂笔记项目"></div>
+          <div class="ppt-note-commandbar" aria-label="课堂整理工具">
+            <label class="ppt-search-field" for="pptSearchInput">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.3-4.3"></path>
+              </svg>
+              <input id="pptSearchInput" type="search" placeholder="搜索课堂、标签、要点" autocomplete="off" />
+            </label>
+            <select id="pptStatusFilter" aria-label="按整理状态筛选">
+              <option value="all">全部状态</option>
+            </select>
+            <select id="pptSortSelect" aria-label="课堂整理排序">
+              <option value="updatedDesc">最近更新</option>
+              <option value="reviewAsc">复习优先</option>
+              <option value="createdDesc">新课在前</option>
+              <option value="title">按标题</option>
+            </select>
+          </div>
+          <div class="ppt-organizer-summary" id="pptOrganizerSummary"></div>
           <form class="module-editor ppt-note-editor" id="pptNoteForm">
             <input name="title" type="text" placeholder="课程 / 主题" autocomplete="off" />
             <input name="subtitle" type="text" placeholder="课次 / 页码 / 日期" autocomplete="off" />
             <select name="projectId" aria-label="标注项目（可多选）" multiple size="3"></select>
+            <select name="status" aria-label="整理状态">
+              <option value="capture">速记</option>
+              <option value="organizing" selected>整理中</option>
+              <option value="review">待复习</option>
+              <option value="done">已完成</option>
+            </select>
+            <input name="tags" type="text" placeholder="标签，如 中观, 发心, 待背诵" autocomplete="off" />
+            <input name="reviewDate" type="date" aria-label="复习日期" />
             <textarea name="body" placeholder="要点一&#10;要点二&#10;疑问 / 待复习"></textarea>
+            <div class="ppt-template-row" id="pptTemplateBar" aria-label="课堂模板">
+              <button type="button" data-ppt-template="outline">提纲</button>
+              <button type="button" data-ppt-template="cornell">康奈尔</button>
+              <button type="button" data-ppt-template="review">复习</button>
+              <button type="button" data-ppt-template="slides">课件</button>
+            </div>
             <label class="ppt-attachment-button">
               <input
                 name="attachment"
@@ -321,36 +355,67 @@
         </section>
 
         <section class="notebook-index-page">
-        <label class="search-box" for="searchInput">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="11" cy="11" r="8"></circle>
-            <path d="m21 21-4.3-4.3"></path>
-          </svg>
-          <input id="searchInput" type="search" placeholder="搜索地点、主题、正文" autocomplete="off" />
-        </label>
+          <section class="index-hero" aria-label="笔记索引封面">
+            <div>
+              <span class="eyebrow">དཀར་ཆག ། 笔记索引</span>
+              <h2 id="listTitle">ཚང་མ། 全部笔记</h2>
+              <p>按时间、人物、地点与标签把每一页收拢起来。</p>
+            </div>
+            <button class="index-new-button" id="indexNewNoteButton" type="button">新记一页</button>
+          </section>
 
-        <nav class="type-filter" aria-label="笔记类型">
-          <button class="type-button active" data-filter="all" type="button">ཚང་མ། 全部</button>
-          <button class="type-button" data-filter="diary" type="button">ཉིན་ཐོ། 日记</button>
-          <button class="type-button" data-filter="reading" type="button">ཀློག་ཐོ། 读书</button>
-          <button class="type-button" data-filter="memo" type="button">དྲན་ཐོ། 备忘</button>
-          <button class="type-button" data-filter="timeline" type="button">གདམས་ངག 教言</button>
-        </nav>
+          <section class="index-command-panel" aria-label="索引工具">
+            <label class="search-box" for="searchInput">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.3-4.3"></path>
+              </svg>
+              <input id="searchInput" type="search" placeholder="搜索地点、主题、正文" autocomplete="off" />
+            </label>
+            <button class="index-current-button" id="indexOpenEditorButton" type="button">打开当前页</button>
+          </section>
 
-        <section class="section-head">
-          <div>
-            <span class="eyebrow">笔记索引</span>
-            <h2 id="listTitle">ཚང་མ། 全部笔记</h2>
-          </div>
-          <select id="sortSelect" title="排序">
-            <option value="updated">ཉེ་ཆར་བསྒྱུར། 最近编辑</option>
-            <option value="dateDesc">གསར་ནས་རྙིང་། 日期从新到旧</option>
-            <option value="dateAsc">རྙིང་ནས་གསར། 日期从旧到新</option>
-            <option value="title">ཁ་བྱང་། 标题</option>
-          </select>
-        </section>
+          <nav class="type-filter" aria-label="笔记类型">
+            <button class="type-button active" data-filter="all" type="button">ཚང་མ། 全部</button>
+            <button class="type-button" data-filter="diary" type="button">ཉིན་ཐོ། 日记</button>
+            <button class="type-button" data-filter="reading" type="button">ཀློག་ཐོ། 读书</button>
+            <button class="type-button" data-filter="memo" type="button">དྲན་ཐོ། 备忘</button>
+            <button class="type-button" data-filter="timeline" type="button">གདམས་ངག 教言</button>
+          </nav>
 
-        <section class="note-list" id="noteList" aria-label="笔记列表"></section>
+          <section class="index-insights" aria-label="笔记概览">
+            <article>
+              <span id="indexInsightTotal">0</span>
+              <small>全部</small>
+            </article>
+            <article>
+              <span id="indexInsightPinned">0</span>
+              <small>置顶</small>
+            </article>
+            <article>
+              <span id="indexInsightTagged">0</span>
+              <small>标签</small>
+            </article>
+            <article>
+              <span id="indexInsightRecent">今日</span>
+              <small>最近</small>
+            </article>
+          </section>
+
+          <section class="section-head index-list-head">
+            <div>
+              <span class="eyebrow">筛选结果</span>
+              <strong id="indexResultCount">0 篇</strong>
+            </div>
+            <select id="sortSelect" title="排序">
+              <option value="updated">ཉེ་ཆར་བསྒྱུར། 最近编辑</option>
+              <option value="dateDesc">གསར་ནས་རྙིང་། 日期从新到旧</option>
+              <option value="dateAsc">རྙིང་ནས་གསར། 日期从旧到新</option>
+              <option value="title">ཁ་བྱང་། 标题</option>
+            </select>
+          </section>
+
+          <section class="note-list" id="noteList" aria-label="笔记列表"></section>
         </section>
 
         <section class="editor-card" aria-label="笔记编辑器">
@@ -361,6 +426,16 @@
             </div>
             <div class="editor-actions">
               <span class="save-state" id="saveState">已保存</span>
+              <button class="round-button small" id="editorPrevNoteButton" type="button" title="上一篇笔记" aria-label="上一篇笔记">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="m15 18-6-6 6-6"></path>
+                </svg>
+              </button>
+              <button class="round-button small" id="editorNextNoteButton" type="button" title="下一篇笔记" aria-label="下一篇笔记">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="m9 18 6-6-6-6"></path>
+                </svg>
+              </button>
               <button class="round-button small primary" id="editorNewNoteButton" type="button" title="新增笔记" aria-label="新增笔记">
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M5 12h14"></path>
@@ -404,6 +479,10 @@
           </section>
 
           <form class="editor-form" id="editorForm">
+            <div class="editor-paper-head">
+              <span>ཟིན་བྲིས། 不离札记</span>
+              <small id="editorPaperMeta">未命名 · 无日期</small>
+            </div>
             <input id="noteTitle" class="title-input" type="text" placeholder="ཁ་བྱང་ / 标题" autocomplete="off" />
             <div class="meta-grid">
               <label>
@@ -432,6 +511,14 @@
               <span>མཚོན་རྟགས། 标签</span>
               <input id="noteTags" type="text" placeholder="信心, 弘法, 色达, 读书摘录" autocomplete="off" />
             </label>
+            <section class="writing-assist" aria-label="书写辅助">
+              <div class="writing-assist-buttons">
+                <button type="button" data-note-template="daily">日记提纲</button>
+                <button type="button" data-note-template="reading">读书摘录</button>
+                <button type="button" data-note-template="teaching">教言整理</button>
+              </div>
+              <span id="noteWordCount">0 字</span>
+            </section>
             <section class="memo-calendar hidden" id="memoCalendarPreview" aria-label="备忘日历页"></section>
             <section class="note-image-panel" aria-label="笔记图片">
               <div class="note-image-head">
@@ -465,9 +552,14 @@
           </div>
           <h3></h3>
           <p></p>
+          <div class="note-card-tags" aria-label="标签"></div>
           <div class="note-card-bottom">
             <span class="person-chip"></span>
             <span class="pin-chip hidden">置顶</span>
+          </div>
+          <div class="note-card-trail" aria-hidden="true">
+            <span class="note-page-mark"></span>
+            <span class="note-image-count"></span>
           </div>
         </button>
       </article>

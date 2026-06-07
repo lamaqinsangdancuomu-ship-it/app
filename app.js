@@ -8,6 +8,45 @@ const BLOOM_GARDEN_PHOTOS_STORAGE_KEY = "buliBloomGardenPhotos.v1";
 const PAGE_WALLPAPER_STORAGE_KEY = "buliPageWallpapers.v2";
 const PPT_DEFAULT_PROJECT_ID = "ppt-project-default";
 const TEACHING_DEFAULT_TEACHER = "晋美彭措法王";
+const PPT_NOTE_STATUS_OPTIONS = [
+  { id: "capture", label: "速记", action: "标为整理中" },
+  { id: "organizing", label: "整理中", action: "标为待复习" },
+  { id: "review", label: "待复习", action: "标为完成" },
+  { id: "done", label: "已完成", action: "重新整理" }
+];
+const PPT_NOTE_STATUS_IDS = new Set(PPT_NOTE_STATUS_OPTIONS.map((item) => item.id));
+const PPT_NOTE_TEMPLATES = {
+  outline: {
+    label: "提纲",
+    body: "主题：\n出处 / 教材：\n核心教言：\n\n一、背景\n-\n\n二、要点\n-\n\n三、可落实的行动\n-\n\n待确认：\n-"
+  },
+  cornell: {
+    label: "康奈尔",
+    body: "线索 / 提问：\n-\n\n笔记区：\n-\n\n课后总结：\n-"
+  },
+  review: {
+    label: "复习",
+    body: "今日三条收获：\n1. \n2. \n3. \n\n待复习问题：\n-\n\n下一步：\n-"
+  },
+  slides: {
+    label: "课件",
+    body: "可整理成课件：\n封面标题：\n\n三页大纲：\n1. \n2. \n3. \n\n引用原文：\n-\n\n结尾提醒：\n-"
+  }
+};
+const NOTE_BODY_TEMPLATES = {
+  daily: {
+    label: "日记提纲",
+    body: "今日所见：\n-\n\n心里想记住的一句：\n-\n\n可以落实的一件小事：\n-"
+  },
+  reading: {
+    label: "读书摘录",
+    body: "书名 / 讲记：\n页码 / 章节：\n\n摘录：\n「」\n\n我的理解：\n-\n\n待复习：\n-"
+  },
+  teaching: {
+    label: "教言整理",
+    body: "教言原文：\n「」\n\n人物 / 来源：\n\n关键词：\n-\n\n落到修行：\n-"
+  }
+};
 
 let deferredInstallPrompt = null;
 
@@ -261,6 +300,9 @@ const defaultModules = {
       subtitle: "第 1 课 / 重点页",
       projectId: PPT_DEFAULT_PROJECT_ID,
       projectIds: [PPT_DEFAULT_PROJECT_ID],
+      status: "organizing",
+      tags: ["模板"],
+      reviewDate: "",
       body: "主题：\n核心教言：\n可整理成课件的三条要点：\n待复习问题：",
       createdAt: Date.now(),
       attachment: null
@@ -383,6 +425,9 @@ const state = {
   sort: "updated",
   view: "write",
   pptProjectFilter: "all",
+  pptStatusFilter: "all",
+  pptQuery: "",
+  pptSort: "updatedDesc",
   teachingTeacherFilter: "all",
   saveTimer: null,
   renderTimer: null
@@ -419,11 +464,18 @@ const els = {
   searchInput: document.querySelector("#searchInput"),
   tocJumpButton: document.querySelector("#tocJumpButton"),
   newNoteButton: document.querySelector("#newNoteButton"),
+  indexNewNoteButton: document.querySelector("#indexNewNoteButton"),
+  indexOpenEditorButton: document.querySelector("#indexOpenEditorButton"),
   editorNewNoteButton: document.querySelector("#editorNewNoteButton"),
   exportButton: document.querySelector("#exportButton"),
   installButton: document.querySelector("#installButton"),
   typeButtons: [...document.querySelectorAll(".type-button")],
   listTitle: document.querySelector("#listTitle"),
+  indexResultCount: document.querySelector("#indexResultCount"),
+  indexInsightTotal: document.querySelector("#indexInsightTotal"),
+  indexInsightPinned: document.querySelector("#indexInsightPinned"),
+  indexInsightTagged: document.querySelector("#indexInsightTagged"),
+  indexInsightRecent: document.querySelector("#indexInsightRecent"),
   sortSelect: document.querySelector("#sortSelect"),
   noteToc: document.querySelector("#noteToc"),
   noteList: document.querySelector("#noteList"),
@@ -434,6 +486,11 @@ const els = {
   editorForm: document.querySelector("#editorForm"),
   timelineView: document.querySelector("#timelineView"),
   saveState: document.querySelector("#saveState"),
+  editorPaperMeta: document.querySelector("#editorPaperMeta"),
+  noteWordCount: document.querySelector("#noteWordCount"),
+  noteTemplateButtons: [...document.querySelectorAll("[data-note-template]")],
+  editorPrevNoteButton: document.querySelector("#editorPrevNoteButton"),
+  editorNextNoteButton: document.querySelector("#editorNextNoteButton"),
   pinButton: document.querySelector("#pinButton"),
   deleteButton: document.querySelector("#deleteButton"),
   noteTitle: document.querySelector("#noteTitle"),
@@ -474,6 +531,12 @@ const els = {
   pptProjectTabs: document.querySelector("#pptProjectTabs"),
   pptNoteForm: document.querySelector("#pptNoteForm"),
   pptProjectSelect: document.querySelector("#pptNoteForm select[name='projectId']"),
+  pptSearchInput: document.querySelector("#pptSearchInput"),
+  pptStatusFilter: document.querySelector("#pptStatusFilter"),
+  pptSortSelect: document.querySelector("#pptSortSelect"),
+  pptOrganizerSummary: document.querySelector("#pptOrganizerSummary"),
+  pptTemplateButtons: [...document.querySelectorAll("[data-ppt-template]")],
+  pptExportButton: document.querySelector("#pptExportButton"),
   pptNoteList: document.querySelector("#pptNoteList")
 };
 
@@ -520,7 +583,14 @@ function bindEvents() {
   });
 
   els.newNoteButton.addEventListener("click", createAndOpenNote);
+  els.indexNewNoteButton?.addEventListener("click", createAndOpenNote);
+  els.indexOpenEditorButton?.addEventListener("click", scrollToEditor);
   els.editorNewNoteButton?.addEventListener("click", createAndOpenNote);
+  els.editorPrevNoteButton?.addEventListener("click", () => turnToRelativeNote(-1));
+  els.editorNextNoteButton?.addEventListener("click", () => turnToRelativeNote(1));
+  els.noteTemplateButtons.forEach((button) => {
+    button.addEventListener("click", () => applyNoteTemplate(button.dataset.noteTemplate));
+  });
 
   els.exportButton?.addEventListener("click", exportNotes);
   els.installButton?.addEventListener("click", installApp);
@@ -565,6 +635,22 @@ function bindEvents() {
   els.offeringBuddhaReset?.addEventListener("click", changeOfferingBuddhaWall);
   els.pptProjectForm?.addEventListener("submit", addPptProject);
   els.pptNoteForm?.addEventListener("submit", addPptNote);
+  els.pptSearchInput?.addEventListener("input", (event) => {
+    state.pptQuery = event.target.value.trim().toLowerCase();
+    renderPptNotes();
+  });
+  els.pptStatusFilter?.addEventListener("change", (event) => {
+    state.pptStatusFilter = event.target.value || "all";
+    renderPptNotes();
+  });
+  els.pptSortSelect?.addEventListener("change", (event) => {
+    state.pptSort = event.target.value || "updatedDesc";
+    renderPptNotes();
+  });
+  els.pptTemplateButtons.forEach((button) => {
+    button.addEventListener("click", () => applyPptTemplate(button.dataset.pptTemplate));
+  });
+  els.pptExportButton?.addEventListener("click", exportPptNotes);
 
   els.typeButtons.forEach((button) => {
     button.addEventListener("click", () => {
@@ -1080,7 +1166,19 @@ function saveTeachingQuotes() {
 }
 
 function cloneDefaultModules() {
-  return Object.fromEntries(Object.entries(defaultModules).map(([key, items]) => [key, items.map((item) => ({ ...item }))]));
+  return Object.fromEntries(
+    Object.entries(defaultModules).map(([key, items]) => [
+      key,
+      items.map((item) =>
+        Object.fromEntries(
+          Object.entries(item).map(([field, value]) => [
+            field,
+            Array.isArray(value) ? [...value] : value && typeof value === "object" ? { ...value } : value
+          ])
+        )
+      )
+    ])
+  );
 }
 
 function removeVisibleEnglish(value) {
@@ -1126,7 +1224,10 @@ function loadModules() {
   modules.pptNotes = (modules.pptNotes || []).map((note) => ({
     ...note,
     projectIds: normalizePptNoteProjectIds(note, pptProjectIds),
-    projectId: normalizePptNoteProjectIds(note, pptProjectIds)[0]
+    projectId: normalizePptNoteProjectIds(note, pptProjectIds)[0],
+    status: normalizePptStatus(note.status),
+    tags: normalizePptTags(note.tags),
+    reviewDate: normalizePptReviewDate(note.reviewDate)
   }));
   return modules;
 }
@@ -1177,6 +1278,9 @@ function normalizeModules(saved) {
             subtitle: removeVisibleEnglish(item.subtitle),
             projectId: projectIds[0],
             projectIds,
+            status: normalizePptStatus(item.status),
+            tags: normalizePptTags(item.tags),
+            reviewDate: normalizePptReviewDate(item.reviewDate),
             body: removeVisibleEnglish(item.body),
             attachment: normalizePptAttachment(item.attachment),
             createdAt: item.createdAt || Date.now(),
@@ -1239,6 +1343,37 @@ function normalizePptAttachment(value) {
     size: Math.max(0, Number(value.size) || 0),
     dataUrl
   };
+}
+
+function normalizePptStatus(value) {
+  const status = String(value || "").trim();
+  return PPT_NOTE_STATUS_IDS.has(status) ? status : "organizing";
+}
+
+function getPptStatusOption(status) {
+  const normalized = normalizePptStatus(status);
+  return PPT_NOTE_STATUS_OPTIONS.find((item) => item.id === normalized) || PPT_NOTE_STATUS_OPTIONS[1];
+}
+
+function getNextPptStatus(status) {
+  const normalized = normalizePptStatus(status);
+  const index = PPT_NOTE_STATUS_OPTIONS.findIndex((item) => item.id === normalized);
+  return PPT_NOTE_STATUS_OPTIONS[(index + 1) % PPT_NOTE_STATUS_OPTIONS.length].id;
+}
+
+function normalizePptTags(value) {
+  const tags = Array.isArray(value) ? value : parseTags(String(value || ""));
+  return [...new Set(tags.map((tag) => String(tag || "").trim()).filter(Boolean))].slice(0, 12);
+}
+
+function normalizePptReviewDate(value) {
+  const date = String(value || "").trim();
+  return /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : "";
+}
+
+function isPptReviewDue(item) {
+  const reviewDate = normalizePptReviewDate(item?.reviewDate);
+  return Boolean(reviewDate) && normalizePptStatus(item?.status) !== "done" && reviewDate <= new Date().toISOString().slice(0, 10);
 }
 
 function saveModules() {
@@ -1360,6 +1495,7 @@ function updateActiveNote() {
   note.pageTheme = normalizePageTheme(note.pageTheme);
   note.calendarMode = note.calendarMode || "gregorian";
   note.updatedAt = Date.now();
+  renderEditorStatus(note);
   scheduleSave();
   scheduleNoteRender(note);
 }
@@ -1368,6 +1504,7 @@ function scheduleIndexRender() {
   scheduleRender(() => {
     renderToc();
     renderList();
+    renderIndexSummary();
     renderTimeline();
   });
 }
@@ -1377,6 +1514,7 @@ function scheduleNoteRender(note = getActiveNote()) {
     renderMemoCalendar(note);
     renderToc();
     renderList();
+    renderIndexSummary();
     renderStats();
     renderFocus();
     renderTimeline();
@@ -1424,6 +1562,7 @@ function render() {
   renderEditor();
   renderToc();
   renderList();
+  renderIndexSummary();
   renderStats();
   renderFocus();
   renderModules();
@@ -1444,10 +1583,54 @@ function renderEditor() {
   els.noteTags.value = note.tags.join(", ");
   els.noteBody.value = note.body;
   els.pinButton.classList.toggle("active", note.pinned);
+  renderEditorStatus(note);
   renderPageTheme(note.pageTheme || PLAIN_PAGE_THEME);
   renderMemoCalendar(note);
   renderNoteImages(note);
   renderPageDecoration(note);
+}
+
+function renderEditorStatus(note = getActiveNote()) {
+  if (!note) return;
+  const pieces = [
+    typeLabels[note.type] || "笔记",
+    displayDate(note.date),
+    note.person,
+    note.source
+  ].filter(Boolean);
+  if (els.editorPaperMeta) els.editorPaperMeta.textContent = pieces.join(" · ");
+  if (els.noteWordCount) {
+    const textCount = Array.from(String(note.body || "").replace(/\s/g, "")).length;
+    const tagText = note.tags?.length ? `${note.tags.length} 标签` : "未加标签";
+    const imageText = note.images?.length ? `${note.images.length} 图` : "无图片";
+    els.noteWordCount.textContent = `${textCount} 字 · ${tagText} · ${imageText}`;
+  }
+
+  const hasSiblings = getFilteredNotes().length > 1;
+  if (els.editorPrevNoteButton) els.editorPrevNoteButton.disabled = !hasSiblings;
+  if (els.editorNextNoteButton) els.editorNextNoteButton.disabled = !hasSiblings;
+}
+
+function applyNoteTemplate(templateId) {
+  const template = NOTE_BODY_TEMPLATES[templateId];
+  const note = getActiveNote();
+  if (!template || !note || !els.noteBody) return;
+
+  const start = els.noteBody.selectionStart ?? els.noteBody.value.length;
+  const end = els.noteBody.selectionEnd ?? els.noteBody.value.length;
+  const current = els.noteBody.value;
+  const prefix = current.slice(0, start);
+  const suffix = current.slice(end);
+  const needsBeforeBreak = prefix && !prefix.endsWith("\n") ? "\n\n" : "";
+  const needsAfterBreak = suffix && !suffix.startsWith("\n") ? "\n\n" : "";
+  const inserted = `${needsBeforeBreak}${template.body}${needsAfterBreak}`;
+
+  els.noteBody.value = `${prefix}${inserted}${suffix}`;
+  const nextCursor = prefix.length + inserted.length;
+  els.noteBody.setSelectionRange(nextCursor, nextCursor);
+  els.noteBody.focus();
+  updateActiveNote();
+  els.saveState.textContent = `已插入「${template.label}」`;
 }
 
 function renderPageDecoration(note) {
@@ -1592,7 +1775,7 @@ function readBloomPortraitFile(file) {
       image.addEventListener("load", () => {
         const width = image.naturalWidth || image.width;
         const height = image.naturalHeight || image.height;
-        const maxSide = 900;
+        const maxSide = 640;
         const scale = Math.min(1, maxSide / Math.max(width, height));
         const canvas = document.createElement("canvas");
         canvas.width = Math.max(1, Math.round(width * scale));
@@ -1628,7 +1811,8 @@ function readBloomPortraitFile(file) {
           }
         }
         context.putImageData(data, 0, 0);
-        resolve(canvas.toDataURL("image/png"));
+        const webp = canvas.toDataURL("image/webp", 0.8);
+        resolve(webp.startsWith("data:image/webp") ? webp : canvas.toDataURL("image/png"));
       });
       image.addEventListener("error", () => resolve(String(reader.result)));
       image.src = String(reader.result);
@@ -2615,6 +2799,8 @@ function renderPptProjectManager() {
   if (!activeExists) state.pptProjectFilter = "all";
   renderPptProjectSelect();
   renderPptProjectTabs();
+  renderPptStatusFilter();
+  renderPptSortSelect();
 }
 
 function getPptProjects() {
@@ -2702,6 +2888,45 @@ function getPptProjectCounts() {
       });
   });
   return counts;
+}
+
+function getPptProjectScopedNotes() {
+  const notes = state.modules.pptNotes || [];
+  if (state.pptProjectFilter === "all") return notes;
+  return notes.filter((note) => getPptNoteProjectIds(note).includes(state.pptProjectFilter));
+}
+
+function renderPptStatusFilter() {
+  if (!els.pptStatusFilter) return;
+  const scopedNotes = getPptProjectScopedNotes();
+  const counts = new Map(PPT_NOTE_STATUS_OPTIONS.map((status) => [status.id, 0]));
+  scopedNotes.forEach((note) => {
+    const status = normalizePptStatus(note.status);
+    counts.set(status, (counts.get(status) || 0) + 1);
+  });
+  const activeExists = state.pptStatusFilter === "all" || PPT_NOTE_STATUS_IDS.has(state.pptStatusFilter);
+  if (!activeExists) state.pptStatusFilter = "all";
+
+  els.pptStatusFilter.replaceChildren();
+  els.pptStatusFilter.append(createOption("all", `全部状态 (${scopedNotes.length})`, state.pptStatusFilter === "all"));
+  PPT_NOTE_STATUS_OPTIONS.forEach((status) => {
+    els.pptStatusFilter.append(
+      createOption(status.id, `${status.label} (${counts.get(status.id) || 0})`, state.pptStatusFilter === status.id)
+    );
+  });
+}
+
+function renderPptSortSelect() {
+  if (!els.pptSortSelect) return;
+  els.pptSortSelect.value = state.pptSort;
+}
+
+function createOption(value, label, selected = false) {
+  const option = document.createElement("option");
+  option.value = value;
+  option.textContent = label;
+  option.selected = selected;
+  return option;
 }
 
 function createPptProjectFilterChip(project) {
@@ -2806,19 +3031,50 @@ function deletePptProject(id) {
 }
 
 function getFilteredPptNotes() {
-  if (state.pptProjectFilter === "all") return state.modules.pptNotes;
-  return state.modules.pptNotes.filter((note) => getPptNoteProjectIds(note).includes(state.pptProjectFilter));
+  return getPptProjectScopedNotes()
+    .filter((note) => state.pptStatusFilter === "all" || normalizePptStatus(note.status) === state.pptStatusFilter)
+    .filter((note) => {
+      if (!state.pptQuery) return true;
+      const haystack = [
+        note.title,
+        note.subtitle,
+        getPptNoteProjectTitles(note).join(" "),
+        getPptStatusOption(note.status).label,
+        normalizePptTags(note.tags).join(" "),
+        note.reviewDate,
+        note.body,
+        note.attachment?.name
+      ]
+        .join(" ")
+        .toLowerCase();
+      return haystack.includes(state.pptQuery);
+    })
+    .sort(sortPptNotes);
+}
+
+function sortPptNotes(a, b) {
+  if (state.pptSort === "reviewAsc") {
+    const aDate = normalizePptReviewDate(a.reviewDate) || "9999-12-31";
+    const bDate = normalizePptReviewDate(b.reviewDate) || "9999-12-31";
+    if (aDate !== bDate) return aDate.localeCompare(bDate);
+    return (b.updatedAt || b.createdAt || 0) - (a.updatedAt || a.createdAt || 0);
+  }
+  if (state.pptSort === "createdDesc") return (b.createdAt || 0) - (a.createdAt || 0);
+  if (state.pptSort === "title") return (a.title || "未命名整理").localeCompare(b.title || "未命名整理", "zh-CN");
+  return (b.updatedAt || b.createdAt || 0) - (a.updatedAt || a.createdAt || 0);
 }
 
 function renderPptNotes() {
   if (!els.pptNoteList) return;
   els.pptNoteList.replaceChildren();
+  const scopedNotes = getPptProjectScopedNotes();
   const notes = getFilteredPptNotes();
+  renderPptOrganizerSummary(scopedNotes, notes);
 
   if (!notes.length) {
     const empty = document.createElement("div");
     empty.className = "module-empty";
-    empty.textContent = state.pptProjectFilter === "all" ? "暂无课堂整理，可先加入一条。" : "这个项目里还没有课堂笔记。";
+    empty.textContent = scopedNotes.length ? "没有符合筛选的课堂笔记。" : state.pptProjectFilter === "all" ? "暂无课堂整理，可先加入一条。" : "这个项目里还没有课堂笔记。";
     els.pptNoteList.append(empty);
     return;
   }
@@ -2828,16 +3084,51 @@ function renderPptNotes() {
   });
 }
 
+function renderPptOrganizerSummary(scopedNotes = [], filteredNotes = []) {
+  if (!els.pptOrganizerSummary) return;
+  els.pptOrganizerSummary.replaceChildren();
+  const completed = scopedNotes.filter((note) => normalizePptStatus(note.status) === "done").length;
+  const due = scopedNotes.filter(isPptReviewDue).length;
+  const attachments = scopedNotes.filter((note) => normalizePptAttachment(note.attachment)).length;
+  const visible = filteredNotes.length;
+  [
+    ["当前", visible],
+    ["待复习", due],
+    ["已完成", completed],
+    ["有附件", attachments]
+  ].forEach(([label, value]) => {
+    const item = document.createElement("span");
+    const count = document.createElement("strong");
+    count.textContent = value;
+    item.append(count, label);
+    els.pptOrganizerSummary.append(item);
+  });
+}
+
 function createPptNoteCard(item) {
   const article = document.createElement("article");
   article.className = "ppt-note-card";
+  article.classList.add(`status-${normalizePptStatus(item.status)}`);
   article.dataset.moduleKey = "pptNotes";
   article.dataset.moduleId = item.id;
 
   const head = document.createElement("div");
   head.className = "ppt-note-head";
+  const titleWrap = document.createElement("div");
+  titleWrap.className = "ppt-note-title";
+  const statusRow = document.createElement("div");
+  statusRow.className = "ppt-note-status-row";
+  const status = createPptStatusBadge(item);
+  statusRow.append(status);
+  if (isPptReviewDue(item)) {
+    const due = document.createElement("span");
+    due.className = "ppt-review-due";
+    due.textContent = "今日复习";
+    statusRow.append(due);
+  }
   const title = document.createElement("h3");
   title.textContent = item.title || "未命名整理";
+  titleWrap.append(statusRow, title);
   const meta = document.createElement("div");
   meta.className = "ppt-note-meta";
   const project = document.createElement("span");
@@ -2847,10 +3138,11 @@ function createPptNoteCard(item) {
   const subtitle = document.createElement("span");
   subtitle.textContent = item.subtitle || "课堂笔记";
   meta.append(project, subtitle);
-  head.append(title, meta);
+  head.append(titleWrap, meta);
 
   const body = document.createElement("p");
   body.textContent = item.body || " ";
+  const info = createPptNoteInfo(item);
 
   const attachment = createPptAttachmentLink(item.attachment);
 
@@ -2858,6 +3150,7 @@ function createPptNoteCard(item) {
   actions.className = "ppt-note-actions";
   actions.append(
     createActionButton("更改", () => editPptNote(item.id)),
+    createActionButton(getPptStatusOption(item.status).action, () => cyclePptNoteStatus(item.id), "status"),
     createActionButton(getPptProjectButtonLabel(item), () => movePptNoteProject(item.id), "project"),
     createActionButton("复制", () => copyPptNote(item.id)),
     createActionButton(item.attachment ? "换附件" : "附件", () => replacePptAttachment(item.id)),
@@ -2867,10 +3160,43 @@ function createPptNoteCard(item) {
     actions.append(createActionButton("删附件", () => removePptAttachment(item.id), "danger"));
   }
 
-  article.append(head, body);
+  article.append(head, info, body);
   if (attachment) article.append(attachment);
   article.append(actions);
   return article;
+}
+
+function createPptStatusBadge(item) {
+  const option = getPptStatusOption(item.status);
+  const badge = document.createElement("span");
+  badge.className = `ppt-note-status ${option.id}`;
+  badge.textContent = option.label;
+  return badge;
+}
+
+function createPptNoteInfo(item) {
+  const info = document.createElement("div");
+  info.className = "ppt-note-info";
+  const reviewDate = normalizePptReviewDate(item.reviewDate);
+  if (reviewDate) {
+    const review = document.createElement("span");
+    review.className = "ppt-note-review";
+    review.textContent = `复习 ${displayDate(reviewDate)}`;
+    info.append(review);
+  }
+  normalizePptTags(item.tags).forEach((tag) => {
+    const chip = document.createElement("span");
+    chip.className = "ppt-note-tag";
+    chip.textContent = `#${tag}`;
+    info.append(chip);
+  });
+  if (!info.childElementCount) {
+    const empty = document.createElement("span");
+    empty.className = "ppt-note-info-empty";
+    empty.textContent = "未加标签";
+    info.append(empty);
+  }
+  return info;
 }
 
 function createPptAttachmentLink(attachment) {
@@ -2898,6 +3224,9 @@ async function addPptNote(event) {
   const body = form.elements.body.value.trim();
   const selectedProjectIds = getSelectedPptProjectIds(form.elements.projectId);
   const projectIds = normalizePptNoteProjectIds({ projectIds: selectedProjectIds });
+  const status = normalizePptStatus(form.elements.status?.value);
+  const tags = normalizePptTags(form.elements.tags?.value);
+  const reviewDate = normalizePptReviewDate(form.elements.reviewDate?.value);
   const file = form.elements.attachment?.files[0];
   const attachment = file ? await createPptAttachment(file) : null;
   if (file && !attachment) return;
@@ -2909,6 +3238,9 @@ async function addPptNote(event) {
     subtitle: form.elements.subtitle.value.trim(),
     projectId: projectIds[0],
     projectIds,
+    status,
+    tags,
+    reviewDate,
     body,
     attachment,
     createdAt: Date.now(),
@@ -2919,6 +3251,51 @@ async function addPptNote(event) {
     renderPptProjectManager();
     renderPptNotes();
   }
+}
+
+function applyPptTemplate(templateId) {
+  const template = PPT_NOTE_TEMPLATES[templateId];
+  const form = els.pptNoteForm;
+  const bodyInput = form?.elements.body;
+  if (!template || !bodyInput) return;
+  const current = bodyInput.value.trimEnd();
+  bodyInput.value = current ? `${current}\n\n${template.body}` : template.body;
+  bodyInput.focus();
+  bodyInput.selectionStart = bodyInput.selectionEnd = bodyInput.value.length;
+  setModuleFormStatus(form, `已插入「${template.label}」模板`, "done");
+}
+
+function exportPptNotes() {
+  const notes = getFilteredPptNotes();
+  if (!notes.length) {
+    alert("当前筛选下没有可导出的课堂整理。");
+    return;
+  }
+  const title = state.pptProjectFilter === "all" ? "全部课堂整理" : getPptProjectTitle(state.pptProjectFilter);
+  const lines = [
+    `# ${title}`,
+    `导出时间：${new Intl.DateTimeFormat("zh-CN", { dateStyle: "medium", timeStyle: "short" }).format(new Date())}`,
+    ""
+  ];
+  notes.forEach((note, index) => {
+    lines.push(`## ${index + 1}. ${note.title || "课堂整理"}`);
+    if (note.subtitle) lines.push(note.subtitle);
+    lines.push(`项目：${getPptProjectButtonLabel(note)}`);
+    lines.push(`状态：${getPptStatusOption(note.status).label}`);
+    const tags = normalizePptTags(note.tags);
+    if (tags.length) lines.push(`标签：${tags.join("、")}`);
+    if (normalizePptReviewDate(note.reviewDate)) lines.push(`复习：${displayDate(note.reviewDate)}`);
+    if (note.attachment?.name) lines.push(`附件：${note.attachment.name}`);
+    if (note.body) lines.push("", note.body.trim());
+    lines.push("");
+  });
+  const blob = new Blob([lines.join("\n")], { type: "text/markdown;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `课堂整理-${new Date().toISOString().slice(0, 10)}.md`;
+  link.click();
+  window.setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 
 function editPptNote(id) {
@@ -2940,19 +3317,34 @@ function editPptNote(id) {
 
   const titleInput = createPptInlineTextInput("课程 / 主题", item.title || "");
   const subtitleInput = createPptInlineTextInput("课次 / 页码 / 日期", item.subtitle || "");
+  const statusSelect = createPptStatusSelect(normalizePptStatus(item.status));
+  const tagsInput = createPptInlineTextInput("标签，用逗号分隔", normalizePptTags(item.tags).join(", "));
+  const reviewDateInput = document.createElement("input");
+  reviewDateInput.type = "date";
+  reviewDateInput.value = normalizePptReviewDate(item.reviewDate);
+  reviewDateInput.setAttribute("aria-label", "复习日期");
+  const metaGrid = document.createElement("div");
+  metaGrid.className = "ppt-inline-meta-grid";
+  metaGrid.append(statusSelect, tagsInput, reviewDateInput);
   const bodyInput = document.createElement("textarea");
   bodyInput.placeholder = "课堂整理内容";
   bodyInput.value = item.body || "";
 
   const actions = createPptInlineEditorActions("保存更改", () => editor.remove());
-  editor.append(titleInput, subtitleInput, bodyInput, actions);
+  editor.append(titleInput, subtitleInput, metaGrid, bodyInput, actions);
   editor.addEventListener("submit", (event) => {
     event.preventDefault();
     item.title = titleInput.value.trim() || item.title;
     item.subtitle = subtitleInput.value.trim();
+    item.status = normalizePptStatus(statusSelect.value);
+    item.tags = normalizePptTags(tagsInput.value);
+    item.reviewDate = normalizePptReviewDate(reviewDateInput.value);
     item.body = bodyInput.value.trim();
     item.updatedAt = Date.now();
-    if (saveModules()) renderPptNotes();
+    if (saveModules()) {
+      renderPptProjectManager();
+      renderPptNotes();
+    }
   });
 
   article.append(editor);
@@ -3025,6 +3417,15 @@ function createPptInlineTextInput(placeholder, value) {
   input.placeholder = placeholder;
   input.value = value;
   return input;
+}
+
+function createPptStatusSelect(selectedStatus = "organizing") {
+  const select = document.createElement("select");
+  select.setAttribute("aria-label", "整理状态");
+  PPT_NOTE_STATUS_OPTIONS.forEach((status) => {
+    select.append(createOption(status.id, status.label, status.id === normalizePptStatus(selectedStatus)));
+  });
+  return select;
 }
 
 function createPptInlineEditorActions(saveLabel, onCancel) {
@@ -3129,6 +3530,20 @@ function removePptAttachment(id) {
   if (saveModules()) renderPptNotes();
 }
 
+function cyclePptNoteStatus(id) {
+  const item = findModuleItem("pptNotes", id);
+  if (!item) return;
+  item.status = getNextPptStatus(item.status);
+  if (item.status === "review" && !normalizePptReviewDate(item.reviewDate)) {
+    item.reviewDate = new Date().toISOString().slice(0, 10);
+  }
+  item.updatedAt = Date.now();
+  if (saveModules()) {
+    renderPptProjectManager();
+    renderPptNotes();
+  }
+}
+
 function copyPptNote(id) {
   const item = findModuleItem("pptNotes", id);
   if (!item) return;
@@ -3143,8 +3558,11 @@ function formatPptNoteForCopy(item) {
     .filter(Boolean)
     .map((line) => (line.startsWith("-") ? line : `- ${line}`));
   const project = `项目：${getPptProjectButtonLabel(item)}`;
+  const status = `状态：${getPptStatusOption(item.status).label}`;
+  const tags = normalizePptTags(item.tags).length ? `标签：${normalizePptTags(item.tags).join("、")}` : "";
+  const review = normalizePptReviewDate(item.reviewDate) ? `复习：${displayDate(item.reviewDate)}` : "";
   const attachment = item.attachment?.name ? `附件：${item.attachment.name}` : "";
-  return [`# ${item.title || "课堂整理"}`, item.subtitle ? `## ${item.subtitle}` : "", project, attachment, ...lines]
+  return [`# ${item.title || "课堂整理"}`, item.subtitle ? `## ${item.subtitle}` : "", project, status, tags, review, attachment, ...lines]
     .filter(Boolean)
     .join("\n");
 }
@@ -3542,6 +3960,19 @@ function renderToc() {
   count.textContent = `${pages.length} 页 · ${notes.length} 篇`;
   head.append(titleWrap, count);
 
+  const ledger = document.createElement("div");
+  ledger.className = "note-toc-ledger";
+  const allTags = new Set(state.notes.flatMap((note) => note.tags));
+  [
+    ["全部笔记", state.notes.length],
+    ["置顶", state.notes.filter((note) => note.pinned).length],
+    ["标签", allTags.size]
+  ].forEach(([label, value]) => {
+    const item = document.createElement("span");
+    item.innerHTML = `<strong>${value}</strong><small>${label}</small>`;
+    ledger.append(item);
+  });
+
   const pageSection = createTocSection("页面目录", `${pages.length} 页`);
   const pageList = pageSection.querySelector(".note-toc-list");
   pages.forEach((entry) => {
@@ -3575,7 +4006,7 @@ function renderToc() {
       const itemTitle = document.createElement("strong");
       itemTitle.textContent = getNoteDisplayTitle(note);
       const meta = document.createElement("small");
-      meta.textContent = `${note.date || "未定日期"} · ${typeLabels[note.type] || "笔记"}${note.images?.length ? ` · ${note.images.length} 图` : ""}`;
+      meta.textContent = getNoteMetaLine(note);
       content.append(itemTitle, meta);
 
       item.append(order, content);
@@ -3583,7 +4014,7 @@ function renderToc() {
     });
   }
 
-  els.noteToc.append(head, pageSection, noteSection);
+  els.noteToc.append(head, ledger, pageSection, noteSection);
   updateTocPageActiveState();
 }
 
@@ -3710,21 +4141,75 @@ function renderList() {
     const body = fragment.querySelector("p");
     const person = fragment.querySelector(".person-chip");
     const pin = fragment.querySelector(".pin-chip");
+    const tags = fragment.querySelector(".note-card-tags");
+    const pageMark = fragment.querySelector(".note-page-mark");
+    const imageCount = fragment.querySelector(".note-image-count");
 
     card.classList.toggle("active", note.id === state.activeId);
+    card.dataset.noteType = note.type;
     type.textContent = typeLabels[note.type];
     type.classList.add(note.type);
     date.textContent = displayDate(note.date);
     title.textContent = note.title || "未命名笔记";
-    body.textContent = note.body || note.source || " ";
+    body.textContent = getNoteExcerpt(note);
     person.textContent = note.person || "";
+    person.classList.toggle("hidden", !note.person);
     pin.classList.toggle("hidden", !note.pinned);
+    pageMark.textContent = note.pinned ? "置顶" : displayDate(note.date).slice(0, 5);
+    imageCount.textContent = note.images?.length ? `${note.images.length} 图` : note.source ? "来源" : "";
+    imageCount.classList.toggle("hidden", !note.images?.length && !note.source);
+    renderTagChips(tags, note.tags, 3);
     button.addEventListener("click", () => {
       selectNote(note.id);
       scrollToEditor();
     });
     els.noteList.append(fragment);
   });
+}
+
+function renderTagChips(container, tags, limit = 4) {
+  if (!container) return;
+  container.replaceChildren();
+  const visibleTags = (Array.isArray(tags) ? tags : []).filter(Boolean).slice(0, limit);
+  container.classList.toggle("hidden", !visibleTags.length);
+  visibleTags.forEach((tag) => {
+    const chip = document.createElement("span");
+    chip.textContent = `#${tag}`;
+    container.append(chip);
+  });
+}
+
+function getNoteExcerpt(note) {
+  const body = String(note.body || "").replace(/\s+/g, " ").trim();
+  if (body) return body;
+  if (note.source) return `来源：${note.source}`;
+  if (note.tags?.length) return `标签：${note.tags.join("、")}`;
+  return " ";
+}
+
+function getNoteMetaLine(note) {
+  return [
+    note.date || "未定日期",
+    typeLabels[note.type] || "笔记",
+    note.person,
+    note.source,
+    note.images?.length ? `${note.images.length} 图` : ""
+  ]
+    .filter(Boolean)
+    .join(" · ");
+}
+
+function renderIndexSummary() {
+  const notes = getFilteredNotes();
+  const tags = new Set(state.notes.flatMap((note) => note.tags));
+  const pinned = state.notes.filter((note) => note.pinned).length;
+  const latest = [...state.notes].sort((a, b) => b.updatedAt - a.updatedAt)[0];
+
+  if (els.indexResultCount) els.indexResultCount.textContent = `${notes.length} 篇`;
+  if (els.indexInsightTotal) els.indexInsightTotal.textContent = state.notes.length;
+  if (els.indexInsightPinned) els.indexInsightPinned.textContent = pinned;
+  if (els.indexInsightTagged) els.indexInsightTagged.textContent = tags.size;
+  if (els.indexInsightRecent) els.indexInsightRecent.textContent = latest ? displayDate(latest.date).replace(/\s+/g, "") : "无日期";
 }
 
 function renderStats() {
@@ -3785,6 +4270,12 @@ function renderBloomGardenPhotos() {
   setBloomGardenPhotoElement(els.bloomSelfPhoto, photos.self);
 }
 
+function getBloomGardenPhotoElement(key) {
+  if (key === "teacher") return els.bloomTeacherPhoto;
+  if (key === "self") return els.bloomSelfPhoto;
+  return null;
+}
+
 function setBloomGardenPhotoElement(image, src) {
   if (!image) return;
   const hasPhoto = Boolean(src);
@@ -3801,19 +4292,31 @@ async function updateBloomGardenPhoto(event) {
   const key = input.dataset.bloomPhotoInput;
   const file = input.files?.[0];
   if (!key || !file) return;
+  const target = getBloomGardenPhotoElement(key);
+  const seat = input.closest(".garden-photo-seat");
+  let previewUrl = "";
+  if (target && window.URL?.createObjectURL) {
+    previewUrl = URL.createObjectURL(file);
+    setBloomGardenPhotoElement(target, previewUrl);
+  }
+  seat?.classList.add("is-loading");
   try {
     const image = await readBloomPortraitFile(file);
+    setBloomGardenPhotoElement(target, image);
     const photos = loadBloomGardenPhotos();
     photos[key] = image;
     if (saveBloomGardenPhotos(photos)) {
-      renderBloomGardenPhotos();
       bloomGardenFlowers();
     }
   } catch (error) {
     console.warn("Failed to update bloom garden photo", error);
     alert("照片读取失败，请换一张图片再试。");
   } finally {
+    seat?.classList.remove("is-loading");
     input.value = "";
+    if (previewUrl) {
+      setTimeout(() => URL.revokeObjectURL(previewUrl), 1200);
+    }
   }
 }
 

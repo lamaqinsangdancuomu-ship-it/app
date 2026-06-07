@@ -295,6 +295,7 @@
               <span class="eyebrow">སློབ་ཁྲིད། 课堂整理</span>
               <h2>课堂笔记整理</h2>
             </div>
+            <button class="module-head-action" id="pptExportButton" type="button">导出课堂</button>
           </div>
           <form class="module-editor ppt-project-editor" id="pptProjectForm">
             <input name="title" type="text" placeholder="项目名称，如《入行论》第三品" autocomplete="off" />
@@ -302,11 +303,44 @@
             <button type="submit">新增项目</button>
           </form>
           <div class="ppt-project-tabs" id="pptProjectTabs" aria-label="课堂笔记项目"></div>
+          <div class="ppt-note-commandbar" aria-label="课堂整理工具">
+            <label class="ppt-search-field" for="pptSearchInput">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.3-4.3"></path>
+              </svg>
+              <input id="pptSearchInput" type="search" placeholder="搜索课堂、标签、要点" autocomplete="off" />
+            </label>
+            <select id="pptStatusFilter" aria-label="按整理状态筛选">
+              <option value="all">全部状态</option>
+            </select>
+            <select id="pptSortSelect" aria-label="课堂整理排序">
+              <option value="updatedDesc">最近更新</option>
+              <option value="reviewAsc">复习优先</option>
+              <option value="createdDesc">新课在前</option>
+              <option value="title">按标题</option>
+            </select>
+          </div>
+          <div class="ppt-organizer-summary" id="pptOrganizerSummary"></div>
           <form class="module-editor ppt-note-editor" id="pptNoteForm">
             <input name="title" type="text" placeholder="课程 / 主题" autocomplete="off" />
             <input name="subtitle" type="text" placeholder="课次 / 页码 / 日期" autocomplete="off" />
             <select name="projectId" aria-label="标注项目（可多选）" multiple size="3"></select>
+            <select name="status" aria-label="整理状态">
+              <option value="capture">速记</option>
+              <option value="organizing" selected>整理中</option>
+              <option value="review">待复习</option>
+              <option value="done">已完成</option>
+            </select>
+            <input name="tags" type="text" placeholder="标签，如 中观, 发心, 待背诵" autocomplete="off" />
+            <input name="reviewDate" type="date" aria-label="复习日期" />
             <textarea name="body" placeholder="要点一&#10;要点二&#10;疑问 / 待复习"></textarea>
+            <div class="ppt-template-row" id="pptTemplateBar" aria-label="课堂模板">
+              <button type="button" data-ppt-template="outline">提纲</button>
+              <button type="button" data-ppt-template="cornell">康奈尔</button>
+              <button type="button" data-ppt-template="review">复习</button>
+              <button type="button" data-ppt-template="slides">课件</button>
+            </div>
             <label class="ppt-attachment-button">
               <input
                 name="attachment"

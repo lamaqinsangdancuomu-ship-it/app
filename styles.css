@@ -2051,6 +2051,10 @@ svg {
   gap: 12px;
 }
 
+.ppt-organizer-page {
+  gap: 8px;
+}
+
 .event-pages {
   position: relative;
   padding: 6px 0 8px;
@@ -2104,6 +2108,7 @@ svg {
 }
 
 .module-editor input[type="text"],
+.module-editor input[type="date"],
 .module-editor select {
   min-width: 0;
   height: 40px;
@@ -2504,12 +2509,36 @@ svg {
   box-shadow: 0 10px 24px rgba(64, 47, 23, 0.08);
 }
 
+.ppt-note-card.status-done {
+  border-color: rgba(42, 132, 92, 0.22);
+  background:
+    radial-gradient(circle at 92% 8%, rgba(42, 132, 92, 0.12), transparent 32%),
+    rgba(253, 255, 248, 0.94);
+}
+
+.ppt-note-card.status-review {
+  border-color: rgba(198, 40, 42, 0.22);
+  background:
+    radial-gradient(circle at 92% 8%, rgba(198, 40, 42, 0.12), transparent 32%),
+    rgba(255, 253, 247, 0.94);
+}
+
 .practice-counter-head,
 .ppt-note-head {
   display: flex;
   align-items: start;
   justify-content: space-between;
   gap: 12px;
+}
+
+.ppt-note-title {
+  min-width: 0;
+}
+
+.ppt-note-status-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
 }
 
 .practice-counter-head span,
@@ -2521,6 +2550,35 @@ svg {
   font-weight: 950;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+}
+
+.ppt-note-status-row .ppt-note-status,
+.ppt-note-status-row .ppt-review-due {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: rgba(49, 90, 140, 0.1);
+  color: var(--blue);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+}
+
+.ppt-note-status-row .ppt-note-status.capture {
+  background: rgba(216, 154, 50, 0.15);
+  color: var(--orange-deep);
+}
+
+.ppt-note-status-row .ppt-note-status.review,
+.ppt-note-status-row .ppt-review-due {
+  background: rgba(198, 40, 42, 0.1);
+  color: var(--red);
+}
+
+.ppt-note-status-row .ppt-note-status.done {
+  background: rgba(42, 132, 92, 0.12);
+  color: var(--green);
 }
 
 .practice-counter-head strong,
@@ -2542,6 +2600,36 @@ svg {
 
 .ppt-note-project {
   color: var(--red);
+}
+
+.ppt-note-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ppt-note-info span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  max-width: 100%;
+  padding: 0 9px;
+  border: 1px solid rgba(49, 90, 140, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.74);
+  color: var(--blue);
+  font-size: 11px;
+  font-weight: 900;
+  overflow-wrap: anywhere;
+}
+
+.ppt-note-info .ppt-note-review {
+  border-color: rgba(198, 40, 42, 0.16);
+  color: var(--red);
+}
+
+.ppt-note-info .ppt-note-info-empty {
+  color: rgba(95, 88, 80, 0.58);
 }
 
 .practice-counter-head b {
@@ -2600,6 +2688,10 @@ svg {
   white-space: normal;
 }
 
+.ppt-note-actions .module-action-button.status {
+  color: var(--blue);
+}
+
 .ppt-inline-editor {
   display: grid;
   gap: 8px;
@@ -2611,6 +2703,8 @@ svg {
 }
 
 .ppt-inline-editor input[type="text"],
+.ppt-inline-editor input[type="date"],
+.ppt-inline-editor select,
 .ppt-inline-editor textarea {
   width: 100%;
   min-width: 0;
@@ -2624,9 +2718,17 @@ svg {
   font-weight: 800;
 }
 
-.ppt-inline-editor input[type="text"] {
+.ppt-inline-editor input[type="text"],
+.ppt-inline-editor input[type="date"],
+.ppt-inline-editor select {
   height: 34px;
   padding: 0 10px;
+}
+
+.ppt-inline-meta-grid {
+  display: grid;
+  grid-template-columns: 0.8fr 1.2fr 1fr;
+  gap: 7px;
 }
 
 .ppt-inline-editor textarea {
@@ -5396,6 +5498,120 @@ svg {
 
 .ppt-project-editor {
   grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  padding: 10px;
+}
+
+.ppt-project-editor input[type="text"],
+.ppt-project-editor button {
+  min-height: 34px;
+  height: 34px;
+}
+
+.module-head-action {
+  flex: 0 0 auto;
+  min-height: 34px;
+  padding: 0 13px;
+  border: 1px solid rgba(49, 90, 140, 0.18);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 950;
+  box-shadow: 0 8px 18px rgba(64, 47, 23, 0.08);
+}
+
+.ppt-note-commandbar {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.ppt-search-field {
+  position: relative;
+  display: grid;
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+.ppt-search-field svg {
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 2;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.ppt-search-field input,
+.ppt-note-commandbar select {
+  width: 100%;
+  min-width: 0;
+  height: 32px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  outline: 0;
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.ppt-search-field input {
+  padding: 0 12px 0 38px;
+}
+
+.ppt-note-commandbar select {
+  padding: 0 11px;
+}
+
+.ppt-organizer-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.ppt-organizer-summary span {
+  min-width: 0;
+  padding: 4px 4px;
+  border: 1px solid rgba(216, 154, 50, 0.16);
+  border-radius: var(--radius);
+  background:
+    linear-gradient(135deg, rgba(244, 213, 122, 0.16), transparent 46%),
+    rgba(255, 255, 255, 0.86);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 900;
+  text-align: center;
+}
+
+.ppt-organizer-summary strong {
+  display: block;
+  color: var(--red);
+  font-size: 18px;
+  font-weight: 950;
+  line-height: 1;
+}
+
+.ppt-note-editor {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  padding: 10px;
+}
+
+.ppt-note-editor input[type="text"],
+.ppt-note-editor input[type="date"],
+.ppt-note-editor select {
+  height: 36px;
+}
+
+.ppt-note-editor > input[name="title"],
+.ppt-note-editor > input[name="subtitle"] {
+  grid-column: span 1;
 }
 
 .ppt-project-editor button {
@@ -5403,13 +5619,19 @@ svg {
   min-width: 92px;
 }
 
-.ppt-note-editor select {
+.ppt-note-editor select[name="projectId"] {
+  grid-column: 1 / -1;
+}
+
+.ppt-note-editor select[name="status"],
+.ppt-note-editor input[name="tags"],
+.ppt-note-editor input[name="reviewDate"] {
   grid-column: 1 / -1;
 }
 
 .ppt-note-editor select[multiple] {
   height: auto;
-  min-height: 92px;
+  min-height: 34px;
   padding: 8px;
 }
 
@@ -5420,7 +5642,7 @@ svg {
 
 .ppt-note-editor textarea {
   grid-column: 1 / -1;
-  min-height: 118px;
+  min-height: 42px;
   padding: 12px;
   resize: vertical;
   border: 1px solid var(--line);
@@ -5433,12 +5655,29 @@ svg {
   line-height: 1.7;
 }
 
+.ppt-template-row {
+  display: flex;
+  flex-wrap: wrap;
+  grid-column: 1 / -1;
+  gap: 5px;
+}
+
+.ppt-template-row button {
+  flex: 1 1 72px;
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid rgba(49, 90, 140, 0.14);
+  background: rgba(49, 90, 140, 0.08);
+  color: var(--blue);
+  font-size: 12px;
+}
+
 .ppt-attachment-button {
   position: relative;
   display: grid;
   grid-column: 1 / -1;
   place-items: center;
-  min-height: 40px;
+  min-height: 34px;
   overflow: hidden;
   border: 1px dashed rgba(198, 40, 42, 0.28);
   border-radius: 999px;
@@ -5481,6 +5720,101 @@ svg {
 
 .ppt-note-editor button {
   grid-column: 1 / -1;
+}
+
+.ppt-note-editor button[type="submit"] {
+  min-height: 34px;
+}
+
+@media (max-width: 720px) {
+  .ppt-note-commandbar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .ppt-search-field {
+    grid-column: 1 / -1;
+  }
+
+  .ppt-search-field input,
+  .ppt-note-commandbar select {
+    height: 32px;
+  }
+
+  .ppt-organizer-summary {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .ppt-organizer-summary span {
+    padding: 4px 4px;
+  }
+
+  .ppt-organizer-summary strong {
+    font-size: 18px;
+  }
+
+  .ppt-project-editor {
+    gap: 6px;
+    padding: 10px;
+  }
+
+  .ppt-project-editor input[type="text"],
+  .ppt-project-editor button {
+    min-height: 36px;
+    height: 36px;
+  }
+
+  .ppt-note-editor {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+    padding: 10px;
+  }
+
+  .ppt-note-editor select[name="status"],
+  .ppt-note-editor input[name="tags"],
+  .ppt-note-editor input[name="reviewDate"] {
+    grid-column: 1 / -1;
+  }
+
+  .ppt-note-editor > input[name="title"],
+  .ppt-note-editor > input[name="subtitle"] {
+    grid-column: span 1;
+  }
+
+  .ppt-note-head {
+    display: grid;
+  }
+
+  .ppt-note-meta {
+    justify-items: start;
+    text-align: left;
+  }
+
+  .ppt-inline-meta-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ppt-note-editor select[multiple] {
+    min-height: 36px;
+  }
+
+  .ppt-note-editor textarea {
+    min-height: 48px;
+  }
+
+  .ppt-template-row {
+    gap: 5px;
+  }
+
+  .ppt-template-row button {
+    min-height: 30px;
+  }
+
+  .ppt-attachment-button,
+  .ppt-note-editor button[type="submit"] {
+    min-height: 36px;
+  }
 }
 
 .milestone-note {
@@ -9538,5 +9872,675 @@ textarea:focus,
 
   .signboard-title-art {
     width: min(98%, 326px) !important;
+  }
+}
+
+/* Bloom photo upload polish: instant visible portraits, larger seated presence. */
+.notebook-overview-page .garden-companions {
+  z-index: 32 !important;
+}
+
+.notebook-overview-page .garden-photo-seat {
+  width: 132px !important;
+  height: 178px !important;
+  z-index: 32 !important;
+  touch-action: manipulation;
+}
+
+.notebook-overview-page .garden-photo-seat.teacher {
+  left: 27% !important;
+  bottom: max(118px, calc(env(safe-area-inset-bottom) + 112px)) !important;
+  width: 132px !important;
+  height: 178px !important;
+}
+
+.notebook-overview-page .garden-photo-seat.self {
+  left: calc(27% + 94px) !important;
+  right: auto !important;
+  bottom: max(94px, calc(env(safe-area-inset-bottom) + 88px)) !important;
+  width: 118px !important;
+  height: 158px !important;
+  z-index: 34 !important;
+}
+
+.notebook-overview-page .garden-photo-seat img {
+  opacity: 0;
+  mix-blend-mode: normal !important;
+  filter: saturate(0.94) contrast(0.98) brightness(1.04) sepia(0.06) !important;
+  transition:
+    opacity 0.18s ease,
+    transform 0.24s ease,
+    filter 0.24s ease !important;
+}
+
+.notebook-overview-page .garden-photo-seat img.has-photo {
+  opacity: 0.96 !important;
+}
+
+.notebook-overview-page .garden-photo-seat.is-loading img.has-photo {
+  opacity: 0.92 !important;
+  filter:
+    saturate(0.86)
+    contrast(0.94)
+    brightness(1.08)
+    sepia(0.08)
+    drop-shadow(0 0 16px rgba(255, 238, 170, 0.18)) !important;
+}
+
+@media (max-width: 520px) {
+  .notebook-overview-page .garden-photo-seat {
+    width: 122px !important;
+    height: 166px !important;
+  }
+
+  .notebook-overview-page .garden-photo-seat.teacher {
+    left: 23% !important;
+    bottom: max(112px, calc(env(safe-area-inset-bottom) + 106px)) !important;
+    width: 122px !important;
+    height: 166px !important;
+  }
+
+  .notebook-overview-page .garden-photo-seat.self {
+    left: calc(23% + 86px) !important;
+    bottom: max(88px, calc(env(safe-area-inset-bottom) + 82px)) !important;
+    width: 108px !important;
+    height: 146px !important;
+  }
+}
+
+/* Notebook cover object-fit pass: show the whole cover as a physical book. */
+.journey-cover.notebook-page {
+  display: grid;
+  place-items: center;
+  padding: max(18px, env(safe-area-inset-top)) 14px max(82px, env(safe-area-inset-bottom)) !important;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 50% 18%, rgba(255, 238, 178, 0.28), transparent 48%),
+    linear-gradient(145deg, #4f2a10 0%, #8c480e 42%, #e0931a 100%);
+}
+
+.journey-cover.notebook-page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    linear-gradient(90deg, rgba(31, 16, 5, 0.34), transparent 18%, transparent 82%, rgba(71, 36, 10, 0.24)),
+    repeating-linear-gradient(90deg, rgba(255, 226, 147, 0.08) 0 1px, transparent 1px 7px);
+  pointer-events: none;
+}
+
+.journey-cover.notebook-page::after {
+  display: none;
+}
+
+.journey-cover.notebook-page .cover-image {
+  position: relative !important;
+  inset: auto !important;
+  z-index: 2;
+  display: block;
+  width: auto !important;
+  height: auto !important;
+  max-width: min(96vw, 412px) !important;
+  max-height: calc(100dvh - max(118px, env(safe-area-inset-top) + env(safe-area-inset-bottom) + 98px)) !important;
+  min-height: 0 !important;
+  border: 1px solid rgba(255, 230, 157, 0.34);
+  border-radius: 10px !important;
+  object-fit: contain !important;
+  object-position: center center !important;
+  transform: translateY(clamp(-46px, -5vh, -22px));
+  box-shadow:
+    -13px 0 0 rgba(84, 39, 8, 0.62),
+    -17px 0 18px rgba(41, 19, 5, 0.28),
+    0 22px 48px rgba(34, 17, 4, 0.38),
+    inset 0 0 0 1px rgba(255, 235, 179, 0.26) !important;
+}
+
+.journey-cover .notebook-page-footer {
+  right: 18px !important;
+  bottom: max(18px, env(safe-area-inset-bottom)) !important;
+}
+
+@media (max-width: 520px) {
+  .journey-cover.notebook-page {
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+    max-height: 100dvh !important;
+    padding: max(12px, env(safe-area-inset-top)) 12px max(78px, env(safe-area-inset-bottom)) !important;
+  }
+
+  .journey-cover.notebook-page .cover-image {
+    max-width: min(94vw, 402px) !important;
+    max-height: calc(100dvh - max(104px, env(safe-area-inset-top) + env(safe-area-inset-bottom) + 88px)) !important;
+  }
+}
+
+/* Mature notebook index/editor pass: denser like a real notes app, still kept in the hand-account paper system. */
+.notebook-index-page.notebook-page {
+  gap: 13px !important;
+  padding: 16px 14px max(96px, env(safe-area-inset-bottom)) !important;
+  background:
+    linear-gradient(90deg, rgba(198, 40, 42, 0.075) 0 3px, transparent 3px 100%),
+    repeating-linear-gradient(0deg, rgba(49, 90, 140, 0.045) 0 1px, transparent 1px 34px),
+    linear-gradient(180deg, #fffdf7 0%, #f7f0e2 100%) !important;
+}
+
+.index-hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 14px;
+  overflow: hidden;
+  padding: 18px 16px 16px;
+  border: 1px solid rgba(216, 154, 50, 0.34);
+  border-radius: var(--radius);
+  background:
+    linear-gradient(115deg, rgba(255, 248, 222, 0.92), rgba(255, 253, 247, 0.72) 54%, rgba(235, 242, 232, 0.68)),
+    url("assets/page-header-scroll-right.png") right -20px top -18px / 146px auto no-repeat;
+  box-shadow: 0 14px 30px rgba(64, 47, 23, 0.1);
+}
+
+.index-hero h2 {
+  margin-top: 4px;
+  color: var(--red);
+  font-family: var(--signboard-font);
+  font-size: 32px;
+  font-weight: 900;
+  line-height: 1.08;
+  text-shadow: 0.28px 0 rgba(198, 40, 42, 0.28);
+}
+
+.index-hero p {
+  margin-top: 7px;
+  max-width: 19em;
+  color: #6f6255;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.55;
+}
+
+.index-new-button,
+.index-current-button {
+  min-height: 38px;
+  border: 1px solid rgba(198, 40, 42, 0.26);
+  border-radius: 999px;
+  background: #fffdf7;
+  color: var(--red);
+  font-size: 13px;
+  font-weight: 950;
+  white-space: nowrap;
+  box-shadow: 0 8px 18px rgba(64, 47, 23, 0.08);
+}
+
+.index-new-button {
+  padding: 0 14px;
+  border-color: rgba(255, 215, 126, 0.46);
+  background:
+    linear-gradient(135deg, rgba(255, 235, 159, 0.2), transparent 36%),
+    linear-gradient(145deg, #7f0d13 0%, #c6282a 48%, #8f1217 100%);
+  color: #f8d878;
+}
+
+.index-command-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 9px;
+  align-items: center;
+}
+
+.index-command-panel .search-box {
+  min-height: 44px;
+  border-color: rgba(49, 90, 140, 0.16);
+  background: rgba(255, 253, 247, 0.88);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.52), 0 8px 18px rgba(64, 47, 23, 0.06);
+}
+
+.index-current-button {
+  padding: 0 12px;
+  color: var(--blue);
+}
+
+.index-insights {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.index-insights article {
+  min-width: 0;
+  padding: 10px 6px;
+  border: 1px solid rgba(234, 223, 208, 0.92);
+  border-radius: var(--radius);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(247, 242, 232, 0.82)),
+    #fffdf7;
+  text-align: center;
+  box-shadow: 0 8px 18px rgba(64, 47, 23, 0.06);
+}
+
+.index-insights span {
+  display: block;
+  overflow: hidden;
+  color: var(--blue);
+  font-family: var(--signboard-font);
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1.05;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.index-insights small {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.section-head.index-list-head {
+  align-items: center;
+  padding: 2px 2px 0;
+}
+
+.section-head.index-list-head strong {
+  display: block;
+  margin-top: 2px;
+  color: var(--red);
+  font-size: 20px;
+  font-weight: 950;
+}
+
+.index-list-head select {
+  max-width: 180px;
+  border-color: rgba(49, 90, 140, 0.16);
+  background: rgba(255, 253, 247, 0.9);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.notebook-index-page .type-filter {
+  gap: 6px;
+}
+
+.notebook-index-page .type-button {
+  min-height: 42px;
+  padding: 4px 4px;
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(247, 242, 232, 0.88));
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.42);
+}
+
+.notebook-index-page .type-button.active {
+  border-color: rgba(49, 90, 140, 0.2);
+  background: linear-gradient(145deg, #24486f, #315a8c);
+}
+
+.notebook-index-page .note-list {
+  gap: 10px;
+}
+
+.notebook-index-page .note-card-button {
+  position: relative;
+  min-height: 148px;
+  overflow: hidden;
+  gap: 9px;
+  padding: 14px 58px 14px 14px;
+  border-color: rgba(234, 223, 208, 0.94);
+  background:
+    linear-gradient(90deg, rgba(198, 40, 42, 0.055) 0 4px, transparent 4px),
+    radial-gradient(circle at 12% 18%, rgba(216, 154, 50, 0.09), transparent 30%),
+    rgba(255, 253, 247, 0.92);
+  box-shadow: 0 12px 26px rgba(64, 47, 23, 0.08);
+}
+
+.notebook-index-page .note-card-button::after {
+  content: "";
+  position: absolute;
+  top: 12px;
+  right: 42px;
+  bottom: 12px;
+  width: 1px;
+  background: repeating-linear-gradient(180deg, rgba(216, 154, 50, 0.34) 0 5px, transparent 5px 10px);
+}
+
+.notebook-index-page .note-card:nth-child(n) .note-card-button {
+  border-top-width: 1px;
+}
+
+.notebook-index-page .note-card[data-note-type="diary"] .note-card-button {
+  border-left: 6px solid var(--red);
+}
+
+.notebook-index-page .note-card[data-note-type="reading"] .note-card-button {
+  border-left: 6px solid var(--blue);
+}
+
+.notebook-index-page .note-card[data-note-type="memo"] .note-card-button {
+  border-left: 6px solid var(--gold);
+}
+
+.notebook-index-page .note-card[data-note-type="timeline"] .note-card-button {
+  border-left: 6px solid var(--green);
+}
+
+.notebook-index-page .note-card.active .note-card-button {
+  outline: 0;
+  border-color: rgba(198, 40, 42, 0.32);
+  box-shadow: 0 16px 30px rgba(198, 40, 42, 0.13);
+}
+
+.notebook-index-page .note-card h3 {
+  color: var(--ink);
+  font-family: var(--signboard-font);
+  font-size: 25px;
+  line-height: 1.06;
+  text-transform: none;
+}
+
+.notebook-index-page .note-card p {
+  min-height: 42px;
+  color: #675e56;
+  font-size: 13px;
+  line-height: 1.6;
+  -webkit-line-clamp: 2;
+}
+
+.note-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 24px;
+}
+
+.note-card-tags span {
+  max-width: 100%;
+  min-height: 22px;
+  padding: 2px 8px;
+  overflow: hidden;
+  border: 1px solid rgba(49, 90, 140, 0.14);
+  border-radius: 999px;
+  background: rgba(49, 90, 140, 0.08);
+  color: var(--blue);
+  font-size: 11px;
+  font-weight: 850;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.note-card-trail {
+  position: absolute;
+  top: 14px;
+  right: 10px;
+  bottom: 14px;
+  display: grid;
+  align-content: space-between;
+  justify-items: center;
+  width: 26px;
+  color: rgba(49, 90, 140, 0.72);
+  font-size: 11px;
+  font-weight: 950;
+  writing-mode: vertical-rl;
+}
+
+.note-image-count {
+  color: rgba(198, 40, 42, 0.72);
+}
+
+.note-toc-ledger {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.note-toc-ledger span {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  padding: 9px 6px;
+  border: 1px solid rgba(234, 223, 208, 0.86);
+  border-radius: var(--radius);
+  background: rgba(255, 253, 247, 0.72);
+  text-align: center;
+}
+
+.note-toc-ledger strong {
+  color: var(--red);
+  font-size: 18px;
+  line-height: 1;
+}
+
+.note-toc-ledger small {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.note-toc-feature .note-toc-list {
+  max-height: 258px;
+}
+
+.note-toc-feature .note-toc-item {
+  border-radius: 8px;
+}
+
+.editor-card.notebook-page {
+  background:
+    linear-gradient(90deg, rgba(82, 54, 28, 0.09) 0 10px, transparent 10px),
+    linear-gradient(180deg, #fffdf7, #f3ead9) !important;
+}
+
+.editor-card .editor-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px;
+  background: rgba(255, 253, 247, 0.9);
+  backdrop-filter: blur(10px);
+}
+
+.editor-card .editor-actions {
+  flex: 1 1 190px;
+  justify-content: flex-end;
+  gap: 6px;
+  min-width: 0;
+}
+
+.editor-card .round-button.small {
+  width: 34px;
+  height: 34px;
+}
+
+.editor-card .round-button:disabled {
+  cursor: default;
+  opacity: 0.42;
+  box-shadow: none;
+}
+
+.editor-card .save-state {
+  max-width: 62px;
+  overflow: hidden;
+  color: #8a7460;
+  font-size: 11px;
+  font-weight: 850;
+  text-overflow: ellipsis;
+}
+
+.editor-card .segmented {
+  flex: 0 1 140px;
+  width: 140px;
+  height: 34px;
+}
+
+.editor-card .segment {
+  font-size: 12px;
+}
+
+.editor-form {
+  gap: 12px;
+  padding: 92px 18px 24px !important;
+}
+
+.editor-paper-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(198, 40, 42, 0.22);
+}
+
+.editor-paper-head span {
+  color: var(--gold);
+  font-size: 12px;
+  font-weight: 950;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+.editor-paper-head small {
+  min-width: 0;
+  overflow: hidden;
+  color: #74685d;
+  font-size: 11px;
+  font-weight: 850;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.editor-form .title-input {
+  min-height: 58px;
+  border-bottom-width: 2px;
+  font-size: 36px;
+}
+
+.editor-form .meta-grid {
+  gap: 9px;
+}
+
+.editor-form label span {
+  color: #7a695b;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.editor-form input,
+.editor-form select {
+  height: 40px;
+  border-color: rgba(167, 128, 79, 0.24);
+  background: rgba(255, 252, 240, 0.72);
+}
+
+.writing-assist {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid rgba(216, 154, 50, 0.22);
+  border-radius: var(--radius);
+  background: rgba(255, 253, 247, 0.62);
+}
+
+.writing-assist-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 0;
+}
+
+.writing-assist button {
+  min-height: 30px;
+  padding: 0 9px;
+  border: 1px solid rgba(49, 90, 140, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--blue);
+  font-size: 11px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.writing-assist span {
+  color: #7a695b;
+  font-size: 11px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.editor-form textarea {
+  min-height: 360px;
+  border-color: rgba(167, 128, 79, 0.22);
+  border-radius: 6px;
+  font-size: 22px;
+  line-height: 1.86;
+  background:
+    radial-gradient(circle at 18% 22%, rgba(128, 103, 69, 0.045) 0 1px, transparent 2px),
+    repeating-linear-gradient(92deg, rgba(101, 86, 58, 0.032) 0 1px, transparent 1px 18px),
+    linear-gradient(rgba(255, 253, 245, 0.74) 40px, rgba(109, 74, 31, 0.09) 41px),
+    rgba(255, 253, 245, 0.7);
+  background-size: 100% 41px;
+}
+
+.editor-card .page-theme-picker {
+  grid-auto-columns: minmax(118px, 40%);
+  padding: 10px;
+}
+
+.editor-card .page-theme-option {
+  min-height: 76px;
+}
+
+@media (max-width: 390px) {
+  .index-hero h2 {
+    font-size: 28px;
+  }
+
+  .notebook-index-page .note-card h3 {
+    font-size: 23px;
+  }
+
+  .index-command-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .index-current-button {
+    min-height: 36px;
+  }
+
+  .index-insights {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .editor-card .save-state {
+    display: none;
+  }
+
+  .editor-card .segmented {
+    width: 128px;
+  }
+
+  .editor-form {
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+
+  .editor-form .title-input {
+    font-size: 32px;
+  }
+
+  .editor-form textarea {
+    font-size: 21px;
+  }
+
+  .writing-assist {
+    grid-template-columns: 1fr;
   }
 }
