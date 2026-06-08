@@ -555,7 +555,198 @@ function prepareImage(image, options = {}) {
   return image;
 }
 
-init();
+/* ============================================================================
+ * Buli 图片存储层 (IndexedDB)  —  根治“图片塞进 localStorage 超出 ~5MB 配额
+ * 导致添加壁纸/供灯佛像/笔记配图静默保存失败”的问题。
+ *
+ * 原理：透明拦截 localStorage 的 setItem/getItem。
+ *   - setItem：把 JSON 里体积较大的 data: 图片外置到 IndexedDB（容量大几百倍），
+ *     localStorage 里只留一个极小的令牌 "idb::img::<hash>-<len>"。
+ *   - getItem：把令牌还原成原始 data: 图片（从启动时预载的内存缓存读取，同步返回）。
+ * 渲染代码完全无需改动；启动时自动把已有的 base64 迁移进 IndexedDB，当场释放空间。
+ * 若设备不支持 IndexedDB（极少数），自动退回原行为，绝不报错。
+ * ==========================================================================*/
+const BuliImageLayer = (function () {
+  // —— crypto.randomUUID 兼容垫片：老安卓 WebView 缺失会导致添加计数/笔记崩溃 ——
+  try {
+    if (typeof crypto !== "undefined" && crypto && typeof crypto.randomUUID !== "function") {
+      crypto.randomUUID = function () {
+        return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+          var r = (Math.random() * 16) | 0;
+          var v = c === "x" ? r : (r & 0x3) | 0x8;
+          return v.toString(16);
+        });
+      };
+    }
+  } catch (e) { /* ignore */ }
+
+  var DB_NAME = "buli-image-store";
+  var STORE = "images";
+  var TOKEN_PREFIX = "idb::img::";
+  var MIN_INLINE = 514; // 含两个引号；约 512 字符以上的 data: 才外置，极小内联图保持原样
+
+  var cache = new Map();        // token -> dataURL
+  var urlToToken = new Map();   // dataURL -> token
+  var db = null;
+  var available = false;
+  var nativeGet = null;
+  var nativeSet = null;
+
+  function openDb() {
+    return new Promise(function (resolve) {
+      try {
+        if (typeof indexedDB === "undefined" || !indexedDB) { resolve(false); return; }
+        var req = indexedDB.open(DB_NAME, 1);
+        req.onupgradeneeded = function () {
+          var d = req.result;
+          if (!d.objectStoreNames.contains(STORE)) d.createObjectStore(STORE);
+        };
+        req.onsuccess = function () { db = req.result; available = true; resolve(true); };
+        req.onerror = function () { resolve(false); };
+        req.onblocked = function () { resolve(false); };
+      } catch (e) { resolve(false); }
+    });
+  }
+
+  function idbPut(token, dataUrl) {
+    if (!db) return;
+    try {
+      var tx = db.transaction(STORE, "readwrite");
+      tx.objectStore(STORE).put(dataUrl, token);
+    } catch (e) { /* ignore */ }
+  }
+
+  function loadAll() {
+    return new Promise(function (resolve) {
+      if (!db) { resolve(); return; }
+      try {
+        var tx = db.transaction(STORE, "readonly");
+        var store = tx.objectStore(STORE);
+        var req = store.openCursor();
+        req.onsuccess = function () {
+          var cur = req.result;
+          if (cur) {
+            var token = String(cur.key);
+            var val = cur.value;
+            if (typeof val === "string") {
+              cache.set(token, val);
+              urlToToken.set(val, token);
+            }
+            cur.continue();
+          } else {
+            resolve();
+          }
+        };
+        req.onerror = function () { resolve(); };
+      } catch (e) { resolve(); }
+    });
+  }
+
+  // 稳定的 53-bit 哈希（cyrb53），输出 base36，使同一图片始终映射到同一令牌
+  function hash53(str) {
+    var h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+    for (var i = 0; i < str.length; i++) {
+      var ch = str.charCodeAt(i);
+      h1 = Math.imul(h1 ^ ch, 2654435761);
+      h2 = Math.imul(h2 ^ ch, 1597334677);
+    }
+    h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+    h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+    var num = 4294967296 * (2097151 & h2) + (h1 >>> 0);
+    return num.toString(36);
+  }
+
+  function tokenFor(dataUrl) {
+    if (urlToToken.has(dataUrl)) return urlToToken.get(dataUrl);
+    var token = TOKEN_PREFIX + hash53(dataUrl) + "-" + dataUrl.length;
+    cache.set(token, dataUrl);
+    urlToToken.set(dataUrl, token);
+    idbPut(token, dataUrl);
+    return token;
+  }
+
+  // 把 JSON 字符串里较大的 data: 图片替换成令牌
+  function tokenizeJson(str) {
+    if (!available || typeof str !== "string" || str.indexOf("data:") === -1) return str;
+    return str.replace(/"data:[^"\\]+"/g, function (m) {
+      if (m.length < MIN_INLINE) return m;
+      var url = m.slice(1, -1);
+      return JSON.stringify(tokenFor(url));
+    });
+  }
+
+  // 把 JSON 字符串里的令牌还原成原始 data: 图片
+  function resolveJson(str) {
+    if (typeof str !== "string" || str.indexOf(TOKEN_PREFIX) === -1) return str;
+    return str.replace(/"idb::img::[0-9a-z]+-[0-9]+"/g, function (m) {
+      var token = m.slice(1, -1);
+      var url = cache.get(token);
+      return url ? JSON.stringify(url) : m;
+    });
+  }
+
+  function installOverride() {
+    try {
+      var ls = window.localStorage;
+      if (!ls) return;
+      nativeGet = ls.getItem.bind(ls);
+      nativeSet = ls.setItem.bind(ls);
+      ls.setItem = function (key, value) {
+        var v = value;
+        if (typeof v === "string") {
+          try { v = tokenizeJson(v); } catch (e) { v = value; }
+        }
+        return nativeSet(key, v);
+      };
+      ls.getItem = function (key) {
+        var raw = nativeGet(key);
+        if (typeof raw === "string") {
+          try { return resolveJson(raw); } catch (e) { return raw; }
+        }
+        return raw;
+      };
+    } catch (e) { /* 拦截失败则保持原生行为，应用仍可用 */ }
+  }
+
+  // 启动时把已有的 base64 一次性迁入 IndexedDB，立即给 localStorage 腾出空间
+  function migrateExisting() {
+    if (!available || !nativeGet || !nativeSet) return;
+    try {
+      var keys = [];
+      for (var i = 0; i < window.localStorage.length; i++) {
+        keys.push(window.localStorage.key(i));
+      }
+      keys.forEach(function (k) {
+        if (k == null) return;
+        var raw = nativeGet(k);
+        if (typeof raw === "string" && raw.indexOf("data:") !== -1) {
+          var tokenized = tokenizeJson(raw);
+          if (tokenized !== raw) {
+            try { nativeSet(k, tokenized); } catch (e) { /* ignore */ }
+          }
+        }
+      });
+    } catch (e) { /* ignore */ }
+  }
+
+  function boot() {
+    return openDb().then(function () {
+      return loadAll();
+    }).then(function () {
+      installOverride();
+      migrateExisting();
+    }).catch(function () {
+      // 兜底：即便出错也安装拦截（此时为透明直通），不阻塞应用启动
+      try { installOverride(); } catch (e) { /* ignore */ }
+    });
+  }
+
+  return { boot: boot };
+})();
+
+BuliImageLayer.boot().then(init).catch(function () {
+  try { init(); } catch (err) { console.error(err); }
+});
 
 function init() {
   prepareStaticImages();
@@ -731,6 +922,10 @@ function setupNotebookPager() {
   notebookPager.pages.forEach((page, index) => {
     page.classList.add("notebook-page");
     page.dataset.notebookPage = String(index + 1);
+    // 滚动安全网：无论样式表如何，强制每页可竖向滚动（含 iOS 惯性滚动），
+    // 防止任何补丁层 CSS 覆盖导致“无法下拉页面”。
+    page.style.overflowY = "auto";
+    page.style.webkitOverflowScrolling = "touch";
   });
 
   promoteNotebookPages();
@@ -1546,6 +1741,7 @@ function scheduleSave() {
 }
 
 function render() {
+  if (window.BuliEnhance) window.BuliEnhance.afterRender();
   els.typeButtons.forEach((button) => {
     button.classList.toggle("active", button.dataset.filter === state.filter);
   });
@@ -2494,19 +2690,32 @@ function createPracticeCounterCard(item) {
   const title = document.createElement("strong");
   title.textContent = item.title || "未命名功课";
   titleWrap.append(subtitle, title);
+  const numericCount = Number(item.count) || 0;
+  const numericTarget = Number(item.target) || 0;
+  const complete = numericTarget > 0 && numericCount >= numericTarget;
+  if (complete) card.classList.add("is-complete");
+
   const count = document.createElement("b");
   count.textContent = formatNumber(item.count);
   head.append(titleWrap, count);
+  if (complete) {
+    const badge = document.createElement("span");
+    badge.className = "practice-complete-badge";
+    badge.textContent = "已圆满 ✓";
+    head.append(badge);
+  }
 
   const progress = document.createElement("div");
   progress.className = "practice-progress";
   const bar = document.createElement("span");
-  const percent = item.target ? Math.min(100, Math.round((item.count / item.target) * 100)) : 0;
+  const percent = numericTarget ? Math.min(100, Math.round((numericCount / numericTarget) * 100)) : 0;
   bar.style.width = `${percent}%`;
   progress.append(bar);
 
   const meta = document.createElement("p");
-  meta.textContent = `目标 ${formatNumber(item.target)} · ${percent}% · 每次 +${formatNumber(item.step)}`;
+  meta.textContent = complete
+    ? `已圆满 ${formatNumber(item.count)} / ${formatNumber(item.target)} · 每步 ${formatNumber(item.step)}`
+    : `目标 ${formatNumber(item.target)} · ${percent}% · 每步 ${formatNumber(item.step)}`;
 
   const actions = document.createElement("div");
   actions.className = "practice-counter-actions";
@@ -2530,6 +2739,7 @@ function createPracticeCounterCard(item) {
     if (shouldOpen) targetEditor.querySelector("input[name='target']")?.focus();
   });
   actions.append(
+    createActionButton(`−${item.step}`, () => updatePracticeCounter(item.id, -item.step)),
     createActionButton(`+${item.step}`, () => updatePracticeCounter(item.id, item.step)),
     manualInput,
     createActionButton("手动", () => {
@@ -3065,6 +3275,7 @@ function sortPptNotes(a, b) {
 }
 
 function renderPptNotes() {
+  if (window.BuliEnhance) window.BuliEnhance.afterPpt();
   if (!els.pptNoteList) return;
   els.pptNoteList.replaceChildren();
   const scopedNotes = getPptProjectScopedNotes();
@@ -4120,6 +4331,7 @@ function getNoteDisplayTitle(note) {
 }
 
 function renderList() {
+  if (window.BuliEnhance) window.BuliEnhance.afterList();
   const notes = getFilteredNotes();
   els.noteList.replaceChildren();
 
@@ -5601,6 +5813,11 @@ async function addPageWallpapers(event) {
         switchClassroomMode(tab.dataset.buliClassroomMode);
         return;
       }
+      const insertBtn = event.target.closest("[data-buli-template-insert]");
+      if (insertBtn) {
+        insertClassroomTemplate(insertBtn.dataset.buliTemplateInsert);
+        return;
+      }
       if (event.target.closest("[data-buli-classroom-new]")) {
         resetClassroomDraft(true);
         return;
@@ -5650,6 +5867,26 @@ async function addPageWallpapers(event) {
     const body = form.elements.body;
     if (body && isEmptyOrTemplateText(body.value)) body.value = tpl.body;
     body?.focus();
+  }
+
+  function insertClassroomTemplate(mode) {
+    const form = $("#pptNoteForm");
+    const tpl = CLASSROOM_TEMPLATES_MATURE[mode];
+    if (!form || !tpl) return;
+    if (!safeText(form.elements.title?.value)) form.elements.title.value = tpl.title;
+    if (form.elements.status && tpl.status) form.elements.status.value = tpl.status;
+    if (form.elements.tags && !safeText(form.elements.tags.value)) form.elements.tags.value = tpl.tags || "";
+    const body = form.elements.body;
+    if (body) {
+      if (isEmptyOrTemplateText(body.value)) {
+        body.value = tpl.body;
+      } else {
+        body.value = body.value.replace(/\s+$/, "") + "\n\n" + tpl.body;
+      }
+      body.dispatchEvent(new Event("input", { bubbles: true }));
+      body.focus();
+    }
+    try { form.scrollIntoView({ behavior: "smooth", block: "center" }); } catch (e) { /* ignore */ }
   }
 
   function resetClassroomDraft(applyTemplate = true) {
@@ -5704,61 +5941,28 @@ async function addPageWallpapers(event) {
       `;
     } else {
       const tpl = CLASSROOM_TEMPLATES_MATURE[mode] || CLASSROOM_TEMPLATES_MATURE.outline;
+      const hint = mode === "outline" ? "听闻开示时抓主旨、脉络、主要教言和待请教的问题。"
+        : mode === "cornell" ? "康奈尔式：左栏记线索关键词，右栏记闻法内容，底部做思维总结与落实。"
+        : mode === "review" ? "适合背诵、温习、查漏补缺与修持落实。"
+        : "适合整理法本资料、共修分享、开示摘录与回向发愿。";
+      const escapeHtml = (text) => String(text || "")
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
       current.innerHTML = `
-        <div class="buli-classroom-template-card">
-          <span>${tpl.label}</span>
-          <strong>${tpl.title}</strong>
-          <p>${mode === "outline" ? "听闻开示时抓主旨、脉络、主要教言和待请教问题。" : mode === "cornell" ? "将康奈尔结构转为线索、闻法记录、思维整理和落实。" : mode === "review" ? "适合背诵、温习、查漏补缺和修持落实。" : "适合整理法本资料、共修分享、开示摘录与回向发愿。"}</p>
+        <div class="buli-current-template-panel">
+          <div class="buli-current-template-head"><span>${tpl.label}</span><strong>${tpl.title}</strong></div>
+          <p>${hint}</p>
+          <pre class="buli-current-template-preview">${escapeHtml(tpl.body)}</pre>
+          <div class="buli-current-template-actions">
+            <button type="button" class="primary" data-buli-template-insert="${mode}">插入此模板到表单</button>
+            <small>已保存 ${allNotes.length} 篇课堂笔记</small>
+          </div>
         </div>
-        <div class="buli-classroom-keep-template">下方原有“课堂笔记整理模板”继续保留，作为辅助整理区。</div>
       `;
     }
   }
 
-  function patchOfferingControls() {
-    const scene = $("#offeringLampScene") || $(".offering-lamp-page");
-    const input = $("#offeringBuddhaInput");
-    const reset = $("#offeringBuddhaReset");
-    if (!scene || !input || scene.dataset.buliOfferingFixed === "true") return;
-    scene.dataset.buliOfferingFixed = "true";
-    const controls = $(".offering-buddha-controls") || input.closest("div") || scene;
-    const addButton = document.createElement("button");
-    addButton.type = "button";
-    addButton.className = "buli-offering-file-button";
-    addButton.textContent = "添加佛像";
-    controls.prepend(addButton);
-    addButton.addEventListener("click", (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      input.click();
-    });
-    input.addEventListener("change", async (event) => {
-      if (typeof saveOfferingBuddhaFiles === "function") {
-        await saveOfferingBuddhaFiles(event.currentTarget.files, { replace: false });
-      }
-      event.currentTarget.value = "";
-    });
-    if (reset && reset.dataset.buliOfferingIntercepted !== "true") {
-      reset.dataset.buliOfferingIntercepted = "true";
-      reset.addEventListener("click", (event) => {
-        event.preventDefault();
-        event.stopImmediatePropagation();
-        const picker = document.createElement("input");
-        picker.type = "file";
-        picker.accept = "image/*";
-        picker.multiple = true;
-        picker.style.position = "fixed";
-        picker.style.left = "-9999px";
-        picker.addEventListener("change", async () => {
-          if (typeof saveOfferingBuddhaFiles === "function") await saveOfferingBuddhaFiles(picker.files, { replace: true });
-          picker.remove();
-        }, { once: true });
-        document.body.append(picker);
-        picker.click();
-        setTimeout(() => picker.remove(), 15000);
-      }, true);
-    }
-  }
+  // patchOfferingControls 已移除：该补丁会注入重复“添加佛像”按钮并造成图片被加两次，
+  // 现由 bindEvents 中的 addOfferingBuddhaImages / changeOfferingBuddhaWall 直接处理。
 
   function patchNoteTemplateButtons() {
     if (typeof NOTE_BODY_TEMPLATES !== "undefined") {
@@ -5783,42 +5987,20 @@ async function addPageWallpapers(event) {
     enhanceOrdinaryEditor();
     enhanceUnifiedIndex();
     enhanceClassroom();
-    patchOfferingControls();
+    // patchOfferingControls() 已停用：它会注入重复的“添加佛像”按钮、给文件输入挂第二个 change
+    // 监听导致图片被添加两次，并以捕获阶段劫持“更改图像”。供灯按钮已由 bindEvents 正确绑定
+    //（addOfferingBuddhaImages / changeOfferingBuddhaWall → saveOfferingBuddhaFiles → IndexedDB）。
     renderAllEnhanced();
   }
 
-  // Wrap existing render functions so the enhanced UI stays synchronized without removing existing behavior.
-  try {
-    if (typeof render === "function" && !render.__buliWrapped) {
-      const originalRender = render;
-      render = function patchedRender(...args) {
-        const result = originalRender.apply(this, args);
-        setTimeout(renderAllEnhanced, 0);
-        return result;
-      };
-      render.__buliWrapped = true;
-    }
-    if (typeof renderList === "function" && !renderList.__buliWrapped) {
-      const originalRenderList = renderList;
-      renderList = function patchedRenderList(...args) {
-        const result = originalRenderList.apply(this, args);
-        setTimeout(renderUnifiedIndex, 0);
-        return result;
-      };
-      renderList.__buliWrapped = true;
-    }
-    if (typeof renderPptNotes === "function" && !renderPptNotes.__buliWrapped) {
-      const originalRenderPptNotes = renderPptNotes;
-      renderPptNotes = function patchedRenderPptNotes(...args) {
-        const result = originalRenderPptNotes.apply(this, args);
-        setTimeout(renderClassroomPanels, 0);
-        return result;
-      };
-      renderPptNotes.__buliWrapped = true;
-    }
-  } catch (error) {
-    console.warn("Buli wrapper setup failed", error);
-  }
+  // 增强渲染钩子：由核心 render / renderList / renderPptNotes 在各自开头调用，
+  // 取代过去“重新包裹核心函数”(monkey-patch) 的做法。行为一致：增强渲染仍在核心
+  // 渲染完成后通过 0 延时异步执行。
+  window.BuliEnhance = {
+    afterRender: function () { setTimeout(renderAllEnhanced, 0); },
+    afterList: function () { setTimeout(renderUnifiedIndex, 0); },
+    afterPpt: function () { setTimeout(renderClassroomPanels, 0); }
+  };
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", initEnhancements, { once: true });

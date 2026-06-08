@@ -11303,3 +11303,119 @@ textarea:focus,
     display: none;
   }
 }
+
+/* ========================================================================== */
+/* 不离手账 · 修复与增强追加样式（仅追加，不改写任何原有规则；小熊等装饰原样保留） */
+/* ========================================================================== */
+
+/* —— 1. 滚动可靠性：根治旧机型“无法下拉页面” ——
+ * .app-shell 原本只有 100svh，旧浏览器（约 2015–2022）不支持 svh 时高度塌成 auto，
+ * 子页 height:100% 失去固定高度→无法滚动。仅在不支持 svh 的环境补 100vh 回退，
+ * 现代浏览器完全不受影响（@supports 块在支持 svh 时为空操作）。 */
+@supports not (height: 100svh) {
+  .app-shell {
+    height: 100vh;
+    min-height: 100vh;
+  }
+}
+.notebook-page {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* —— 2. 功课计数“已圆满”样式 —— */
+.practice-counter-card.is-complete {
+  border-color: rgba(49, 95, 75, 0.55);
+  box-shadow: 0 0 0 1px rgba(49, 95, 75, 0.18), 0 10px 26px rgba(49, 95, 75, 0.12);
+}
+.practice-counter-card.is-complete .practice-progress {
+  background: rgba(49, 95, 75, 0.16);
+}
+.practice-counter-card.is-complete .practice-progress span {
+  background: linear-gradient(90deg, #4fa97e, var(--green));
+}
+.practice-complete-badge {
+  align-self: center;
+  flex: none;
+  margin-left: 6px;
+  padding: 3px 11px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #4fa97e, var(--green));
+  color: #f6fffb;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  box-shadow: 0 3px 8px rgba(49, 95, 75, 0.28);
+}
+
+/* —— 3. 课堂模板预览面板（沿用已存在的 .buli-current-template-panel 外框与小熊装饰）—— */
+.buli-current-template-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.buli-current-template-head span {
+  color: var(--buli-deep-red, #b04a2f);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+.buli-current-template-head strong {
+  color: var(--buli-deep-blue, #2c4a6b);
+  font-size: 1.04rem;
+  font-weight: 900;
+}
+.buli-current-template-preview {
+  margin: 10px 0 0;
+  padding: 12px 14px;
+  max-height: 240px;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid rgba(183, 121, 24, 0.32);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.66);
+  color: #4a443c;
+  font-family: "PingFang SC", "Microsoft YaHei", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12.5px;
+  line-height: 1.75;
+  white-space: pre-wrap;
+  word-break: break-word;
+  tab-size: 2;
+}
+.buli-current-template-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+.buli-current-template-actions small {
+  color: var(--buli-muted, #8a7d6a);
+  font-size: 12px;
+  font-weight: 700;
+}
+.buli-current-template-actions button.primary {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  padding: 9px 18px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--orange, #f4a000), var(--orange-deep, #df7d16));
+  color: #fff7e8;
+  font-size: 13.5px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  box-shadow: 0 6px 16px rgba(223, 125, 22, 0.28);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+}
+.buli-current-template-actions button.primary:hover {
+  filter: brightness(1.03);
+  box-shadow: 0 8px 20px rgba(223, 125, 22, 0.34);
+}
+.buli-current-template-actions button.primary:active {
+  transform: translateY(1px);
+  box-shadow: 0 4px 12px rgba(223, 125, 22, 0.3);
+}
