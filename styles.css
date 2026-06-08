@@ -11419,3 +11419,145 @@ textarea:focus,
   transform: translateY(1px);
   box-shadow: 0 4px 12px rgba(223, 125, 22, 0.3);
 }
+
+/* ========================================================================== */
+/* 交互修复(第二轮):遍地花开人物照片按钮 + 供灯佛像两个按钮的点击失效 */
+/* 仅追加，不改写原有规则 */
+/* ========================================================================== */
+
+/* —— 遍地花开:让文件输入框直接铺满照片位、可点击 ——
+ * 原 .garden-photo-seat input 设了 pointer-events:none，依赖 <label> 转发点击；
+ * 部分手机 WebView 下 label 转发打不开选图器。改为输入框透明铺满、直接接收点击。 */
+.garden-photo-seat {
+  pointer-events: auto !important;
+}
+.garden-photo-seat input[type="file"] {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  opacity: 0 !important;
+  pointer-events: auto !important;
+  cursor: pointer;
+  z-index: 6 !important;
+}
+
+/* —— 供灯:把控制面板抬到所有装饰层(中央灯钮 z3、灯焰 z7 等)之上，
+ *    并确保“添加佛像 / 更改图像”两个按钮都能接收点击 —— */
+.offering-lamp-panel {
+  z-index: 9 !important;
+}
+.offering-buddha-controls {
+  position: relative;
+  z-index: 9 !important;
+  pointer-events: auto !important;
+}
+.offering-buddha-controls .offering-buddha-upload,
+.offering-buddha-controls .offering-buddha-reset {
+  position: relative;
+  z-index: 9 !important;
+  pointer-events: auto !important;
+}
+/* “添加佛像”：文件输入透明铺满整个标签、直接可点 */
+.offering-buddha-controls .offering-buddha-upload input[type="file"] {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  opacity: 0 !important;
+  pointer-events: auto !important;
+  cursor: pointer;
+  z-index: 2;
+}
+
+/* ========================================================================== */
+/* 视觉统一(药师蓝页眉 + 八吉祥坛城徽记 + 喇荣怀业红按钮 + 牡丹/小熊点缀) */
+/* 仅追加，不改写原有规则；配套图片放入 assets/ */
+/* ========================================================================== */
+
+/* —— 三页统一页眉:药师琉璃蓝底 + 坛城圆形徽记 —— */
+.editor-paper-head,
+.index-hero,
+.ppt-organizer-summary {
+  position: relative !important;
+  background: #1a5390 !important;
+  border: none !important;
+  border-bottom: 2px solid #d4a534 !important;
+  border-radius: 12px 12px 0 0 !important;
+  box-shadow: none !important;
+  padding: 12px 14px 12px 60px !important;
+}
+.editor-paper-head::before,
+.index-hero::before,
+.ppt-organizer-summary::before {
+  content: "" !important;
+  position: absolute !important;
+  left: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid #d4a534;
+  background: url("assets/mandala-emblem.jpg") center / cover no-repeat;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.28);
+}
+.editor-paper-head span { color: #f0d98a !important; }
+.editor-paper-head small { color: #cfe0f0 !important; }
+.index-hero h2 { color: #f6edd4 !important; text-shadow: none !important; }
+.index-hero p { color: #cfe0f0 !important; }
+.ppt-organizer-summary span { color: #cfe0f0 !important; }
+.ppt-organizer-summary strong { color: #f6edd4 !important; }
+
+/* —— 按钮统一喇荣怀业红 (#b5272b) —— */
+.round-button:not(.text-button):not(:disabled),
+.index-new-button,
+.index-current-button,
+.toc-action-button.primary,
+.note-template-action.primary,
+.buli-editor-actionbar .primary,
+.buli-classroom-actions .primary,
+.buli-current-template-actions button.primary,
+.type-button.active {
+  background: #b5272b !important;
+  background-image: none !important;
+  border: 1px solid #8e1f22 !important;
+  color: #f8e6c8 !important;
+  box-shadow: 0 4px 12px rgba(150, 30, 35, 0.26) !important;
+}
+.round-button:not(.text-button):not(:disabled) svg {
+  color: #f8e6c8 !important;
+  fill: currentColor !important;
+}
+.round-button.danger:not(:disabled) { background: #8e1f22 !important; }
+
+/* —— 编辑器点缀:牡丹经函(左下，小、半透) + 小熊(右下) —— */
+.editor-card { position: relative; }
+.editor-card::before {
+  content: "";
+  position: absolute;
+  left: 6px;
+  bottom: 6px;
+  width: 58px;
+  height: 65px;
+  background: url("assets/peony.png") center / contain no-repeat;
+  opacity: 0.42;
+  pointer-events: none;
+  z-index: 4;
+}
+.editor-card::after {
+  content: "";
+  position: absolute;
+  right: 9px;
+  bottom: 9px;
+  width: 30px;
+  height: 36px;
+  background: url("assets/bear.png") center / contain no-repeat;
+  opacity: 0.96;
+  pointer-events: none;
+  z-index: 5;
+}
