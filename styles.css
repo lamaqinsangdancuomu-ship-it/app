@@ -11479,10 +11479,9 @@ textarea:focus,
 /* 仅追加，不改写原有规则；配套图片放入 assets/ */
 /* ========================================================================== */
 
-/* —— 三页统一页眉:药师琉璃蓝底 + 坛城圆形徽记 —— */
-.editor-paper-head,
-.index-hero,
-.ppt-organizer-summary {
+/* —— 统一页眉:药师琉璃蓝底 + 坛城圆形徽记 —— */
+/* 编辑器页眉(横幅式) */
+.editor-paper-head {
   position: relative !important;
   background: #1a5390 !important;
   border: none !important;
@@ -11491,9 +11490,7 @@ textarea:focus,
   box-shadow: none !important;
   padding: 12px 14px 12px 60px !important;
 }
-.editor-paper-head::before,
-.index-hero::before,
-.ppt-organizer-summary::before {
+.editor-paper-head::before {
   content: "" !important;
   position: absolute !important;
   left: 13px;
@@ -11508,10 +11505,46 @@ textarea:focus,
 }
 .editor-paper-head span { color: #f0d98a !important; }
 .editor-paper-head small { color: #cfe0f0 !important; }
-.index-hero h2 { color: #f6edd4 !important; text-shadow: none !important; }
-.index-hero p { color: #cfe0f0 !important; }
-.ppt-organizer-summary span { color: #cfe0f0 !important; }
-.ppt-organizer-summary strong { color: #f6edd4 !important; }
+
+/* 课堂 / 索引 的真实页眉(原为红渐变 → 改药师蓝 + 坛城徽记) */
+.buli-classroom-top,
+.buli-index-heading {
+  position: relative !important;
+  background: #1a5390 !important;
+  background-image: none !important;
+  border: 1px solid #d4a534 !important;
+  box-shadow: 0 8px 20px rgba(26, 83, 144, 0.18) !important;
+  padding-left: 60px !important;
+}
+.buli-classroom-top::before,
+.buli-index-heading::before {
+  content: "" !important;
+  position: absolute !important;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid #d4a534;
+  background: url("assets/mandala-emblem.jpg") center / cover no-repeat;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.28);
+}
+.buli-classroom-top strong,
+.buli-index-heading strong { color: #f6edd4 !important; }
+.buli-classroom-top span,
+.buli-classroom-top small,
+.buli-index-heading span,
+.buli-index-heading small { color: #cfe0f0 !important; }
+
+/* 课堂统计四格(当前 / 待复习 / 已完成 / 有附件)→ 喇荣怀业红 */
+.ppt-organizer-summary span {
+  background: rgba(181, 39, 43, 0.08) !important;
+  border: 1px solid rgba(181, 39, 43, 0.4) !important;
+  color: #b5272b !important;
+  border-radius: 10px !important;
+}
+.ppt-organizer-summary span strong { color: #b5272b !important; }
 
 /* —— 按钮统一喇荣怀业红 (#b5272b) —— */
 .round-button:not(.text-button):not(:disabled),
@@ -11706,4 +11739,75 @@ textarea:focus,
   font-size: 13px;
   background: #fffdf7;
   color: #2c3135;
+}
+
+/* ========================================================================== */
+/* 设计整理:索引去重清爽 + 课堂理顺层次 + 供灯灯火更生动 + 遍地开花按钮红    */
+/* 仅 CSS，可逆；功能元素一律保留                                              */
+/* ========================================================================== */
+
+/* —— 索引:统一面板已接管,隐藏与之重复的原 hero / 筛选条 / 平铺列表(保留搜索) —— */
+.notebook-index-page:has(#buliUnifiedIndex) .index-hero,
+.notebook-index-page:has(#buliUnifiedIndex) .type-filter,
+.notebook-index-page:has(#buliUnifiedIndex) .note-list {
+  display: none !important;
+}
+.notebook-index-page:has(#buliUnifiedIndex) .index-command-panel {
+  margin-bottom: 12px;
+}
+.buli-unified-index { display: grid; gap: 12px; }
+.buli-index-groups { display: grid; gap: 12px; }
+.buli-index-group { display: grid; gap: 6px; }
+
+/* —— 课堂:理顺层次(不隐藏功能元素),分区清爽、选中态明确 —— */
+.buli-classroom-shell { display: grid; gap: 12px; }
+.buli-classroom-tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.buli-classroom-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+/* 当前所处页签 → 喇荣怀业红,清楚知道在哪一页 */
+.buli-classroom-tabs button.active {
+  background: #b5272b !important;
+  background-image: none !important;
+  color: #f8e6c8 !important;
+  border-color: #8e1f22 !important;
+  box-shadow: 0 4px 12px rgba(150, 30, 35, 0.24) !important;
+}
+/* 真实笔记卡片留白一致、彼此分隔更清楚 */
+.ppt-organizer-page.buli-classroom-enhanced .ppt-note-list { display: grid; gap: 10px; margin-top: 4px; }
+.ppt-organizer-page.buli-classroom-enhanced .ppt-note-card { border-radius: 14px; }
+
+/* —— 供灯:点灯后火焰轻颤 + 光晕呼吸(只动亮度/透明度,不改位置,稳妥) —— */
+@keyframes buli-flame-flicker {
+  0%, 100% { opacity: 1; filter: brightness(1); }
+  28% { opacity: 0.9; filter: brightness(1.14); }
+  52% { opacity: 0.98; filter: brightness(0.95); }
+  76% { opacity: 0.93; filter: brightness(1.08); }
+}
+@keyframes buli-glow-breathe {
+  0%, 100% { opacity: 1; filter: brightness(1); }
+  50% { opacity: 0.8; filter: brightness(1.18); }
+}
+.offering-lamp-scene.is-lit .lamp-flame,
+.offering-lamp-scene.is-lit .offering-flame {
+  animation: buli-flame-flicker 1.8s ease-in-out infinite;
+  will-change: opacity, filter;
+}
+.offering-lamp-scene.is-lit .lamp-aura,
+.offering-lamp-scene.is-lit .lamp-glow {
+  animation: buli-glow-breathe 3s ease-in-out infinite;
+  will-change: opacity, filter;
+}
+@media (prefers-reduced-motion: reduce) {
+  .offering-lamp-scene.is-lit .lamp-flame,
+  .offering-lamp-scene.is-lit .offering-flame,
+  .offering-lamp-scene.is-lit .lamp-aura,
+  .offering-lamp-scene.is-lit .lamp-glow { animation: none; }
+}
+
+/* —— 不离:遍地开花按钮 → 喇荣怀业红 —— */
+#bloomGardenButton {
+  background: #b5272b !important;
+  background-image: none !important;
+  color: #f8e6c8 !important;
+  border: 1px solid #8e1f22 !important;
+  box-shadow: 0 4px 12px rgba(150, 30, 35, 0.26) !important;
 }

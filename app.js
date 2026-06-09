@@ -608,12 +608,30 @@ const BuliImageLayer = (function () {
     });
   }
 
+  var pending = [];
   function idbPut(token, dataUrl) {
-    if (!db) return;
-    try {
-      var tx = db.transaction(STORE, "readwrite");
-      tx.objectStore(STORE).put(dataUrl, token);
-    } catch (e) { /* ignore */ }
+    if (!db) return Promise.resolve();
+    var p = new Promise(function (resolve) {
+      try {
+        var tx = db.transaction(STORE, "readwrite");
+        tx.oncomplete = function () { resolve(); };
+        tx.onerror = function () { resolve(); };
+        tx.onabort = function () { resolve(); };
+        tx.objectStore(STORE).put(dataUrl, token);
+      } catch (e) { resolve(); }
+    });
+    pending.push(p);
+    p.then(function () {
+      var i = pending.indexOf(p);
+      if (i >= 0) pending.splice(i, 1);
+    });
+    return p;
+  }
+
+  // 等待所有挂起的 IndexedDB 写入提交完成（供保存后调用，确保照片真正落盘）
+  function flush() {
+    if (!pending.length) return Promise.resolve();
+    return Promise.all(pending.slice()).then(function () {}, function () {});
   }
 
   function loadAll() {
@@ -741,7 +759,7 @@ const BuliImageLayer = (function () {
     });
   }
 
-  return { boot: boot };
+  return { boot: boot, flush: flush };
 })();
 
 BuliImageLayer.boot().then(init).catch(function () {
@@ -1292,7 +1310,8 @@ function bindPageTurn() {
 }
 
 function turnToRelativeNote(direction) {
-  const notes = getFilteredNotes();
+  let notes = getFilteredNotes();
+  if (notes.length < 2) notes = state.notes; // 当前筛选下不足两篇时回退到全部笔记，保证箭头可用
   if (notes.length < 2) return;
 
   const activeIndex = Math.max(0, notes.findIndex((note) => note.id === state.activeId));
@@ -1802,7 +1821,7 @@ function renderEditorStatus(note = getActiveNote()) {
     els.noteWordCount.textContent = `${textCount} 字 · ${tagText} · ${imageText}`;
   }
 
-  const hasSiblings = getFilteredNotes().length > 1;
+  const hasSiblings = state.notes.length > 1;
   if (els.editorPrevNoteButton) els.editorPrevNoteButton.disabled = !hasSiblings;
   if (els.editorNextNoteButton) els.editorNextNoteButton.disabled = !hasSiblings;
 }
@@ -2661,24 +2680,32 @@ function renderPracticeCounters() {
   if (!els.practiceCounterGrid || !els.practiceSummary) return;
   els.practiceCounterGrid.replaceChildren();
 
-  const total = state.modules.practiceCounters.reduce((sum, item) => sum + (Number(item.count) || 0), 0);
-  const target = state.modules.practiceCounters.reduce((sum, item) => sum + (Number(item.target) || 0), 0);
-  els.practiceSummary.textContent = `总计 ${formatNumber(total)} / ${formatNumber(target)} · ${state.modules.practiceCounters.length} 项功课`;
+  const counters = state.modules.practiceCounters;
+  counters.forEach(ensurePracticeLedgerFields);
 
-  if (!state.modules.practiceCounters.length) {
+  const todaySum = counters.reduce((sum, item) => sum + practiceTodayTotal(item), 0);
+  els.practiceSummary.textContent = counters.length
+    ? `共 ${counters.length} 门功课 · 今日合计 +${formatNumber(todaySum)}`
+    : "尚未添加功课";
+
+  els.practiceCounterGrid.append(buildPracticeOverview());
+
+  if (!counters.length) {
     const empty = document.createElement("div");
     empty.className = "module-empty";
-    empty.textContent = "暂无计数功课，可先添加一项。";
+    empty.textContent = "暂无计数功课，可在下方添加一项，或用「加行·五十万预设」一键建立四加行。";
     els.practiceCounterGrid.append(empty);
     return;
   }
 
-  state.modules.practiceCounters.forEach((item) => {
+  counters.forEach((item) => {
     els.practiceCounterGrid.append(createPracticeCounterCard(item));
   });
+  els.practiceCounterGrid.append(buildPracticeTimeline());
 }
 
 function createPracticeCounterCard(item) {
+  ensurePracticeLedgerFields(item);
   const card = document.createElement("article");
   card.className = "practice-counter-card";
 
@@ -2692,12 +2719,18 @@ function createPracticeCounterCard(item) {
   titleWrap.append(subtitle, title);
   const numericCount = Number(item.count) || 0;
   const numericTarget = Number(item.target) || 0;
+  const unit = item.unit || "遍";
   const complete = numericTarget > 0 && numericCount >= numericTarget;
   if (complete) card.classList.add("is-complete");
 
+  const countWrap = document.createElement("div");
+  countWrap.className = "practice-counter-total";
   const count = document.createElement("b");
   count.textContent = formatNumber(item.count);
-  head.append(titleWrap, count);
+  const countUnit = document.createElement("small");
+  countUnit.textContent = `${unit} · 一生累计`;
+  countWrap.append(count, countUnit);
+  head.append(titleWrap, countWrap);
   if (complete) {
     const badge = document.createElement("span");
     badge.className = "practice-complete-badge";
@@ -2712,20 +2745,21 @@ function createPracticeCounterCard(item) {
   bar.style.width = `${percent}%`;
   progress.append(bar);
 
+  const today = practiceTodayTotal(item);
   const meta = document.createElement("p");
-  meta.textContent = complete
-    ? `已圆满 ${formatNumber(item.count)} / ${formatNumber(item.target)} · 每步 ${formatNumber(item.step)}`
-    : `目标 ${formatNumber(item.target)} · ${percent}% · 每步 ${formatNumber(item.step)}`;
+  const milestoneText = complete ? `已圆满（目标 ${formatNumber(item.target)}），仍可继续增长` : `目标 ${formatNumber(item.target)} · ${percent}%`;
+  meta.textContent = `${milestoneText} · 今日 +${formatNumber(today)}`;
 
+  const bigStep = (Number(item.step) || 108) * 10;
   const actions = document.createElement("div");
   actions.className = "practice-counter-actions";
   const manualInput = document.createElement("input");
   manualInput.className = "practice-counter-manual";
   manualInput.type = "number";
   manualInput.inputMode = "numeric";
-  manualInput.placeholder = "输入数量";
+  manualInput.placeholder = "自定义数量";
   manualInput.title = "输入正数增加，负数减少";
-  manualInput.setAttribute("aria-label", "手动输入本次功课数量");
+  manualInput.setAttribute("aria-label", "自定义本次功课数量");
   manualInput.addEventListener("keydown", (event) => {
     if (event.key !== "Enter") return;
     event.preventDefault();
@@ -2733,25 +2767,26 @@ function createPracticeCounterCard(item) {
     manualInput.value = "";
   });
   const targetEditor = createPracticeTargetEditor(item);
-  const targetButton = createActionButton("目标", () => {
+  const targetButton = createActionButton("目标·单位", () => {
     const shouldOpen = targetEditor.classList.contains("hidden");
     targetEditor.classList.toggle("hidden", !shouldOpen);
     if (shouldOpen) targetEditor.querySelector("input[name='target']")?.focus();
   });
   actions.append(
-    createActionButton(`−${item.step}`, () => updatePracticeCounter(item.id, -item.step)),
-    createActionButton(`+${item.step}`, () => updatePracticeCounter(item.id, item.step)),
+    createActionButton(`−${formatNumber(item.step)}`, () => updatePracticeCounter(item.id, -item.step)),
+    createActionButton(`+${formatNumber(item.step)}`, () => updatePracticeCounter(item.id, item.step), "buli-quick-add"),
+    createActionButton(`+${formatNumber(bigStep)}`, () => updatePracticeCounter(item.id, bigStep), "buli-quick-add"),
     manualInput,
-    createActionButton("手动", () => {
+    createActionButton("记一笔", () => {
       customPracticeCounterDelta(item.id, manualInput.value);
       manualInput.value = "";
-    }),
+    }, "buli-quick-add"),
     targetButton,
     createActionButton("清零", () => resetPracticeCounter(item.id), "danger"),
     createActionButton("删除", () => deleteModuleItem("practiceCounters", item.id), "danger")
   );
 
-  card.append(head, progress, meta, actions, targetEditor);
+  card.append(head, progress, meta, actions, targetEditor, buildPracticeRecords(item));
   return card;
 }
 
@@ -2779,21 +2814,33 @@ function createPracticeTargetEditor(item) {
   stepInput.value = String(item.step || 108);
   stepInput.setAttribute("aria-label", "每次增加数量");
 
+  const unitInput = document.createElement("select");
+  unitInput.name = "unit";
+  unitInput.className = "practice-unit-select";
+  unitInput.setAttribute("aria-label", "计数单位");
+  ["遍", "个", "座", "次", "字", "小时"].forEach((u) => {
+    const opt = document.createElement("option");
+    opt.value = u;
+    opt.textContent = u;
+    unitInput.append(opt);
+  });
+  unitInput.value = item.unit || "遍";
+
   const actions = document.createElement("div");
   actions.className = "practice-target-editor-actions";
   const saveButton = document.createElement("button");
   saveButton.type = "submit";
   saveButton.className = "module-action-button";
-  saveButton.textContent = "保存目标";
+  saveButton.textContent = "保存";
   const cancelButton = createActionButton("取消", () => form.classList.add("hidden"));
   actions.append(saveButton, cancelButton);
 
   form.addEventListener("submit", (event) => {
     event.preventDefault();
-    savePracticeCounterTarget(item.id, targetInput.value, stepInput.value);
+    savePracticeCounterTarget(item.id, targetInput.value, stepInput.value, unitInput.value);
   });
 
-  form.append(targetInput, stepInput, actions);
+  form.append(targetInput, stepInput, unitInput, actions);
   return form;
 }
 
@@ -2803,13 +2850,18 @@ function addPracticeCounter(event) {
   const title = form.elements.title.value.trim();
   if (!title) return;
 
+  const unitField = form.elements.unit;
+  const unit = (unitField && String(unitField.value || "").trim()) || "遍";
   state.modules.practiceCounters.push({
     id: crypto.randomUUID(),
     title,
     subtitle: "自定义",
+    unit,
     count: 0,
     target: Math.max(1, Number(form.elements.target.value) || 100000),
     step: Math.max(1, Number(form.elements.step.value) || 108),
+    sessions: [],
+    createdAt: Date.now(),
     updatedAt: Date.now()
   });
   if (saveModules()) {
@@ -2821,8 +2873,13 @@ function addPracticeCounter(event) {
 function updatePracticeCounter(id, delta) {
   const item = findModuleItem("practiceCounters", id);
   if (!item) return;
-  item.count = Math.max(0, (Number(item.count) || 0) + delta);
+  ensurePracticeLedgerFields(item);
+  const before = Number(item.count) || 0;
+  const after = Math.max(0, before + delta); // 无上限:圆满后仍可继续增长
+  const actual = after - before;
+  item.count = after;
   item.updatedAt = Date.now();
+  if (actual !== 0) logPracticeSession(item, actual);
   if (saveModules()) renderPracticeCounters();
 }
 
@@ -2840,7 +2897,7 @@ function customPracticeCounterDelta(id, rawValue) {
   updatePracticeCounter(id, Math.trunc(delta));
 }
 
-function savePracticeCounterTarget(id, targetValue, stepValue) {
+function savePracticeCounterTarget(id, targetValue, stepValue, unitValue) {
   const item = findModuleItem("practiceCounters", id);
   if (!item) return;
   const target = Number(String(targetValue || "").trim());
@@ -2851,6 +2908,8 @@ function savePracticeCounterTarget(id, targetValue, stepValue) {
   }
   item.target = Math.trunc(target);
   item.step = Math.trunc(step);
+  const unit = String(unitValue || "").trim();
+  if (unit) item.unit = unit;
   item.updatedAt = Date.now();
   if (saveModules()) renderPracticeCounters();
 }
@@ -2858,9 +2917,11 @@ function savePracticeCounterTarget(id, targetValue, stepValue) {
 function resetPracticeCounter(id) {
   const item = findModuleItem("practiceCounters", id);
   if (!item) return;
-  const ok = confirm(`清零「${item.title}」的计数？`);
+  const ok = confirm(`确定清零「${item.title}」吗？\n这会把一生累计与全部记录都归零，且不可恢复（建议先导出备份）。`);
   if (!ok) return;
+  ensurePracticeLedgerFields(item);
   item.count = 0;
+  item.sessions = [];
   item.updatedAt = Date.now();
   if (saveModules()) renderPracticeCounters();
 }
@@ -2970,8 +3031,12 @@ function changeOfferingBuddhaWall() {
   input.accept = "image/*";
   input.multiple = true;
   input.style.position = "fixed";
-  input.style.left = "-9999px";
-  input.style.top = "-9999px";
+  input.style.top = "0";
+  input.style.left = "0";
+  input.style.width = "1px";
+  input.style.height = "1px";
+  input.style.opacity = "0";
+  input.style.zIndex = "-1";
   document.body.append(input);
   input.addEventListener(
     "change",
@@ -2996,6 +3061,7 @@ async function saveOfferingBuddhaFiles(fileList, options = {}) {
     }
     if (saveOfferingBuddhaImages([...current, ...added].slice(-12))) {
       renderOfferingBuddhaWall();
+      try { await BuliImageLayer.flush(); } catch (e) { /* ignore */ }
     }
   } catch (error) {
     console.warn("Failed to add offering Buddha images", error);
@@ -4519,6 +4585,7 @@ async function updateBloomGardenPhoto(event) {
     photos[key] = image;
     if (saveBloomGardenPhotos(photos)) {
       bloomGardenFlowers();
+      try { await BuliImageLayer.flush(); } catch (e) { /* ignore */ }
     }
   } catch (error) {
     console.warn("Failed to update bloom garden photo", error);
@@ -5749,17 +5816,16 @@ async function addPageWallpapers(event) {
         <span><strong>${withImages}</strong>有图片</span>
       </div>
       <div class="buli-index-groups">
-        ${notes.length ? [...groups.entries()].slice(0, 6).map(([group, items]) => `
+        ${notes.length ? [...groups.entries()].map(([group, items]) => `
           <section class="buli-index-group">
             <h3>▼ ${group} <small>${items.length} 条</small></h3>
-            ${items.slice(0, 5).map((note, index) => `
+            ${items.map((note, index) => `
               <article class="buli-index-card" data-buli-note-open="${note.id}">
                 <span>${String(index + 1).padStart(2, "0")}</span>
                 <div><strong>${safeText(note.title) || "未命名笔记"}</strong><small>${typeLabels?.[note.type] || "笔记"} · ${safeText(note.date) || "无日期"}${note.source ? ` · ${note.source}` : ""}</small>${note.tags?.length ? `<em>${note.tags.slice(0, 4).map((tag) => `#${tag}`).join(" ")}</em>` : ""}</div>
                 <b>›</b>
               </article>
             `).join("")}
-            ${items.length > 5 ? `<button type="button" class="buli-index-more">查看更多 ${Math.min(20, items.length - 5)} 条</button>` : ""}
           </section>
         `).join("") : `<p class="buli-empty-note">暂无匹配内容。点击“新建”开始记录。</p>`}
       </div>
@@ -5930,7 +5996,7 @@ async function addPageWallpapers(event) {
           ${allNotes.length ? [...groups.entries()].map(([group, items]) => `
             <section class="buli-classroom-group">
               <h3>▼ ${group} <small>${items.length} 条</small></h3>
-              ${items.slice(0, 6).map((note, index) => `
+              ${items.map((note, index) => `
                 <article class="buli-classroom-card" data-buli-ppt-open="${note.id}">
                   <span>${String(index + 1).padStart(2, "0")}</span>
                   <div><strong>${safeText(note.title) || "未命名课堂笔记"}</strong><small>${typeof getPptStatusOption === "function" ? getPptStatusOption(note.status).label : note.status || "整理中"} · ${safeText(note.subtitle) || "课堂笔记"}</small>${(note.tags || []).length ? `<em>${(note.tags || []).slice(0, 4).map((tag) => `#${tag}`).join(" ")}</em>` : ""}</div>
@@ -6008,3 +6074,332 @@ async function addPageWallpapers(event) {
     setTimeout(initEnhancements, 0);
   }
 })();
+
+/* ========================================================================== */
+/* 功课·一生账本:记录 / 总览(各功课分开) / 合并时间线 / 加行预设 / 导入恢复  */
+/* 在原有计数系统上扩展;count(一生累计)独立保留，无上限，圆满后仍可增长。      */
+/* ========================================================================== */
+
+function ensurePracticeLedgerFields(item) {
+  if (!item) return item;
+  if (!Array.isArray(item.sessions)) item.sessions = [];
+  if (typeof item.unit !== "string" || !item.unit) item.unit = "遍";
+  return item;
+}
+
+function logPracticeSession(item, delta) {
+  ensurePracticeLedgerFields(item);
+  item.sessions.push({ t: Date.now(), n: Math.trunc(delta) });
+  if (item.sessions.length > 2000) item.sessions = item.sessions.slice(-2000);
+}
+
+function practiceDayKey(ts) {
+  const d = new Date(ts);
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+}
+
+function practiceTodayTotal(item) {
+  ensurePracticeLedgerFields(item);
+  const today = practiceDayKey(Date.now());
+  return item.sessions.reduce((sum, s) => sum + (practiceDayKey(s.t) === today ? (Number(s.n) || 0) : 0), 0);
+}
+
+function buildPracticeOverview() {
+  const section = document.createElement("section");
+  section.className = "buli-practice-overview";
+
+  const banner = document.createElement("div");
+  banner.className = "buli-practice-banner";
+  const bannerTitle = document.createElement("div");
+  bannerTitle.className = "buli-practice-banner-title";
+  const strongEl = document.createElement("strong");
+  strongEl.textContent = "功课计数";
+  bannerTitle.append(document.createTextNode("ཉམས་ལེན། "), strongEl);
+  const bannerSub = document.createElement("div");
+  bannerSub.className = "buli-practice-banner-sub";
+  bannerSub.textContent = "一生功课总览 · 各自累计";
+  banner.append(bannerTitle, bannerSub);
+  section.append(banner);
+
+  const tools = document.createElement("div");
+  tools.className = "buli-practice-ledger-controls";
+  const presetBtn = document.createElement("button");
+  presetBtn.type = "button";
+  presetBtn.className = "buli-ledger-button";
+  presetBtn.textContent = "加行·五十万预设";
+  presetBtn.addEventListener("click", addNgondroPresets);
+  const exportBtn = document.createElement("button");
+  exportBtn.type = "button";
+  exportBtn.className = "buli-ledger-button ghost";
+  exportBtn.textContent = "导出账本备份";
+  exportBtn.addEventListener("click", () => { try { exportNotes(); } catch (e) { console.warn(e); } });
+  const importBtn = document.createElement("button");
+  importBtn.type = "button";
+  importBtn.className = "buli-ledger-button ghost";
+  importBtn.textContent = "导入备份";
+  const fileInput = document.createElement("input");
+  fileInput.type = "file";
+  fileInput.accept = "application/json,.json";
+  fileInput.style.display = "none";
+  fileInput.addEventListener("change", () => {
+    const file = fileInput.files && fileInput.files[0];
+    if (file) importBackupFromFile(file);
+    fileInput.value = "";
+  });
+  importBtn.addEventListener("click", () => fileInput.click());
+  tools.append(presetBtn, exportBtn, importBtn, fileInput);
+  section.append(tools);
+
+  const counters = state.modules.practiceCounters;
+  if (!counters.length) return section;
+
+  const list = document.createElement("div");
+  list.className = "buli-practice-overview-list";
+  counters.forEach((item) => {
+    ensurePracticeLedgerFields(item);
+    const row = document.createElement("div");
+    row.className = "buli-practice-overview-row";
+    const name = document.createElement("span");
+    name.className = "buli-practice-overview-name";
+    name.textContent = item.title || "未命名功课";
+    const right = document.createElement("span");
+    right.className = "buli-practice-overview-right";
+    const total = document.createElement("b");
+    total.textContent = formatNumber(item.count);
+    const unit = document.createElement("small");
+    unit.textContent = item.unit || "遍";
+    const numericCount = Number(item.count) || 0;
+    const numericTarget = Number(item.target) || 0;
+    const complete = numericTarget > 0 && numericCount >= numericTarget;
+    const chip = document.createElement("em");
+    if (complete) {
+      chip.className = "buli-practice-chip is-complete";
+      chip.textContent = "圆满 ✓";
+    } else {
+      const percent = numericTarget ? Math.min(100, Math.round((numericCount / numericTarget) * 100)) : 0;
+      chip.className = "buli-practice-chip";
+      chip.textContent = percent + "%";
+    }
+    right.append(total, unit, chip);
+    row.append(name, right);
+    list.append(row);
+  });
+  section.append(list);
+  return section;
+}
+
+function buildPracticeRecords(item) {
+  ensurePracticeLedgerFields(item);
+  const wrap = document.createElement("div");
+  wrap.className = "buli-practice-records";
+  if (!item.sessions.length) {
+    const none = document.createElement("p");
+    none.className = "buli-practice-records-empty";
+    none.textContent = "暂无记录，点 + 或「记一笔」即可开始记录。";
+    wrap.append(none);
+    return wrap;
+  }
+  const ordered = item.sessions.slice().reverse();
+  const shortFmt = (s) => {
+    const d = new Date(s.t);
+    const sign = (Number(s.n) || 0) >= 0 ? "+" : "−";
+    return (d.getMonth() + 1) + "/" + d.getDate() + " " + sign + formatNumber(Math.abs(Number(s.n) || 0));
+  };
+  const recent = document.createElement("p");
+  recent.className = "buli-practice-records-recent";
+  recent.textContent = "近期 " + ordered.slice(0, 3).map(shortFmt).join(" · ");
+  wrap.append(recent);
+
+  if (ordered.length > 3) {
+    const details = document.createElement("details");
+    details.className = "buli-practice-records-all";
+    const summary = document.createElement("summary");
+    summary.textContent = "全部记录（" + ordered.length + " 次）";
+    details.append(summary);
+    const ul = document.createElement("ul");
+    ordered.forEach((s) => {
+      const li = document.createElement("li");
+      const sign = (Number(s.n) || 0) >= 0 ? "+" : "−";
+      li.textContent = practiceDayKey(s.t) + "　" + sign + formatNumber(Math.abs(Number(s.n) || 0)) + " " + (item.unit || "遍");
+      ul.append(li);
+    });
+    details.append(ul);
+    wrap.append(details);
+  }
+  return wrap;
+}
+
+function buildPracticeTimeline() {
+  const all = [];
+  state.modules.practiceCounters.forEach((item) => {
+    ensurePracticeLedgerFields(item);
+    item.sessions.forEach((s) => all.push({ t: s.t, n: s.n, title: item.title, unit: item.unit || "遍" }));
+  });
+  const details = document.createElement("details");
+  details.className = "buli-practice-timeline";
+  const summary = document.createElement("summary");
+  summary.textContent = "修行记录 · 全部（合并时间线）";
+  details.append(summary);
+
+  if (!all.length) {
+    const none = document.createElement("p");
+    none.className = "buli-practice-records-empty";
+    none.textContent = "还没有记录。每次完成功课点 +，这里会按时间汇总各门功课。";
+    details.append(none);
+    return details;
+  }
+  all.sort((a, b) => b.t - a.t);
+  const cap = 80;
+  const list = document.createElement("ul");
+  list.className = "buli-practice-timeline-list";
+  all.slice(0, cap).forEach((s) => {
+    const li = document.createElement("li");
+    const dateEl = document.createElement("span");
+    dateEl.className = "buli-tl-date";
+    dateEl.textContent = practiceDayKey(s.t);
+    const nameEl = document.createElement("span");
+    nameEl.className = "buli-tl-name";
+    nameEl.textContent = s.title || "";
+    const amtEl = document.createElement("span");
+    amtEl.className = "buli-tl-amt";
+    const sign = (Number(s.n) || 0) >= 0 ? "+" : "−";
+    amtEl.textContent = sign + formatNumber(Math.abs(Number(s.n) || 0)) + " " + s.unit;
+    li.append(dateEl, nameEl, amtEl);
+    list.append(li);
+  });
+  details.append(list);
+  if (all.length > cap) {
+    const more = document.createElement("p");
+    more.className = "buli-practice-records-empty";
+    more.textContent = "仅显示最近 " + cap + " 条；更早记录已保存，可用「导出账本备份」查看。";
+    details.append(more);
+  }
+  return details;
+}
+
+function addNgondroPresets() {
+  const presets = [
+    { title: "皈依·大礼拜", subtitle: "སྐྱབས་འགྲོ།", unit: "个", step: 108, target: 100000 },
+    { title: "金刚萨埵心咒", subtitle: "རྡོ་རྗེ་སེམས་དཔའ།", unit: "遍", step: 108, target: 100000 },
+    { title: "曼茶罗供", subtitle: "མཎྜལ།", unit: "座", step: 108, target: 100000 },
+    { title: "上师瑜伽·祈祷", subtitle: "བླ་མའི་རྣལ་འབྱོར།", unit: "遍", step: 108, target: 100000 }
+  ];
+  const existing = new Set(state.modules.practiceCounters.map((it) => it.title));
+  const toAdd = presets.filter((p) => !existing.has(p.title));
+  if (!toAdd.length) {
+    alert("四加行功课已存在，无需重复添加。");
+    return;
+  }
+  const ok = confirm("将添加 " + toAdd.length + " 门加行功课（各以十万为一圆满，可继续增长）：\n" + toAdd.map((p) => "· " + p.title).join("\n"));
+  if (!ok) return;
+  toAdd.forEach((p) => {
+    state.modules.practiceCounters.push({
+      id: crypto.randomUUID(),
+      title: p.title,
+      subtitle: p.subtitle,
+      unit: p.unit,
+      count: 0,
+      target: p.target,
+      step: p.step,
+      sessions: [],
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    });
+  });
+  if (saveModules()) renderPracticeCounters();
+}
+
+function setupPracticeLedgerControls() {
+  const form = els.practiceCounterForm;
+  if (!form || form.dataset.ledgerControls === "1") return;
+  form.dataset.ledgerControls = "1";
+
+  const row = document.createElement("div");
+  row.className = "buli-practice-ledger-controls";
+
+  const presetBtn = document.createElement("button");
+  presetBtn.type = "button";
+  presetBtn.className = "buli-ledger-button";
+  presetBtn.textContent = "加行·五十万预设";
+  presetBtn.addEventListener("click", addNgondroPresets);
+
+  const exportBtn = document.createElement("button");
+  exportBtn.type = "button";
+  exportBtn.className = "buli-ledger-button ghost";
+  exportBtn.textContent = "导出账本备份";
+  exportBtn.addEventListener("click", () => { try { exportNotes(); } catch (e) { console.warn(e); } });
+
+  const importBtn = document.createElement("button");
+  importBtn.type = "button";
+  importBtn.className = "buli-ledger-button ghost";
+  importBtn.textContent = "导入备份";
+  const fileInput = document.createElement("input");
+  fileInput.type = "file";
+  fileInput.accept = "application/json,.json";
+  fileInput.style.display = "none";
+  fileInput.addEventListener("change", () => {
+    const file = fileInput.files && fileInput.files[0];
+    if (file) importBackupFromFile(file);
+    fileInput.value = "";
+  });
+  importBtn.addEventListener("click", () => fileInput.click());
+
+  row.append(presetBtn, exportBtn, importBtn, fileInput);
+  form.insertAdjacentElement("afterend", row);
+}
+
+function mergeBackupArrayById(targetArr, incomingArr) {
+  if (!Array.isArray(targetArr) || !Array.isArray(incomingArr)) return 0;
+  const indexById = new Map();
+  targetArr.forEach((x, i) => { if (x && x.id) indexById.set(x.id, i); });
+  let changed = 0;
+  incomingArr.forEach((inc) => {
+    if (!inc) return;
+    if (inc.id && indexById.has(inc.id)) { targetArr[indexById.get(inc.id)] = inc; changed++; }
+    else { if (inc.id) indexById.set(inc.id, targetArr.length); targetArr.push(inc); changed++; }
+  });
+  return changed;
+}
+
+function importBackupFromFile(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    let data;
+    try {
+      data = JSON.parse(String(reader.result || ""));
+    } catch (e) {
+      alert("读取失败：这不是有效的备份文件。");
+      return;
+    }
+    if (!data || typeof data !== "object" || (!data.modules && !data.notes)) {
+      alert("这个文件看起来不是「不离手账」的备份。");
+      return;
+    }
+    if (!confirm("导入会把备份里的功课、笔记等按条目合并进当前数据（不会删除你现有的内容）。继续吗？")) return;
+    try {
+      if (data.modules && typeof data.modules === "object") {
+        Object.keys(data.modules).forEach((key) => {
+          if (!Array.isArray(data.modules[key])) return;
+          if (!Array.isArray(state.modules[key])) state.modules[key] = [];
+          mergeBackupArrayById(state.modules[key], data.modules[key]);
+        });
+        if (Array.isArray(state.modules.practiceCounters)) state.modules.practiceCounters.forEach(ensurePracticeLedgerFields);
+      }
+      if (Array.isArray(data.notes)) mergeBackupArrayById(state.notes, data.notes);
+      if (Array.isArray(data.teachingQuotes)) mergeBackupArrayById(state.teachingQuotes, data.teachingQuotes);
+
+      saveModules();
+      scheduleSave();
+      if (typeof saveTeachingQuotes === "function") { try { saveTeachingQuotes(); } catch (e) {} }
+      if (typeof render === "function") { try { render(); } catch (e) {} }
+      if (typeof renderList === "function") { try { renderList(); } catch (e) {} }
+      renderPracticeCounters();
+      alert("导入完成。");
+    } catch (e) {
+      console.warn("import failed", e);
+      alert("导入过程中出错，已尽量保留原有数据。");
+    }
+  };
+  reader.onerror = () => alert("读取文件失败。");
+  reader.readAsText(file);
+}
