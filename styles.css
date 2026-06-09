@@ -11811,3 +11811,200 @@ textarea:focus,
   border: 1px solid #8e1f22 !important;
   box-shadow: 0 4px 12px rgba(150, 30, 35, 0.26) !important;
 }
+
+/* ========================================================================== */
+/* 设计重塑 v2:目录 & 课堂 —— 扁平降噪、统一气质、清爽有条理(仅 CSS、可逆)  */
+/* ========================================================================== */
+
+/* 1) 外层"盒中盒"扁平化:面板/索引/当前区去框去底,让内容透气 */
+.buli-unified-index,
+.buli-classroom-index,
+.buli-classroom-current {
+  border: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+  margin: 12px 0 14px !important;
+}
+
+/* 2) 分组扁平:只留清晰的分组标题线 + 卡片,不再每组一个框 */
+.buli-index-group,
+.buli-classroom-group {
+  border: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+}
+.buli-index-group h3,
+.buli-classroom-group h3 {
+  margin: 4px 2px 8px !important;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(183, 121, 24, 0.28);
+  color: #1a5390 !important;
+  font-size: 0.92rem !important;
+  font-weight: 800;
+}
+.buli-index-group h3 small,
+.buli-classroom-group h3 small { color: #9a8e78 !important; font-weight: 600; }
+
+/* 3) 卡片更克制:浅描边、统一圆角、清爽留白、轻悬浮 */
+.buli-index-card,
+.buli-classroom-card {
+  grid-template-columns: 28px 1fr auto !important;
+  gap: 11px !important;
+  padding: 11px 12px !important;
+  border-radius: 13px !important;
+  border: 1px solid rgba(124, 82, 33, 0.16) !important;
+  background: #fffdf8 !important;
+  box-shadow: 0 1px 2px rgba(80, 60, 30, 0.04) !important;
+  margin-top: 8px !important;
+}
+.buli-index-card:hover,
+.buli-classroom-card:hover {
+  transform: translateY(-1px);
+  border-color: rgba(181, 39, 43, 0.4) !important;
+  box-shadow: 0 6px 16px rgba(80, 40, 20, 0.1) !important;
+}
+.buli-index-card > span,
+.buli-classroom-card > span { color: #b5402e !important; font-size: 0.9rem !important; }
+.buli-index-card b,
+.buli-classroom-card b { color: #b5272b !important; font-size: 1.1rem !important; }
+
+/* 4) 分类/页签:干净的分段式胶囊条,选中 = 喇荣怀业红(目录与课堂统一) */
+.buli-classroom-tabs,
+.buli-index-modes {
+  gap: 6px !important;
+  padding: 4px !important;
+  background: rgba(26, 83, 144, 0.05) !important;
+  border-radius: 999px;
+}
+.buli-classroom-tabs button,
+.buli-index-modes button {
+  padding: 7px 15px !important;
+  border-radius: 999px !important;
+  border: 1px solid transparent !important;
+  background: transparent !important;
+  color: #5a5045 !important;
+  font-weight: 700;
+  box-shadow: none !important;
+}
+.buli-classroom-tabs button.active,
+.buli-index-modes button.active {
+  background: #b5272b !important;
+  background-image: none !important;
+  color: #f8e6c8 !important;
+  border-color: #8e1f22 !important;
+  box-shadow: 0 3px 10px rgba(150, 30, 35, 0.22) !important;
+}
+
+/* 5) 统计条:臃肿薄荷块 → 纤巧、贴主题(暖底 + 红数字);课堂四格保持喇荣红不动 */
+.buli-index-stats,
+.buli-classroom-summary,
+.ppt-organizer-summary { gap: 7px !important; margin: 10px 0 12px !important; }
+.buli-index-stats span,
+.buli-classroom-summary span {
+  min-height: 46px !important;
+  border-radius: 12px !important;
+  background: rgba(216, 154, 50, 0.1) !important;
+  border: 1px solid rgba(216, 154, 50, 0.26) !important;
+  color: #6f6255 !important;
+  font-size: 0.76rem !important;
+  gap: 2px !important;
+}
+.buli-index-stats strong,
+.buli-classroom-summary strong { color: #b5402e !important; font-size: 1.1rem !important; }
+
+/* 课堂筛选条更轻 */
+.ppt-note-commandbar { gap: 7px !important; }
+
+/* ========================================================================== */
+/* 供灯:点灯后整景暖光轻漾(只动场景自身阴影,不碰灯具各层,稳妥)            */
+/* ========================================================================== */
+@keyframes buli-scene-glow {
+  0%, 100% {
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 214, 120, 0.1),
+      inset 0 60px 120px rgba(255, 150, 40, 0.1),
+      0 18px 36px rgba(64, 47, 23, 0.18);
+  }
+  50% {
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 214, 120, 0.16),
+      inset 0 64px 150px rgba(255, 150, 40, 0.2),
+      0 18px 36px rgba(64, 47, 23, 0.18);
+  }
+}
+.offering-lamp-scene.is-lit { animation: buli-scene-glow 3.4s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .offering-lamp-scene.is-lit { animation: none; }
+}
+
+/* ========================================================================== */
+/* 不离:照片座描金圆光 + 花园更精致的描金内框(锦上添花,不动既有场景)      */
+/* ========================================================================== */
+.garden-photo-seat {
+  box-shadow:
+    0 0 0 2px rgba(216, 165, 52, 0.55),
+    0 8px 20px rgba(20, 40, 60, 0.22) !important;
+}
+.bloom-garden {
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.24),
+    inset 0 0 0 4px rgba(216, 165, 52, 0.34),
+    0 16px 32px rgba(64, 47, 23, 0.16) !important;
+}
+
+/* ========================================================================== */
+/* 全局风格统一:四页眉同款 + 文档类卡片同一清爽语言(仅 CSS、可逆)         */
+/* 供灯/不离为沉浸式场景,保留各自气质,仅共享配色                            */
+/* ========================================================================== */
+
+/* —— 四处页眉统一:药师蓝贴顶横幅 + 坛城金徽 + 金色底边 —— */
+.editor-paper-head,
+.buli-classroom-top,
+.buli-index-heading,
+.buli-practice-banner {
+  position: relative !important;
+  background: #1a5390 !important;
+  background-image: none !important;
+  border: none !important;
+  border-bottom: 2px solid #d4a534 !important;
+  border-radius: 14px 14px 0 0 !important;
+  box-shadow: 0 6px 16px rgba(26, 83, 144, 0.16) !important;
+  padding: 12px 14px 12px 58px !important;
+  margin-bottom: 12px !important;
+}
+.editor-paper-head::before,
+.buli-classroom-top::before,
+.buli-index-heading::before,
+.buli-practice-banner::before {
+  content: "" !important;
+  position: absolute !important;
+  left: 12px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 50% !important;
+  border: 2px solid #d4a534 !important;
+  background: url("assets/mandala-emblem.jpg") center / cover no-repeat !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.28) !important;
+}
+
+/* —— 文档类卡片统一:清爽语言(浅棕细描边 / 14px / 干净底 / 轻阴影) —— */
+.practice-counter-card,
+.ppt-note-card {
+  border-color: rgba(124, 82, 33, 0.18) !important;
+  border-radius: 14px !important;
+  background: #fffdf8 !important;
+  box-shadow: 0 2px 8px rgba(80, 60, 30, 0.06) !important;
+}
+/* 课堂笔记状态色保留(只调整为更清爽的描边) */
+.ppt-note-card.status-done { border-color: rgba(42, 132, 92, 0.34) !important; background: #fdfff9 !important; }
+.ppt-note-card.status-review { border-color: rgba(181, 39, 43, 0.3) !important; background: #fffdf8 !important; }
+
+/* —— 功课总览/时间线对齐同一组令牌 —— */
+.buli-practice-overview-list {
+  border-color: rgba(124, 82, 33, 0.18) !important;
+  border-radius: 14px !important;
+  background: #fffdf8 !important;
+}
+.buli-practice-timeline { border-radius: 14px !important; }
