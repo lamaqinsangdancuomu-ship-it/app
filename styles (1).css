@@ -11951,3 +11951,102 @@ textarea:focus,
     inset 0 0 0 4px rgba(216, 165, 52, 0.34),
     0 16px 32px rgba(64, 47, 23, 0.16) !important;
 }
+
+/* ========================================================================== */
+/* 全局风格统一:四页眉同款 + 文档类卡片同一清爽语言(仅 CSS、可逆)         */
+/* 供灯/不离为沉浸式场景,保留各自气质,仅共享配色                            */
+/* ========================================================================== */
+
+/* —— 四处页眉统一:药师蓝贴顶横幅 + 坛城金徽 + 金色底边 —— */
+.editor-paper-head,
+.buli-classroom-top,
+.buli-index-heading,
+.buli-practice-banner {
+  position: relative !important;
+  background: #1a5390 !important;
+  background-image: none !important;
+  border: none !important;
+  border-bottom: 2px solid #d4a534 !important;
+  border-radius: 14px 14px 0 0 !important;
+  box-shadow: 0 6px 16px rgba(26, 83, 144, 0.16) !important;
+  padding: 12px 14px 12px 58px !important;
+  margin-bottom: 12px !important;
+}
+.editor-paper-head::before,
+.buli-classroom-top::before,
+.buli-index-heading::before,
+.buli-practice-banner::before {
+  content: "" !important;
+  position: absolute !important;
+  left: 12px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 50% !important;
+  border: 2px solid #d4a534 !important;
+  background: url("assets/mandala-emblem.jpg") center / cover no-repeat !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.28) !important;
+}
+
+/* —— 文档类卡片统一:清爽语言(浅棕细描边 / 14px / 干净底 / 轻阴影) —— */
+.practice-counter-card,
+.ppt-note-card {
+  border-color: rgba(124, 82, 33, 0.18) !important;
+  border-radius: 14px !important;
+  background: #fffdf8 !important;
+  box-shadow: 0 2px 8px rgba(80, 60, 30, 0.06) !important;
+}
+/* 课堂笔记状态色保留(只调整为更清爽的描边) */
+.ppt-note-card.status-done { border-color: rgba(42, 132, 92, 0.34) !important; background: #fdfff9 !important; }
+.ppt-note-card.status-review { border-color: rgba(181, 39, 43, 0.3) !important; background: #fffdf8 !important; }
+
+/* —— 功课总览/时间线对齐同一组令牌 —— */
+.buli-practice-overview-list {
+  border-color: rgba(124, 82, 33, 0.18) !important;
+  border-radius: 14px !important;
+  background: #fffdf8 !important;
+}
+.buli-practice-timeline { border-radius: 14px !important; }
+
+/* —— 扉页一 · 整页图（莫舍己道） —— */
+.teaching-page.flyleaf-full {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  padding: 0 !important;
+  gap: 0;
+  background: #241208;
+}
+.flyleaf-page.flyleaf-full::before,
+.flyleaf-page.flyleaf-full::after {
+  display: none !important;
+}
+.teaching-page.flyleaf-full .flyleaf-fullimg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* —— 首页/尾页 新封面：整幅完整显示、垂直居中、不裁切 —— */
+.journey-cover,
+.back-cover {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #241208;
+}
+.journey-cover::after,
+.back-cover.notebook-page::after {
+  display: none;
+}
+.journey-cover .cover-image,
+.back-cover img {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  object-fit: contain;
+  border-radius: 0;
+  box-shadow: none;
+}
