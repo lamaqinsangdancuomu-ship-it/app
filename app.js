@@ -1,3 +1,44 @@
+/* ============================================================================
+ * 不离手账 (Buli Shouzhang) · app.js — 结构导航 (2026-06-11 优化)
+ *
+ *   核心代码         约 1 – 4860 行 : 状态/存储、渲染、编辑器、功课、课堂、供灯、遍地花开
+ *   补丁层一          约 4865 – 5200 : 分类空白页模板 (IIFE + 包裹 createNote/renderEditor)
+ *   壁纸上传修复补丁    约 5202 – 5374 : 顶层重声明 createAddPageWallpaperOption/addPageWallpapers
+ *   补丁层二          约 5376 – 6170 : buliCompleteLogicFix(笔记索引/成熟模板/课堂页)
+ *   功课·一生账本      约 6172 – 6410 : 记录 / 各功课分开总览 / 合并时间线 / 加行预设 / 导入
+ *   数据管家 + 年份筛选 约 6412 – 末尾  : 年份快速筛选 + 一生数据管家(占用/持久/备份提醒)
+ *
+ *   维护提示:补丁层以「运行时包裹 + 末尾追加」方式叠加,顺序敏感;正逐层收敛进核心。
+ * ========================================================================== */
+
+/* [兼容垫片 2026-06-11] 旧安卓 WebView / 老浏览器可能没有 crypto.randomUUID,
+   而本 App 多处用到它,缺失会直接抛错。此处最前面安全补齐(已存在则原样不动)。 */
+(function ensureRandomUUID() {
+  try {
+    var g = (typeof globalThis !== "undefined") ? globalThis : (typeof window !== "undefined") ? window : this;
+    if (!g.crypto) { try { g.crypto = {}; } catch (e) {} }
+    if (g.crypto && typeof g.crypto.randomUUID !== "function") {
+      g.crypto.randomUUID = function randomUUID() {
+        var c = g.crypto, hex = [];
+        for (var i = 0; i < 256; i++) hex[i] = (i + 0x100).toString(16).slice(1);
+        if (c && typeof c.getRandomValues === "function") {
+          var b = new Uint8Array(16);
+          c.getRandomValues(b);
+          b[6] = (b[6] & 0x0f) | 0x40;
+          b[8] = (b[8] & 0x3f) | 0x80;
+          return hex[b[0]] + hex[b[1]] + hex[b[2]] + hex[b[3]] + "-" + hex[b[4]] + hex[b[5]] + "-" +
+                 hex[b[6]] + hex[b[7]] + "-" + hex[b[8]] + hex[b[9]] + "-" +
+                 hex[b[10]] + hex[b[11]] + hex[b[12]] + hex[b[13]] + hex[b[14]] + hex[b[15]];
+        }
+        return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (ch) {
+          var r = (Math.random() * 16) | 0;
+          return (ch === "x" ? r : (r & 0x3) | 0x8).toString(16);
+        });
+      };
+    }
+  } catch (e) { /* 垫片本身绝不影响主流程 */ }
+})();
+
 const STORAGE_KEY = "jigmeyPhuntsokNotebook.v5";
 const TEACHING_STORAGE_KEY = "jigmeyPhuntsokTeachings.v1";
 const MODULE_STORAGE_KEY = "jigmeyPhuntsokModules.v1";
@@ -1665,6 +1706,17 @@ function createNote(options = {}) {
   if (!options.silent) {
     scheduleSave();
   }
+  // [收敛层一] 原 patchedCreateNote 的逻辑内联进核心:新建笔记按类型套空白页模板。
+  // 由就绪标志守护——init() 阶段(标志尚为 false)创建的默认笔记不套模板,与原版时机一致。
+  if (window.__buliTypeTemplatesReady && typeof getTypeTemplate === "function") {
+    const typeTpl = getTypeTemplate(note.type);
+    if (!options.body && isBlankOrKnownTemplate(note.body)) {
+      note.body = typeTpl.body;
+      note.updatedAt = Date.now();
+      if (state.activeId === note.id && els.noteBody) els.noteBody.value = note.body;
+      if (!options.silent) scheduleSave();
+    }
+  }
   return note;
 }
 
@@ -1806,7 +1858,10 @@ function render() {
 
 function renderEditor() {
   const note = getActiveNote();
-  if (!note) return;
+  if (!note) {
+    if (window.__buliTypeTemplatesReady && typeof renderTypeTemplateUI === "function") renderTypeTemplateUI();
+    return;
+  }
   els.noteTitle.value = note.title;
   els.noteType.value = note.type;
   els.noteDate.value = note.date;
@@ -1820,6 +1875,8 @@ function renderEditor() {
   renderMemoCalendar(note);
   renderNoteImages(note);
   renderPageDecoration(note);
+  // [收敛层一] 复刻原 patchedRenderEditor:渲染编辑器后刷新分类模板 UI(就绪后才生效)。
+  if (window.__buliTypeTemplatesReady && typeof renderTypeTemplateUI === "function") renderTypeTemplateUI();
 }
 
 function renderEditorStatus(note = getActiveNote()) {
@@ -2205,48 +2262,10 @@ function createPageWallpaperOption(wallpaper, selectedTheme) {
   return card;
 }
 
-function createAddPageWallpaperOption() {
-  const label = document.createElement("label");
-  label.className = "page-theme-option page-theme-add";
-  const input = document.createElement("input");
-  input.type = "file";
-  input.accept = "image/*";
-  input.multiple = true;
-  input.addEventListener("change", addPageWallpapers);
-  const text = document.createElement("span");
-  text.textContent = "添加壁纸";
-  label.append(input, text);
-  return label;
-}
-
-async function addPageWallpapers(event) {
-  const input = event.currentTarget;
-  const files = [...(input.files || [])].filter((file) => file.type.startsWith("image/"));
-  if (!files.length) return;
-  try {
-    const added = [];
-    for (const file of files.slice(0, 12)) {
-      added.push({
-        id: `wallpaper-${crypto.randomUUID()}`,
-        title: file.name.replace(/\.[^.]+$/, "") || "自定义壁纸",
-        image: await readImageFile(file)
-      });
-    }
-    pageWallpapers = [...pageWallpapers, ...added];
-    if (!savePageWallpapers()) {
-      pageWallpapers = pageWallpapers.filter((wallpaper) => !added.some((item) => item.id === wallpaper.id));
-      state.pageWallpapers = pageWallpapers;
-      return;
-    }
-    if (added[0]) updatePageTheme(added[0].id);
-    renderPageWallpaperPicker(added[0]?.id);
-  } catch (error) {
-    console.warn("Failed to add page wallpapers", error);
-    alert("壁纸读取失败，请换一张图片再试。");
-  } finally {
-    input.value = "";
-  }
-}
+/* [优化·死代码删除 2026-06-11] 此处原有 createAddPageWallpaperOption / addPageWallpapers
+   两个核心版函数，已被后面「空白页壁纸上传修复补丁」(约 5246/5274 行) 的同名顶层函数
+   声明覆盖(JS 函数提升后声明者生效)，且旧版直接调用 crypto.randomUUID 在老安卓 WebView
+   会报错。经真实浏览器运行时确认有效版本是补丁版后，整段删除。deletePageWallpaper 保留。 */
 
 function deletePageWallpaper(id) {
   const wallpaper = getPageWallpaper(id);
@@ -4862,320 +4881,302 @@ async function installApp() {
   alert("安卓 Chrome：点右上角菜单，选择“添加到主屏幕”或“安装应用”。\n苹果 Safari：点分享按钮，选择“添加到主屏幕”。\n请使用 HTTPS 地址或 localhost 打开，file:// 页面不能安装。");
 }
 
-/* === 不离手账：分类空白页模板与编辑页排版优化补丁 2026-06-08 ===
-   仅作用于笔记编辑页：根据“日记 / 读书笔记 / 备忘录 / 教言摘录”类型，显示对应空白页模板。
-   不修改供灯、相册、首页、尾页、导出、保存、图片插入、翻页等功能。
+/* === [收敛层一 2026-06-11] 分类空白页模板 ==========================================
+   原为 IIFE + 对 createNote/renderEditor 的运行时包裹(monkey-patch)。现已并入核心:
+   下面的数据与 helper 提升为顶层;新建/渲染逻辑改在核心 createNote/renderEditor 内显式调用,
+   由 window.__buliTypeTemplatesReady 守护,复刻"init 期间尚未生效"的原加载时机。
+   仅作用于笔记编辑页,不影响供灯/相册/导出/保存/翻页等。
 */
-(() => {
-  if (window.__buliNotebookTypeTemplatePatch) return;
-  window.__buliNotebookTypeTemplatePatch = "2026-06-08-type-template-pages";
+const TYPE_TEMPLATE_PAGES = {
+  diary: {
+    label: "日记",
+    badge: "ཉིན་ཐོ། 日记",
+    title: "日记空白页",
+    subtitle: "记录今日所见、心绪觉察、感恩与明日愿望。",
+    placeholder: "从今天的一件小事、一点心绪或一个愿望开始写。",
+    sourcePlaceholder: "地点、缘起或今日关键词",
+    body: [
+      "日期：",
+      "天气 / 地点：",
+      "今日心绪：",
+      "",
+      "一、今日所见",
+      "- ",
+      "",
+      "二、今日所感",
+      "- ",
+      "",
+      "三、今日感恩",
+      "1. ",
+      "2. ",
+      "3. ",
+      "",
+      "四、可以落实的一件小事",
+      "- ",
+      "",
+      "明日一愿："
+    ].join("\n"),
+    sections: [
+      { label: "所见所感", text: "今日所见：\n- \n\n今日所感：\n- " },
+      { label: "三件感恩", text: "今日感恩：\n1. \n2. \n3. " },
+      { label: "明日一愿", text: "明日一愿：\n- " }
+    ]
+  },
+  reading: {
+    label: "读书笔记",
+    badge: "ཀློག་ཐོ། 读书",
+    title: "读书摘录空白页",
+    subtitle: "按书目信息、原文摘录、理解、待查问题分区整理。",
+    placeholder: "摘录原文、页码和自己的理解，适合读书笔记与讲记整理。",
+    sourcePlaceholder: "书名、讲记、课程或页码",
+    body: [
+      "书名 / 讲记：",
+      "作者 / 讲者：",
+      "章节 / 页码：",
+      "阅读日期：",
+      "",
+      "一、原文摘录",
+      "「」",
+      "",
+      "二、关键词",
+      "- ",
+      "",
+      "三、我的理解",
+      "- ",
+      "",
+      "四、可引用句",
+      "- ",
+      "",
+      "五、待查 / 待复习",
+      "- "
+    ].join("\n"),
+    sections: [
+      { label: "书目信息", text: "书名 / 讲记：\n作者 / 讲者：\n章节 / 页码：\n阅读日期：" },
+      { label: "原文摘录", text: "原文摘录：\n「」\n\n页码 / 章节：" },
+      { label: "理解复盘", text: "我的理解：\n- \n\n可引用句：\n- \n\n待查 / 待复习：\n- " }
+    ]
+  },
+  memo: {
+    label: "备忘录",
+    badge: "དྲན་ཐོ། 备忘",
+    title: "备忘录空白页",
+    subtitle: "突出待办、提醒、清单与完成回看，适合手机端快速记录。",
+    placeholder: "写下待办、提醒、清单、灵感或当天需要完成的小事。",
+    sourcePlaceholder: "事项来源、地点或提醒对象",
+    body: [
+      "备忘日期：",
+      "重要程度：□ 今日必做  □ 本周完成  □ 以后处理",
+      "提醒时间：",
+      "",
+      "一、重要事项",
+      "☐ ",
+      "☐ ",
+      "☐ ",
+      "",
+      "二、补充说明",
+      "- ",
+      "",
+      "三、完成后记录",
+      "- "
+    ].join("\n"),
+    sections: [
+      { label: "今日待办", text: "今日待办：\n☐ \n☐ \n☐ " },
+      { label: "提醒事项", text: "提醒时间：\n提醒对象：\n事项：" },
+      { label: "完成回看", text: "完成后记录：\n- \n\n下一步：\n- " }
+    ]
+  },
+  timeline: {
+    label: "教言摘录",
+    badge: "གདམས་ངག 教言",
+    title: "教言整理空白页",
+    subtitle: "按原文、来源、关键词、要义与落实方式分区。",
+    placeholder: "整理教言原文、出处、关键词和自己可以落实的一点。",
+    sourcePlaceholder: "上师、讲记、开示、出处或章节",
+    body: [
+      "教言原文：",
+      "「」",
+      "",
+      "上师 / 来源：",
+      "时间 / 章节：",
+      "",
+      "一、关键词",
+      "- ",
+      "",
+      "二、要义整理",
+      "1. ",
+      "2. ",
+      "",
+      "三、与我相关",
+      "- ",
+      "",
+      "四、今日落实",
+      "- ",
+      "",
+      "回向 / 发愿："
+    ].join("\n"),
+    sections: [
+      { label: "教言原文", text: "教言原文：\n「」\n\n上师 / 来源：\n时间 / 章节：" },
+      { label: "要义整理", text: "关键词：\n- \n\n要义整理：\n1. \n2. " },
+      { label: "今日落实", text: "与我相关：\n- \n\n今日落实：\n- \n\n回向 / 发愿：" }
+    ]
+  }
+};
 
-  if (typeof els === "undefined" || !els?.editorForm || !els?.noteType || !els?.noteBody) return;
+const LEGACY_TEMPLATE_BODIES = Object.values(typeof NOTE_BODY_TEMPLATES === "object" ? NOTE_BODY_TEMPLATES : {})
+  .map((item) => item?.body)
+  .filter(Boolean);
 
-  const TYPE_TEMPLATE_PAGES = {
-    diary: {
-      label: "日记",
-      badge: "ཉིན་ཐོ། 日记",
-      title: "日记空白页",
-      subtitle: "记录今日所见、心绪觉察、感恩与明日愿望。",
-      placeholder: "从今天的一件小事、一点心绪或一个愿望开始写。",
-      sourcePlaceholder: "地点、缘起或今日关键词",
-      body: [
-        "日期：",
-        "天气 / 地点：",
-        "今日心绪：",
-        "",
-        "一、今日所见",
-        "- ",
-        "",
-        "二、今日所感",
-        "- ",
-        "",
-        "三、今日感恩",
-        "1. ",
-        "2. ",
-        "3. ",
-        "",
-        "四、可以落实的一件小事",
-        "- ",
-        "",
-        "明日一愿："
-      ].join("\n"),
-      sections: [
-        { label: "所见所感", text: "今日所见：\n- \n\n今日所感：\n- " },
-        { label: "三件感恩", text: "今日感恩：\n1. \n2. \n3. " },
-        { label: "明日一愿", text: "明日一愿：\n- " }
-      ]
-    },
-    reading: {
-      label: "读书笔记",
-      badge: "ཀློག་ཐོ། 读书",
-      title: "读书摘录空白页",
-      subtitle: "按书目信息、原文摘录、理解、待查问题分区整理。",
-      placeholder: "摘录原文、页码和自己的理解，适合读书笔记与讲记整理。",
-      sourcePlaceholder: "书名、讲记、课程或页码",
-      body: [
-        "书名 / 讲记：",
-        "作者 / 讲者：",
-        "章节 / 页码：",
-        "阅读日期：",
-        "",
-        "一、原文摘录",
-        "「」",
-        "",
-        "二、关键词",
-        "- ",
-        "",
-        "三、我的理解",
-        "- ",
-        "",
-        "四、可引用句",
-        "- ",
-        "",
-        "五、待查 / 待复习",
-        "- "
-      ].join("\n"),
-      sections: [
-        { label: "书目信息", text: "书名 / 讲记：\n作者 / 讲者：\n章节 / 页码：\n阅读日期：" },
-        { label: "原文摘录", text: "原文摘录：\n「」\n\n页码 / 章节：" },
-        { label: "理解复盘", text: "我的理解：\n- \n\n可引用句：\n- \n\n待查 / 待复习：\n- " }
-      ]
-    },
-    memo: {
-      label: "备忘录",
-      badge: "དྲན་ཐོ། 备忘",
-      title: "备忘录空白页",
-      subtitle: "突出待办、提醒、清单与完成回看，适合手机端快速记录。",
-      placeholder: "写下待办、提醒、清单、灵感或当天需要完成的小事。",
-      sourcePlaceholder: "事项来源、地点或提醒对象",
-      body: [
-        "备忘日期：",
-        "重要程度：□ 今日必做  □ 本周完成  □ 以后处理",
-        "提醒时间：",
-        "",
-        "一、重要事项",
-        "☐ ",
-        "☐ ",
-        "☐ ",
-        "",
-        "二、补充说明",
-        "- ",
-        "",
-        "三、完成后记录",
-        "- "
-      ].join("\n"),
-      sections: [
-        { label: "今日待办", text: "今日待办：\n☐ \n☐ \n☐ " },
-        { label: "提醒事项", text: "提醒时间：\n提醒对象：\n事项：" },
-        { label: "完成回看", text: "完成后记录：\n- \n\n下一步：\n- " }
-      ]
-    },
-    timeline: {
-      label: "教言摘录",
-      badge: "གདམས་ངག 教言",
-      title: "教言整理空白页",
-      subtitle: "按原文、来源、关键词、要义与落实方式分区。",
-      placeholder: "整理教言原文、出处、关键词和自己可以落实的一点。",
-      sourcePlaceholder: "上师、讲记、开示、出处或章节",
-      body: [
-        "教言原文：",
-        "「」",
-        "",
-        "上师 / 来源：",
-        "时间 / 章节：",
-        "",
-        "一、关键词",
-        "- ",
-        "",
-        "二、要义整理",
-        "1. ",
-        "2. ",
-        "",
-        "三、与我相关",
-        "- ",
-        "",
-        "四、今日落实",
-        "- ",
-        "",
-        "回向 / 发愿："
-      ].join("\n"),
-      sections: [
-        { label: "教言原文", text: "教言原文：\n「」\n\n上师 / 来源：\n时间 / 章节：" },
-        { label: "要义整理", text: "关键词：\n- \n\n要义整理：\n1. \n2. " },
-        { label: "今日落实", text: "与我相关：\n- \n\n今日落实：\n- \n\n回向 / 发愿：" }
-      ]
+function normalizeTemplateText(value) {
+  return String(value || "").replace(/\r\n/g, "\n").trim();
+}
+
+function getTypeTemplate(type) {
+  return TYPE_TEMPLATE_PAGES[type] || TYPE_TEMPLATE_PAGES.diary;
+}
+
+function knownFullTemplates() {
+  return [
+    ...Object.values(TYPE_TEMPLATE_PAGES).map((item) => item.body),
+    ...LEGACY_TEMPLATE_BODIES
+  ].map(normalizeTemplateText);
+}
+
+function isBlankOrKnownTemplate(value) {
+  const normalized = normalizeTemplateText(value);
+  return !normalized || knownFullTemplates().includes(normalized);
+}
+
+function escapeHtml(value) {
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function ensureTemplatePanel() {
+  let panel = document.querySelector("#noteTypeTemplatePanel");
+  if (!panel) {
+    panel = document.createElement("section");
+    panel.id = "noteTypeTemplatePanel";
+    panel.className = "note-type-template-panel";
+    panel.setAttribute("aria-label", "分类空白页模板");
+    const assist = els.editorForm.querySelector(".writing-assist");
+    if (assist) {
+      assist.insertAdjacentElement("afterend", panel);
+    } else {
+      els.noteBody.insertAdjacentElement("beforebegin", panel);
     }
-  };
+  }
+  return panel;
+}
 
-  const LEGACY_TEMPLATE_BODIES = Object.values(typeof NOTE_BODY_TEMPLATES === "object" ? NOTE_BODY_TEMPLATES : {})
-    .map((item) => item?.body)
-    .filter(Boolean);
+function insertTextAtCursor(text, label = "模板") {
+  if (!els.noteBody) return;
+  const start = els.noteBody.selectionStart ?? els.noteBody.value.length;
+  const end = els.noteBody.selectionEnd ?? els.noteBody.value.length;
+  const current = els.noteBody.value;
+  const prefix = current.slice(0, start);
+  const suffix = current.slice(end);
+  const needsBeforeBreak = prefix && !prefix.endsWith("\n") ? "\n\n" : "";
+  const needsAfterBreak = suffix && !suffix.startsWith("\n") ? "\n\n" : "";
+  const inserted = `${needsBeforeBreak}${text}${needsAfterBreak}`;
+  els.noteBody.value = `${prefix}${inserted}${suffix}`;
+  const nextCursor = prefix.length + inserted.length;
+  els.noteBody.setSelectionRange(nextCursor, nextCursor);
+  els.noteBody.focus();
+  updateActiveNote();
+  if (els.saveState) els.saveState.textContent = `已插入「${label}」`;
+}
 
-  function normalizeTemplateText(value) {
-    return String(value || "").replace(/\r\n/g, "\n").trim();
+function applyFullTypeTemplate(forceReplace = false) {
+  const note = getActiveNote();
+  if (!note) return;
+  const template = getTypeTemplate(note.type || els.noteType.value);
+  const current = els.noteBody.value;
+
+  if (!forceReplace && !isBlankOrKnownTemplate(current)) {
+    const ok = confirm("当前页面已有正文。是否把该模板插入到光标处？\n\n选择“确定”：插入模板，不覆盖原文。\n选择“取消”：保留原文，不插入。");
+    if (!ok) return;
+    insertTextAtCursor(template.body, template.label);
+    return;
   }
 
-  function getTypeTemplate(type) {
-    return TYPE_TEMPLATE_PAGES[type] || TYPE_TEMPLATE_PAGES.diary;
+  els.noteBody.value = template.body;
+  note.body = template.body;
+  note.type = els.noteType.value || note.type;
+  note.updatedAt = Date.now();
+  renderEditorStatus(note);
+  scheduleSave();
+  scheduleNoteRender(note);
+  if (els.saveState) els.saveState.textContent = `已套用「${template.label}」模板`;
+}
+
+function renderTypeTemplateUI() {
+  const note = getActiveNote();
+  const activeType = note?.type || els.noteType.value || "diary";
+  const template = getTypeTemplate(activeType);
+  const panel = ensureTemplatePanel();
+
+  els.editorForm.dataset.noteKind = activeType;
+  els.noteBody.placeholder = template.placeholder;
+  if (els.noteSource) els.noteSource.placeholder = template.sourcePlaceholder;
+
+  const buttonBox = els.editorForm.querySelector(".writing-assist-buttons");
+  if (buttonBox) {
+    buttonBox.innerHTML = "";
+    const fullButton = document.createElement("button");
+    fullButton.type = "button";
+    fullButton.className = "note-template-action primary";
+    fullButton.textContent = `套用${template.label}模板`;
+    fullButton.addEventListener("click", () => applyFullTypeTemplate(false));
+    buttonBox.append(fullButton);
+
+    template.sections.forEach((section) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "note-template-action";
+      button.textContent = section.label;
+      button.addEventListener("click", () => insertTextAtCursor(section.text, section.label));
+      buttonBox.append(button);
+    });
   }
 
-  function knownFullTemplates() {
-    return [
-      ...Object.values(TYPE_TEMPLATE_PAGES).map((item) => item.body),
-      ...LEGACY_TEMPLATE_BODIES
-    ].map(normalizeTemplateText);
-  }
+  panel.innerHTML = `
+    <div class="note-type-template-head">
+      <span class="note-type-template-badge">${escapeHtml(template.badge)}</span>
+      <div>
+        <strong>${escapeHtml(template.title)}</strong>
+        <small>${escapeHtml(template.subtitle)}</small>
+      </div>
+    </div>
+    <div class="note-type-template-lines" aria-label="当前模板分区">
+      ${template.sections.map((section) => `<span>${escapeHtml(section.label)}</span>`).join("")}
+    </div>
+  `;
+}
 
-  function isBlankOrKnownTemplate(value) {
-    const normalized = normalizeTemplateText(value);
-    return !normalized || knownFullTemplates().includes(normalized);
-  }
-
-  function escapeHtml(value) {
-    return String(value || "")
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
-  }
-
-  function ensureTemplatePanel() {
-    let panel = document.querySelector("#noteTypeTemplatePanel");
-    if (!panel) {
-      panel = document.createElement("section");
-      panel.id = "noteTypeTemplatePanel";
-      panel.className = "note-type-template-panel";
-      panel.setAttribute("aria-label", "分类空白页模板");
-      const assist = els.editorForm.querySelector(".writing-assist");
-      if (assist) {
-        assist.insertAdjacentElement("afterend", panel);
-      } else {
-        els.noteBody.insertAdjacentElement("beforebegin", panel);
-      }
-    }
-    return panel;
-  }
-
-  function insertTextAtCursor(text, label = "模板") {
-    if (!els.noteBody) return;
-    const start = els.noteBody.selectionStart ?? els.noteBody.value.length;
-    const end = els.noteBody.selectionEnd ?? els.noteBody.value.length;
-    const current = els.noteBody.value;
-    const prefix = current.slice(0, start);
-    const suffix = current.slice(end);
-    const needsBeforeBreak = prefix && !prefix.endsWith("\n") ? "\n\n" : "";
-    const needsAfterBreak = suffix && !suffix.startsWith("\n") ? "\n\n" : "";
-    const inserted = `${needsBeforeBreak}${text}${needsAfterBreak}`;
-    els.noteBody.value = `${prefix}${inserted}${suffix}`;
-    const nextCursor = prefix.length + inserted.length;
-    els.noteBody.setSelectionRange(nextCursor, nextCursor);
-    els.noteBody.focus();
-    updateActiveNote();
-    if (els.saveState) els.saveState.textContent = `已插入「${label}」`;
-  }
-
-  function applyFullTypeTemplate(forceReplace = false) {
-    const note = getActiveNote();
-    if (!note) return;
-    const template = getTypeTemplate(note.type || els.noteType.value);
-    const current = els.noteBody.value;
-
-    if (!forceReplace && !isBlankOrKnownTemplate(current)) {
-      const ok = confirm("当前页面已有正文。是否把该模板插入到光标处？\n\n选择“确定”：插入模板，不覆盖原文。\n选择“取消”：保留原文，不插入。");
-      if (!ok) return;
-      insertTextAtCursor(template.body, template.label);
-      return;
-    }
-
-    els.noteBody.value = template.body;
+function ensureActiveNoteTemplate() {
+  const note = getActiveNote();
+  if (!note) return;
+  const template = getTypeTemplate(note.type);
+  if (isBlankOrKnownTemplate(note.body)) {
     note.body = template.body;
-    note.type = els.noteType.value || note.type;
+    if (els.noteBody) els.noteBody.value = template.body;
     note.updatedAt = Date.now();
     renderEditorStatus(note);
     scheduleSave();
     scheduleNoteRender(note);
-    if (els.saveState) els.saveState.textContent = `已套用「${template.label}」模板`;
   }
+}
 
-  function renderTypeTemplateUI() {
-    const note = getActiveNote();
-    const activeType = note?.type || els.noteType.value || "diary";
-    const template = getTypeTemplate(activeType);
-    const panel = ensureTemplatePanel();
+// [收敛层一] 原对 createNote / renderEditor 的运行时包裹(monkey-patch)已删除;
+// 等效逻辑已内联进核心 createNote / renderEditor,由 window.__buliTypeTemplatesReady 守护。
 
-    els.editorForm.dataset.noteKind = activeType;
-    els.noteBody.placeholder = template.placeholder;
-    if (els.noteSource) els.noteSource.placeholder = template.sourcePlaceholder;
-
-    const buttonBox = els.editorForm.querySelector(".writing-assist-buttons");
-    if (buttonBox) {
-      buttonBox.innerHTML = "";
-      const fullButton = document.createElement("button");
-      fullButton.type = "button";
-      fullButton.className = "note-template-action primary";
-      fullButton.textContent = `套用${template.label}模板`;
-      fullButton.addEventListener("click", () => applyFullTypeTemplate(false));
-      buttonBox.append(fullButton);
-
-      template.sections.forEach((section) => {
-        const button = document.createElement("button");
-        button.type = "button";
-        button.className = "note-template-action";
-        button.textContent = section.label;
-        button.addEventListener("click", () => insertTextAtCursor(section.text, section.label));
-        buttonBox.append(button);
-      });
-    }
-
-    panel.innerHTML = `
-      <div class="note-type-template-head">
-        <span class="note-type-template-badge">${escapeHtml(template.badge)}</span>
-        <div>
-          <strong>${escapeHtml(template.title)}</strong>
-          <small>${escapeHtml(template.subtitle)}</small>
-        </div>
-      </div>
-      <div class="note-type-template-lines" aria-label="当前模板分区">
-        ${template.sections.map((section) => `<span>${escapeHtml(section.label)}</span>`).join("")}
-      </div>
-    `;
-  }
-
-  function ensureActiveNoteTemplate() {
-    const note = getActiveNote();
-    if (!note) return;
-    const template = getTypeTemplate(note.type);
-    if (isBlankOrKnownTemplate(note.body)) {
-      note.body = template.body;
-      if (els.noteBody) els.noteBody.value = template.body;
-      note.updatedAt = Date.now();
-      renderEditorStatus(note);
-      scheduleSave();
-      scheduleNoteRender(note);
-    }
-  }
-
-  const originalCreateNote = createNote;
-  createNote = function patchedCreateNote(options = {}) {
-    const note = originalCreateNote(options);
-    const template = getTypeTemplate(note.type);
-    if (!options.body && isBlankOrKnownTemplate(note.body)) {
-      note.body = template.body;
-      note.updatedAt = Date.now();
-      if (state.activeId === note.id && els.noteBody) els.noteBody.value = note.body;
-      if (!options.silent) scheduleSave();
-    }
-    return note;
-  };
-
-  const originalRenderEditor = renderEditor;
-  renderEditor = function patchedRenderEditor(...args) {
-    const result = originalRenderEditor.apply(this, args);
-    renderTypeTemplateUI();
-    return result;
-  };
-
+// 模块初始化(原 IIFE 尾部):编辑器元素就绪时安装「类型切换」监听、置就绪标志、套用初始模板。
+if (typeof els !== "undefined" && els && els.editorForm && els.noteType && els.noteBody
+    && !window.__buliTypeTemplatesReady) {
   els.noteType.addEventListener("change", () => {
     const note = getActiveNote();
     if (!note) return;
@@ -5195,9 +5196,10 @@ async function installApp() {
     renderTypeTemplateUI();
   });
 
+  window.__buliTypeTemplatesReady = true;
   ensureActiveNoteTemplate();
   renderTypeTemplateUI();
-})();
+}
 /*
  * 空白页壁纸上传修复补丁
  * 作用：修复安卓端 / WebView 中“添加壁纸”点击不稳定、图片过大保存失败、部分机型 crypto.randomUUID 不兼容等问题。
