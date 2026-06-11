@@ -6444,44 +6444,9 @@ function addNgondroPresets() {
   if (saveModules()) renderPracticeCounters();
 }
 
-function setupPracticeLedgerControls() {
-  const form = els.practiceCounterForm;
-  if (!form || form.dataset.ledgerControls === "1") return;
-  form.dataset.ledgerControls = "1";
-
-  const row = document.createElement("div");
-  row.className = "buli-practice-ledger-controls";
-
-  const presetBtn = document.createElement("button");
-  presetBtn.type = "button";
-  presetBtn.className = "buli-ledger-button";
-  presetBtn.textContent = "加行·五十万预设";
-  presetBtn.addEventListener("click", addNgondroPresets);
-
-  const exportBtn = document.createElement("button");
-  exportBtn.type = "button";
-  exportBtn.className = "buli-ledger-button ghost";
-  exportBtn.textContent = "导出账本备份";
-  exportBtn.addEventListener("click", () => { try { exportNotes(); } catch (e) { console.warn(e); } });
-
-  const importBtn = document.createElement("button");
-  importBtn.type = "button";
-  importBtn.className = "buli-ledger-button ghost";
-  importBtn.textContent = "导入备份";
-  const fileInput = document.createElement("input");
-  fileInput.type = "file";
-  fileInput.accept = "application/json,.json";
-  fileInput.style.display = "none";
-  fileInput.addEventListener("change", () => {
-    const file = fileInput.files && fileInput.files[0];
-    if (file) importBackupFromFile(file);
-    fileInput.value = "";
-  });
-  importBtn.addEventListener("click", () => fileInput.click());
-
-  row.append(presetBtn, exportBtn, importBtn, fileInput);
-  form.insertAdjacentElement("afterend", row);
-}
+/* [优化·死代码删除 2026-06-11] setupPracticeLedgerControls 已删除:它定义但从未被调用
+   (0 处调用),且它要加的「加行预设 / 导出账本备份 / 导入备份」三个按钮,实际已由
+   buildPracticeOverview(已接线、渲染中)提供——若再接线只会产生重复按钮。删除是纯收益。 */
 
 function mergeBackupArrayById(targetArr, incomingArr) {
   // 一生安全合并：按 id 对齐；若双方都有 updatedAt，保留较新的一方，
