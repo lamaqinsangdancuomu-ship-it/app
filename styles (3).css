@@ -12008,3 +12008,141 @@ textarea:focus,
   background: #fffdf8 !important;
 }
 .buli-practice-timeline { border-radius: 14px !important; }
+
+/* —— 扉页一 · 整页图（莫舍己道） —— */
+.teaching-page.flyleaf-full {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  padding: 0 !important;
+  gap: 0;
+  background: #241208;
+}
+.flyleaf-page.flyleaf-full::before,
+.flyleaf-page.flyleaf-full::after {
+  display: none !important;
+}
+.teaching-page.flyleaf-full .flyleaf-fullimg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* —— 首页/尾页 新封面：整幅完整显示、垂直居中、不裁切 —— */
+.journey-cover,
+.back-cover {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #241208;
+}
+.journey-cover::after,
+.back-cover.notebook-page::after {
+  display: none;
+}
+.journey-cover .cover-image,
+.back-cover img {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  object-fit: contain;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* —— 一生维度 · 数据管家 / 年份筛选 / 列表分页 / 课堂归档 —— */
+.buli-data-steward {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 14px 14px 12px;
+  border: 1px solid rgba(216, 154, 50, 0.4);
+  border-radius: 14px;
+  background:
+    linear-gradient(160deg, rgba(255, 244, 214, 0.92), rgba(251, 240, 214, 0.78)),
+    #fbf4e2;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 10px 22px rgba(94, 62, 22, 0.1);
+}
+.buli-data-steward .steward-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  align-items: baseline;
+  justify-content: space-between;
+}
+.buli-data-steward .steward-head strong {
+  font-size: 15px;
+  color: #6b3f12;
+  letter-spacing: 1px;
+}
+.buli-data-steward #stewardHint {
+  font-size: 12px;
+  color: #7a5a25;
+}
+.buli-data-steward #stewardHint[data-tone="warn"] {
+  color: #9c3a22;
+  font-weight: 700;
+}
+.buli-data-steward #stewardStats,
+.buli-data-steward #stewardStorage {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.7;
+  color: #6e552c;
+}
+.buli-data-steward #stewardStorage:empty {
+  display: none;
+}
+.buli-data-steward .steward-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+#noteYearSelect {
+  flex: 0 0 auto;
+  max-width: 46%;
+  padding: 10px 12px;
+  border: 1px solid rgba(216, 154, 50, 0.4);
+  border-radius: 12px;
+  background: rgba(255, 253, 247, 0.92);
+  color: #6b4a1c;
+  font-size: 13px;
+}
+
+.note-list-more {
+  width: 100%;
+  margin-top: 4px;
+  padding: 12px;
+  border: 1px dashed rgba(216, 154, 50, 0.55);
+  border-radius: 12px;
+  background: rgba(255, 250, 238, 0.85);
+  color: #8a5a22;
+  font-size: 13.5px;
+  font-weight: 600;
+}
+.note-list-more:active {
+  background: rgba(255, 240, 205, 0.95);
+}
+
+.ppt-archived-toggle {
+  align-self: center;
+  padding: 8px 12px;
+  border: 1px dashed rgba(216, 154, 50, 0.55);
+  border-radius: 999px;
+  background: rgba(255, 250, 238, 0.7);
+  color: #8a5a22;
+  font-size: 12.5px;
+  white-space: nowrap;
+}
+.ppt-project-chip.archived {
+  opacity: 0.62;
+  filter: saturate(0.8);
+}
+.ppt-project-chip.archived .ppt-project-filter strong::after {
+  content: " · 已归档";
+  font-size: 11px;
+  font-weight: 500;
+  color: #8a6a3a;
+}
