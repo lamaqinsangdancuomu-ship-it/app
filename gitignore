@@ -1,0 +1,36 @@
+# 不离手账 · 推荐 .gitignore（放仓库根目录，避免以后再把垃圾提交进仓库）
+
+# 本地服务器 / 调试日志
+*.log
+_local-server.*
+_preview-server.*
+_python-http.*
+_server*.*
+
+# 开发截图、预览图（按需保留可删掉对应行）
+__*.png
+preview-*.png
+
+# 历史打包快照（请改用 GitHub Releases 存放打包产物，不要塞进仓库）
+/release/
+*.zip
+
+# 浏览器重复下载产生的副本
+* (1).*
+* (2).*
+* (3).*
+* (4).*
+* (5).*
+
+# 安卓工程构建产物（保留源码，不提交编译输出）
+android-app/**/build/
+android-app/**/.gradle/
+android-app/**/.cxx/
+android-app/local.properties
+
+# 系统与编辑器临时文件
+.DS_Store
+Thumbs.db
+*~
+.vscode/
+.idea/

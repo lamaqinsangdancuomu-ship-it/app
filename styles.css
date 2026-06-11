@@ -10544,3 +10544,1467 @@ textarea:focus,
     grid-template-columns: 1fr;
   }
 }
+/* =========================================================
+   Last page only fix
+   Purpose: make the final back cover display completely on Android,
+   like a real notebook cover, without changing other pages/functions.
+   Place this block at the very end of assets/styles.css.
+   ========================================================= */
+.back-cover.notebook-page {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-width: 100% !important;
+  height: 100dvh !important;
+  min-height: 100dvh !important;
+  max-height: 100dvh !important;
+  padding: max(14px, env(safe-area-inset-top)) 14px max(54px, env(safe-area-inset-bottom)) !important;
+  overflow: hidden !important;
+  background: var(--orange) !important;
+}
+
+.back-cover.notebook-page::after {
+  display: none !important;
+}
+
+.back-cover.notebook-page > img {
+  display: block !important;
+  width: auto !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: calc(100dvh - max(76px, env(safe-area-inset-top) + env(safe-area-inset-bottom) + 58px)) !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  object-fit: contain !important;
+  object-position: center center !important;
+  border-radius: var(--radius) !important;
+  box-shadow: var(--shadow) !important;
+}
+
+.back-cover.notebook-page > .notebook-page-footer {
+  position: absolute !important;
+  right: auto !important;
+  bottom: max(2px, env(safe-area-inset-bottom)) !important;
+  left: 50% !important;
+  z-index: 80 !important;
+  transform: translateX(-50%) !important;
+}
+
+@media (max-width: 520px) {
+  .back-cover.notebook-page {
+    padding: max(10px, env(safe-area-inset-top)) 10px max(48px, env(safe-area-inset-bottom)) !important;
+  }
+
+  .back-cover.notebook-page > img {
+    max-width: 100% !important;
+    max-height: calc(100dvh - max(68px, env(safe-area-inset-top) + env(safe-area-inset-bottom) + 50px)) !important;
+  }
+}
+/* === Note editor template pages fix === */
+/* === 不离手账：分类空白页模板与编辑页排版优化补丁 2026-06-08 ===
+   仅作用于笔记编辑页，不影响其它页面与功能。
+*/
+.editor-form[data-note-kind] {
+  gap: 13px !important;
+}
+
+.note-type-template-panel {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  gap: 10px;
+  padding: 12px 13px;
+  border: 1px solid rgba(167, 128, 79, 0.22);
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 8% 8%, rgba(255, 226, 155, 0.36), transparent 34%),
+    linear-gradient(135deg, rgba(255, 253, 247, 0.92), rgba(248, 238, 213, 0.82));
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.52),
+    0 10px 22px rgba(64, 47, 23, 0.06);
+}
+
+.note-type-template-panel::before {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  z-index: -1;
+  border: 1px dashed rgba(198, 40, 42, 0.16);
+  border-radius: 10px;
+  pointer-events: none;
+}
+
+.note-type-template-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+}
+
+.note-type-template-badge {
+  display: inline-grid;
+  place-items: center;
+  min-height: 30px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(49, 90, 140, 0.09);
+  color: var(--blue);
+  font-size: 11px;
+  font-weight: 950;
+  white-space: nowrap;
+}
+
+.note-type-template-head strong {
+  display: block;
+  color: var(--red);
+  font-size: 15px;
+  font-weight: 950;
+  line-height: 1.25;
+}
+
+.note-type-template-head small {
+  display: block;
+  margin-top: 2px;
+  color: #7a695b;
+  font-size: 12px;
+  font-weight: 760;
+  line-height: 1.45;
+}
+
+.note-type-template-lines {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.note-type-template-lines span {
+  display: inline-grid;
+  place-items: center;
+  min-height: 26px;
+  padding: 0 9px;
+  border: 1px solid rgba(216, 154, 50, 0.2);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  color: #7a5432;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.writing-assist-buttons .note-template-action.primary {
+  border-color: rgba(198, 40, 42, 0.22);
+  background: linear-gradient(180deg, rgba(255, 248, 220, 0.95), rgba(255, 233, 171, 0.82));
+  color: var(--red);
+}
+
+.editor-form[data-note-kind="diary"] .note-type-template-badge {
+  background: rgba(198, 40, 42, 0.08);
+  color: var(--red);
+}
+
+.editor-form[data-note-kind="reading"] .note-type-template-badge {
+  background: rgba(49, 90, 140, 0.1);
+  color: var(--blue);
+}
+
+.editor-form[data-note-kind="memo"] .note-type-template-badge {
+  background: rgba(216, 154, 50, 0.14);
+  color: #8a5a15;
+}
+
+.editor-form[data-note-kind="timeline"] .note-type-template-badge {
+  background: rgba(39, 123, 82, 0.1);
+  color: #287a52;
+}
+
+.editor-form[data-note-kind="diary"] textarea,
+.editor-form[data-note-kind="reading"] textarea,
+.editor-form[data-note-kind="memo"] textarea,
+.editor-form[data-note-kind="timeline"] textarea {
+  min-height: 410px;
+  padding: 20px 18px;
+  border-radius: 10px;
+  line-height: 1.9;
+}
+
+.editor-form[data-note-kind="reading"] textarea {
+  background:
+    linear-gradient(90deg, rgba(49, 90, 140, 0.08) 0 3px, transparent 3px),
+    radial-gradient(circle at 18% 22%, rgba(128, 103, 69, 0.04) 0 1px, transparent 2px),
+    linear-gradient(rgba(255, 253, 245, 0.76) 40px, rgba(49, 90, 140, 0.08) 41px),
+    rgba(255, 253, 245, 0.72);
+  background-size: 100% 41px;
+}
+
+.editor-form[data-note-kind="memo"] textarea {
+  background:
+    linear-gradient(90deg, rgba(216, 154, 50, 0.08) 0 3px, transparent 3px),
+    radial-gradient(circle at 18% 22%, rgba(128, 103, 69, 0.04) 0 1px, transparent 2px),
+    linear-gradient(rgba(255, 253, 245, 0.78) 40px, rgba(216, 154, 50, 0.1) 41px),
+    rgba(255, 253, 245, 0.72);
+  background-size: 100% 41px;
+}
+
+.editor-form[data-note-kind="timeline"] textarea {
+  background:
+    linear-gradient(90deg, rgba(39, 123, 82, 0.08) 0 3px, transparent 3px),
+    radial-gradient(circle at 18% 22%, rgba(128, 103, 69, 0.04) 0 1px, transparent 2px),
+    linear-gradient(rgba(255, 253, 245, 0.76) 40px, rgba(39, 123, 82, 0.08) 41px),
+    rgba(255, 253, 245, 0.72);
+  background-size: 100% 41px;
+}
+
+@media (max-width: 520px) {
+  .note-type-template-head {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .note-type-template-badge {
+    justify-self: start;
+  }
+
+  .editor-form[data-note-kind] textarea {
+    min-height: 390px;
+  }
+}
+/* 空白页壁纸上传按钮修复与移动端适配 */
+.page-theme-option.page-theme-add.page-theme-upload-fixed {
+  position: relative;
+  overflow: hidden;
+  min-height: 92px;
+  cursor: pointer;
+}
+
+.page-theme-option.page-theme-add.page-theme-upload-fixed input[type="file"] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.page-theme-option.page-theme-add.page-theme-upload-fixed .page-theme-add-button {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: grid;
+  place-content: center;
+  gap: 4px;
+  min-height: 100%;
+  padding: 12px;
+  border: 0;
+  color: var(--red);
+  text-align: center;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.page-theme-option.page-theme-add.page-theme-upload-fixed .page-theme-add-button span {
+  position: static;
+  inset: auto;
+  display: inline-grid;
+  place-items: center;
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.82);
+  color: var(--red);
+  font-size: 13px;
+  font-weight: 950;
+  box-shadow: 0 8px 16px rgba(64, 47, 23, 0.08);
+}
+
+.page-theme-option.page-theme-add.page-theme-upload-fixed .page-theme-add-button small {
+  display: block;
+  color: rgba(135, 83, 29, 0.82);
+  font-size: 11px;
+  font-weight: 850;
+  line-height: 1.2;
+}
+
+.editor-form.page-wallpaper textarea {
+  background:
+    radial-gradient(circle at 18% 22%, rgba(128, 103, 69, 0.035) 0 1px, transparent 2px),
+    repeating-linear-gradient(92deg, rgba(101, 86, 58, 0.022) 0 1px, transparent 1px 18px),
+    linear-gradient(rgba(255, 253, 245, 0.66) 40px, rgba(109, 74, 31, 0.08) 41px),
+    rgba(255, 253, 245, 0.52);
+  background-size: 100% 41px;
+  backdrop-filter: blur(0.4px);
+}
+/* === Buli Complete Visual Fix: Tibetan auspicious style, mature notebook layout === */
+:root {
+  --buli-red: #c92618;
+  --buli-deep-red: #991b18;
+  --buli-gold: #f4c43b;
+  --buli-gold-dark: #b77918;
+  --buli-turquoise: #23b8c6;
+  --buli-blue: #063a9b;
+  --buli-deep-blue: #02206c;
+  --buli-paper: #fff8e8;
+  --buli-cream: #fff0cf;
+  --buli-ink: #3c231d;
+  --buli-muted: #7a563f;
+}
+
+/* shared auspicious note skin */
+.buli-enhanced-editor,
+.ppt-organizer-page.buli-classroom-enhanced,
+.notebook-index-page {
+  background:
+    radial-gradient(circle at 50% 18%, rgba(244, 196, 59, .16), transparent 34%),
+    linear-gradient(135deg, rgba(201, 38, 24, .09), rgba(35, 184, 198, .08)),
+    var(--buli-paper);
+  border: 2px solid rgba(183, 121, 24, .42);
+  position: relative;
+  overflow: hidden;
+}
+
+.buli-enhanced-editor::before,
+.ppt-organizer-page.buli-classroom-enhanced::before,
+.notebook-index-page::before {
+  content: "";
+  position: absolute;
+  inset: 10px;
+  pointer-events: none;
+  border: 2px solid rgba(244, 196, 59, .45);
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 8% 5%, rgba(35, 184, 198, .18), transparent 11%),
+    radial-gradient(circle at 92% 6%, rgba(6, 58, 155, .14), transparent 12%),
+    radial-gradient(circle at 8% 95%, rgba(244, 196, 59, .14), transparent 10%),
+    radial-gradient(circle at 92% 95%, rgba(35, 184, 198, .12), transparent 10%);
+  z-index: 0;
+}
+
+.buli-enhanced-editor > *,
+.ppt-organizer-page.buli-classroom-enhanced > *,
+.notebook-index-page > * {
+  position: relative;
+  z-index: 1;
+}
+
+.buli-editor-returnbar,
+.buli-classroom-top,
+.buli-index-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 24px;
+  border: 1px solid rgba(244, 196, 59, .65);
+  background: linear-gradient(135deg, var(--buli-deep-red), #7b1715);
+  color: #fff8df;
+  box-shadow: 0 12px 24px rgba(75, 31, 17, .14);
+  margin-bottom: 14px;
+}
+
+.buli-editor-returnbar strong,
+.buli-classroom-top strong,
+.buli-index-heading strong {
+  display: block;
+  font-size: 1.18rem;
+  letter-spacing: .04em;
+}
+
+.buli-editor-returnbar span,
+.buli-classroom-top span,
+.buli-index-heading span,
+.buli-editor-returnbar small,
+.buli-classroom-top small,
+.buli-index-heading small {
+  display: block;
+  color: #ffe8a6;
+  font-size: .82rem;
+  line-height: 1.5;
+}
+
+.buli-return-button,
+.buli-editor-actionbar button,
+.buli-classroom-actions button,
+.buli-index-modes button,
+.buli-note-type-tabs button,
+.buli-classroom-tabs button,
+.buli-offering-file-button {
+  border: 1px solid rgba(183, 121, 24, .62);
+  border-radius: 999px;
+  background: #fff0cf;
+  color: var(--buli-deep-blue);
+  font-weight: 800;
+  cursor: pointer;
+  min-height: 40px;
+  box-shadow: 0 8px 18px rgba(75, 31, 17, .09);
+}
+
+.buli-return-button {
+  padding: 9px 14px;
+  background: var(--buli-blue);
+  color: #fff8df;
+  flex: none;
+}
+
+.buli-editor-actionbar,
+.buli-classroom-actions {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.buli-editor-actionbar button,
+.buli-classroom-actions button {
+  padding: 9px 10px;
+}
+
+.buli-editor-actionbar .primary,
+.buli-classroom-actions .primary {
+  background: var(--buli-deep-blue);
+  color: #fff8df;
+}
+
+.buli-editor-actionbar .danger,
+.buli-classroom-actions .danger {
+  color: var(--buli-deep-red);
+  background: #fff5e6;
+}
+
+.buli-note-type-tabs,
+.buli-classroom-tabs,
+.buli-index-modes {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px 2px 8px;
+  scrollbar-width: thin;
+}
+
+.buli-note-type-tabs button,
+.buli-classroom-tabs button,
+.buli-index-modes button {
+  padding: 9px 18px;
+  flex: 0 0 auto;
+}
+
+.buli-note-type-tabs button.active,
+.buli-classroom-tabs button.active,
+.buli-index-modes button.active {
+  background: var(--buli-deep-blue);
+  color: #fff8df;
+  border-color: var(--buli-gold);
+}
+
+.buli-current-template-panel,
+.buli-classroom-current,
+.buli-classroom-index,
+.buli-unified-index {
+  margin: 12px 0 16px;
+}
+
+.buli-current-template-panel,
+.buli-classroom-template-card,
+.buli-classroom-keep-template,
+.buli-index-stats,
+.buli-classroom-summary {
+  border: 1px solid rgba(183, 121, 24, .45);
+  border-radius: 22px;
+  background: linear-gradient(135deg, #fffdf7, #fff0cf);
+  padding: 14px 16px;
+  color: var(--buli-ink);
+}
+
+.buli-template-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--buli-deep-blue);
+  font-weight: 900;
+}
+
+.buli-template-title span,
+.buli-classroom-template-card span,
+.buli-index-heading span {
+  color: var(--buli-deep-red);
+  font-size: .78rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+}
+
+.buli-current-template-panel p,
+.buli-classroom-template-card p {
+  margin: 8px 0 0;
+  color: var(--buli-muted);
+  line-height: 1.7;
+}
+
+.buli-enhanced-editor .editor-form,
+.ppt-organizer-page.buli-classroom-enhanced .ppt-note-editor {
+  background:
+    linear-gradient(rgba(255, 255, 255, .74), rgba(255, 255, 255, .74)),
+    var(--buli-paper);
+  border: 1px solid rgba(183, 121, 24, .42);
+  border-radius: 24px;
+  box-shadow: inset 0 0 0 1px rgba(244, 196, 59, .16);
+}
+
+.buli-enhanced-editor #noteBody,
+.ppt-organizer-page.buli-classroom-enhanced textarea[name="body"],
+.buli-classroom-body-input {
+  min-height: 430px !important;
+  resize: vertical;
+  line-height: 1.86;
+  font-size: 1rem;
+  background: linear-gradient(#fffef9, #fffaf0);
+  border: 1px solid rgba(183, 121, 24, .35);
+  border-radius: 20px;
+}
+
+.buli-enhanced-editor .writing-assist {
+  display: none;
+}
+
+.buli-unified-index {
+  border: 1px solid rgba(183, 121, 24, .42);
+  border-radius: 26px;
+  padding: 14px;
+  background: rgba(255, 248, 232, .72);
+  margin-bottom: 16px;
+}
+
+.buli-index-heading {
+  margin: 0 0 12px;
+}
+
+.buli-index-heading small {
+  max-width: 58ch;
+  color: #fff0c8;
+}
+
+.buli-index-stats,
+.buli-classroom-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 10px 0 14px;
+}
+
+.buli-index-stats span,
+.buli-classroom-summary span {
+  display: grid;
+  place-items: center;
+  gap: 3px;
+  min-height: 58px;
+  border-radius: 16px;
+  background: #e4f6f4;
+  color: var(--buli-deep-blue);
+  font-size: .82rem;
+}
+
+.buli-index-stats strong,
+.buli-classroom-summary strong {
+  color: var(--buli-deep-red);
+  font-size: 1.2rem;
+}
+
+.buli-index-groups,
+.buli-classroom-groups {
+  display: grid;
+  gap: 14px;
+}
+
+.buli-index-group,
+.buli-classroom-group {
+  padding: 12px;
+  border-radius: 22px;
+  border: 1px solid rgba(183, 121, 24, .36);
+  background: rgba(255, 253, 247, .72);
+}
+
+.buli-index-group h3,
+.buli-classroom-group h3 {
+  margin: 0 0 10px;
+  display: flex;
+  justify-content: space-between;
+  color: var(--buli-deep-red);
+  font-size: 1rem;
+}
+
+.buli-index-group h3 small,
+.buli-classroom-group h3 small {
+  color: var(--buli-muted);
+  font-weight: 600;
+}
+
+.buli-index-card,
+.buli-classroom-card {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border-radius: 18px;
+  background: #fffdf7;
+  border: 1px solid rgba(183, 121, 24, .24);
+  margin-top: 8px;
+  cursor: pointer;
+  transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+}
+
+.buli-index-card:hover,
+.buli-classroom-card:hover {
+  transform: translateY(-1px);
+  border-color: var(--buli-gold);
+  box-shadow: 0 10px 20px rgba(80, 40, 20, .12);
+}
+
+.buli-index-card > span,
+.buli-classroom-card > span {
+  color: var(--buli-deep-red);
+  font-weight: 900;
+}
+
+.buli-index-card strong,
+.buli-classroom-card strong {
+  display: block;
+  color: var(--buli-ink);
+  line-height: 1.35;
+}
+
+.buli-index-card small,
+.buli-classroom-card small,
+.buli-index-card em,
+.buli-classroom-card em {
+  display: block;
+  color: var(--buli-muted);
+  font-style: normal;
+  font-size: .78rem;
+  margin-top: 3px;
+}
+
+.buli-index-card em,
+.buli-classroom-card em {
+  color: var(--buli-deep-blue);
+}
+
+.buli-index-card b,
+.buli-classroom-card b {
+  color: var(--buli-gold-dark);
+  font-size: 1.35rem;
+}
+
+.buli-index-more,
+.buli-empty-note {
+  margin-top: 10px;
+  border-radius: 999px;
+  padding: 9px 14px;
+  border: 1px solid rgba(183, 121, 24, .36);
+  background: #fff0cf;
+  color: var(--buli-deep-blue);
+  font-weight: 800;
+}
+
+.buli-classroom-shell {
+  border: 1px solid rgba(183, 121, 24, .44);
+  border-radius: 26px;
+  padding: 14px;
+  background: rgba(255, 248, 232, .72);
+  margin: 14px 0;
+}
+
+.buli-classroom-top {
+  margin-bottom: 12px;
+}
+
+.buli-classroom-keep-template {
+  margin-top: 12px;
+  color: var(--buli-muted);
+  font-weight: 700;
+}
+
+.ppt-organizer-page[data-buli-classroom-mode="index"] #pptNoteForm {
+  display: none;
+}
+
+.ppt-organizer-page[data-buli-classroom-mode="index"] .ppt-note-list {
+  margin-top: 12px;
+}
+
+.ppt-note-card.buli-highlight {
+  outline: 3px solid var(--buli-gold);
+  box-shadow: 0 0 0 7px rgba(244, 196, 59, .18), 0 14px 28px rgba(80, 40, 20, .18);
+}
+
+.buli-offering-file-button {
+  padding: 10px 16px;
+  background: var(--buli-deep-blue);
+  color: #fff8df;
+  margin: 0 8px 8px 0;
+}
+
+.offering-buddha-controls label.offering-buddha-upload {
+  min-height: 42px;
+}
+
+/* Subtle use of user-provided decorative assets when available */
+.buli-enhanced-editor .editor-form::after,
+.ppt-organizer-page.buli-classroom-enhanced .ppt-note-editor::after {
+  content: "";
+  display: block;
+  width: min(220px, 56%);
+  height: 92px;
+  margin: 6px auto 0;
+  background: url("assets/notebook-decor-flower-horizontal.png") center / contain no-repeat;
+  opacity: .82;
+  pointer-events: none;
+}
+
+.buli-current-template-panel::after,
+.buli-classroom-template-card::after {
+  content: "";
+  float: right;
+  width: 42px;
+  height: 42px;
+  margin-left: 8px;
+  background: url("assets/guru-bear-icon.png") center / contain no-repeat;
+  opacity: .86;
+}
+
+@media (max-width: 760px) {
+  .buli-editor-returnbar,
+  .buli-classroom-top,
+  .buli-index-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .buli-editor-actionbar,
+  .buli-classroom-actions,
+  .buli-index-stats,
+  .buli-classroom-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .buli-enhanced-editor #noteBody,
+  .ppt-organizer-page.buli-classroom-enhanced textarea[name="body"],
+  .buli-classroom-body-input {
+    min-height: 520px !important;
+  }
+
+  .buli-index-card,
+  .buli-classroom-card {
+    grid-template-columns: auto 1fr;
+  }
+
+  .buli-index-card b,
+  .buli-classroom-card b {
+    display: none;
+  }
+}
+
+/* ========================================================================== */
+/* 不离手账 · 修复与增强追加样式（仅追加，不改写任何原有规则；小熊等装饰原样保留） */
+/* ========================================================================== */
+
+/* —— 1. 滚动可靠性：根治旧机型“无法下拉页面” ——
+ * .app-shell 原本只有 100svh，旧浏览器（约 2015–2022）不支持 svh 时高度塌成 auto，
+ * 子页 height:100% 失去固定高度→无法滚动。仅在不支持 svh 的环境补 100vh 回退，
+ * 现代浏览器完全不受影响（@supports 块在支持 svh 时为空操作）。 */
+@supports not (height: 100svh) {
+  .app-shell {
+    height: 100vh;
+    min-height: 100vh;
+  }
+}
+.notebook-page {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* —— 2. 功课计数“已圆满”样式 —— */
+.practice-counter-card.is-complete {
+  border-color: rgba(49, 95, 75, 0.55);
+  box-shadow: 0 0 0 1px rgba(49, 95, 75, 0.18), 0 10px 26px rgba(49, 95, 75, 0.12);
+}
+.practice-counter-card.is-complete .practice-progress {
+  background: rgba(49, 95, 75, 0.16);
+}
+.practice-counter-card.is-complete .practice-progress span {
+  background: linear-gradient(90deg, #4fa97e, var(--green));
+}
+.practice-complete-badge {
+  align-self: center;
+  flex: none;
+  margin-left: 6px;
+  padding: 3px 11px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #4fa97e, var(--green));
+  color: #f6fffb;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  box-shadow: 0 3px 8px rgba(49, 95, 75, 0.28);
+}
+
+/* —— 3. 课堂模板预览面板（沿用已存在的 .buli-current-template-panel 外框与小熊装饰）—— */
+.buli-current-template-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.buli-current-template-head span {
+  color: var(--buli-deep-red, #b04a2f);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+.buli-current-template-head strong {
+  color: var(--buli-deep-blue, #2c4a6b);
+  font-size: 1.04rem;
+  font-weight: 900;
+}
+.buli-current-template-preview {
+  margin: 10px 0 0;
+  padding: 12px 14px;
+  max-height: 240px;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid rgba(183, 121, 24, 0.32);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.66);
+  color: #4a443c;
+  font-family: "PingFang SC", "Microsoft YaHei", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12.5px;
+  line-height: 1.75;
+  white-space: pre-wrap;
+  word-break: break-word;
+  tab-size: 2;
+}
+.buli-current-template-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+.buli-current-template-actions small {
+  color: var(--buli-muted, #8a7d6a);
+  font-size: 12px;
+  font-weight: 700;
+}
+.buli-current-template-actions button.primary {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  padding: 9px 18px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--orange, #f4a000), var(--orange-deep, #df7d16));
+  color: #fff7e8;
+  font-size: 13.5px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  box-shadow: 0 6px 16px rgba(223, 125, 22, 0.28);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+}
+.buli-current-template-actions button.primary:hover {
+  filter: brightness(1.03);
+  box-shadow: 0 8px 20px rgba(223, 125, 22, 0.34);
+}
+.buli-current-template-actions button.primary:active {
+  transform: translateY(1px);
+  box-shadow: 0 4px 12px rgba(223, 125, 22, 0.3);
+}
+
+/* ========================================================================== */
+/* 交互修复(第二轮):遍地花开人物照片按钮 + 供灯佛像两个按钮的点击失效 */
+/* 仅追加，不改写原有规则 */
+/* ========================================================================== */
+
+/* —— 遍地花开:让文件输入框直接铺满照片位、可点击 ——
+ * 原 .garden-photo-seat input 设了 pointer-events:none，依赖 <label> 转发点击；
+ * 部分手机 WebView 下 label 转发打不开选图器。改为输入框透明铺满、直接接收点击。 */
+.garden-photo-seat {
+  pointer-events: auto !important;
+}
+.garden-photo-seat input[type="file"] {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  opacity: 0 !important;
+  pointer-events: auto !important;
+  cursor: pointer;
+  z-index: 6 !important;
+}
+
+/* —— 供灯:把控制面板抬到所有装饰层(中央灯钮 z3、灯焰 z7 等)之上，
+ *    并确保“添加佛像 / 更改图像”两个按钮都能接收点击 —— */
+.offering-lamp-panel {
+  z-index: 9 !important;
+}
+.offering-buddha-controls {
+  position: relative;
+  z-index: 9 !important;
+  pointer-events: auto !important;
+}
+.offering-buddha-controls .offering-buddha-upload,
+.offering-buddha-controls .offering-buddha-reset {
+  position: relative;
+  z-index: 9 !important;
+  pointer-events: auto !important;
+}
+/* “添加佛像”：文件输入透明铺满整个标签、直接可点 */
+.offering-buddha-controls .offering-buddha-upload input[type="file"] {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  opacity: 0 !important;
+  pointer-events: auto !important;
+  cursor: pointer;
+  z-index: 2;
+}
+
+/* ========================================================================== */
+/* 视觉统一(药师蓝页眉 + 八吉祥坛城徽记 + 喇荣怀业红按钮 + 牡丹/小熊点缀) */
+/* 仅追加，不改写原有规则；配套图片放入 assets/ */
+/* ========================================================================== */
+
+/* —— 统一页眉:药师琉璃蓝底 + 坛城圆形徽记 —— */
+/* 编辑器页眉(横幅式) */
+.editor-paper-head {
+  position: relative !important;
+  background: #1a5390 !important;
+  border: none !important;
+  border-bottom: 2px solid #d4a534 !important;
+  border-radius: 12px 12px 0 0 !important;
+  box-shadow: none !important;
+  padding: 12px 14px 12px 60px !important;
+}
+.editor-paper-head::before {
+  content: "" !important;
+  position: absolute !important;
+  left: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid #d4a534;
+  background: url("assets/mandala-emblem.jpg") center / cover no-repeat;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.28);
+}
+.editor-paper-head span { color: #f0d98a !important; }
+.editor-paper-head small { color: #cfe0f0 !important; }
+
+/* 课堂 / 索引 的真实页眉(原为红渐变 → 改药师蓝 + 坛城徽记) */
+.buli-classroom-top,
+.buli-index-heading {
+  position: relative !important;
+  background: #1a5390 !important;
+  background-image: none !important;
+  border: 1px solid #d4a534 !important;
+  box-shadow: 0 8px 20px rgba(26, 83, 144, 0.18) !important;
+  padding-left: 60px !important;
+}
+.buli-classroom-top::before,
+.buli-index-heading::before {
+  content: "" !important;
+  position: absolute !important;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid #d4a534;
+  background: url("assets/mandala-emblem.jpg") center / cover no-repeat;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.28);
+}
+.buli-classroom-top strong,
+.buli-index-heading strong { color: #f6edd4 !important; }
+.buli-classroom-top span,
+.buli-classroom-top small,
+.buli-index-heading span,
+.buli-index-heading small { color: #cfe0f0 !important; }
+
+/* 课堂统计四格(当前 / 待复习 / 已完成 / 有附件)→ 喇荣怀业红 */
+.ppt-organizer-summary span {
+  background: rgba(181, 39, 43, 0.08) !important;
+  border: 1px solid rgba(181, 39, 43, 0.4) !important;
+  color: #b5272b !important;
+  border-radius: 10px !important;
+}
+.ppt-organizer-summary span strong { color: #b5272b !important; }
+
+/* —— 按钮统一喇荣怀业红 (#b5272b) —— */
+.round-button:not(.text-button):not(:disabled),
+.index-new-button,
+.index-current-button,
+.toc-action-button.primary,
+.note-template-action.primary,
+.buli-editor-actionbar .primary,
+.buli-classroom-actions .primary,
+.buli-current-template-actions button.primary,
+.type-button.active {
+  background: #b5272b !important;
+  background-image: none !important;
+  border: 1px solid #8e1f22 !important;
+  color: #f8e6c8 !important;
+  box-shadow: 0 4px 12px rgba(150, 30, 35, 0.26) !important;
+}
+.round-button:not(.text-button):not(:disabled) svg {
+  color: #f8e6c8 !important;
+  fill: currentColor !important;
+}
+.round-button.danger:not(:disabled) { background: #8e1f22 !important; }
+
+/* —— 编辑器点缀:牡丹经函(左下，小、半透) + 小熊(右下) —— */
+.editor-card { position: relative; }
+.editor-card::before {
+  content: "";
+  position: absolute;
+  left: 6px;
+  bottom: 6px;
+  width: 58px;
+  height: 65px;
+  background: url("assets/peony.png") center / contain no-repeat;
+  opacity: 0.42;
+  pointer-events: none;
+  z-index: 4;
+}
+.editor-card::after {
+  content: "";
+  position: absolute;
+  right: 9px;
+  bottom: 9px;
+  width: 30px;
+  height: 36px;
+  background: url("assets/bear.png") center / contain no-repeat;
+  opacity: 0.96;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* ========================================================================== */
+/* 功课·一生账本 样式(药师蓝横幅 + 各功课分开总览 + 记录 + 合并时间线 + 喇荣红) */
+/* ========================================================================== */
+
+/* —— 功课页顶部药师蓝横幅 + 坛城徽记 —— */
+.buli-practice-banner {
+  position: relative;
+  grid-column: 1 / -1;
+  width: 100%;
+  margin: 0 0 12px;
+  padding: 12px 14px 12px 60px;
+  background: #1a5390;
+  border-bottom: 2px solid #d4a534;
+  border-radius: 14px 14px 0 0;
+  box-shadow: 0 8px 20px rgba(26, 83, 144, 0.16);
+}
+.buli-practice-banner::before {
+  content: "";
+  position: absolute;
+  left: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid #d4a534;
+  background: url("assets/mandala-emblem.jpg") center / cover no-repeat;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.28);
+}
+.buli-practice-banner-title { color: #f0d98a; font-size: 13px; font-weight: 700; letter-spacing: .02em; }
+.buli-practice-banner-title strong { color: #f6edd4; font-weight: 800; }
+.buli-practice-banner-sub { color: #cfe0f0; font-size: 11.5px; margin-top: 2px; }
+
+/* —— 一生功课总览(各功课分开列出各自累计) —— */
+.buli-practice-overview { grid-column: 1 / -1; width: 100%; }
+.buli-practice-overview-list {
+  border: 1px solid rgba(183, 121, 24, 0.3);
+  border-radius: 12px;
+  background: #fffef9;
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+.buli-practice-overview-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 12px;
+  border-bottom: 1px solid rgba(124, 82, 33, 0.12);
+}
+.buli-practice-overview-row:last-child { border-bottom: none; }
+.buli-practice-overview-name { font-size: 13.5px; color: #2c3135; font-weight: 600; }
+.buli-practice-overview-right { display: flex; align-items: baseline; gap: 6px; }
+.buli-practice-overview-right b { font-size: 16px; color: #b5402e; font-weight: 800; }
+.buli-practice-overview-right small { font-size: 11px; color: #8a7d6a; }
+.buli-practice-chip {
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 700;
+  color: #9a6a16;
+  background: rgba(216, 154, 50, 0.18);
+  border: 1px solid rgba(216, 154, 50, 0.34);
+  border-radius: 999px;
+  padding: 1px 9px;
+}
+.buli-practice-chip.is-complete { color: #f6fffb; background: #3f9168; border-color: #3f9168; }
+
+/* —— 卡片:一生累计大数 + 记录 —— */
+.practice-counter-total { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.08; }
+.practice-counter-total b { font-size: 22px; color: #b5402e; font-weight: 800; }
+.practice-counter-total small { font-size: 10.5px; color: #8a7d6a; font-weight: 600; margin-top: 1px; }
+
+.buli-practice-records { margin-top: 9px; padding-top: 8px; border-top: 1px dashed rgba(124, 82, 33, 0.2); }
+.buli-practice-records-recent { font-size: 12px; color: #6f6255; }
+.buli-practice-records-empty { font-size: 12px; color: #9a8e78; }
+.buli-practice-records-all { margin-top: 5px; }
+.buli-practice-records-all summary { font-size: 12px; color: #1a5390; font-weight: 600; cursor: pointer; }
+.buli-practice-records-all ul,
+.buli-practice-timeline-list { list-style: none; margin: 6px 0 0; padding: 0; }
+.buli-practice-records-all li { font-size: 12px; color: #5a5045; padding: 3px 0; border-bottom: 1px solid rgba(124, 82, 33, 0.08); }
+
+/* —— 合并时间线 —— */
+.buli-practice-timeline {
+  grid-column: 1 / -1;
+  width: 100%;
+  margin-top: 14px;
+  border: 1px solid rgba(26, 83, 144, 0.22);
+  border-radius: 12px;
+  background: rgba(26, 83, 144, 0.05);
+  padding: 10px 12px;
+}
+.buli-practice-timeline > summary { font-size: 13px; color: #1a5390; font-weight: 700; cursor: pointer; }
+.buli-practice-timeline-list li {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 12px;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(124, 82, 33, 0.1);
+}
+.buli-tl-date { color: #8a7d6a; white-space: nowrap; }
+.buli-tl-name { color: #2c3135; font-weight: 600; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.buli-tl-amt { color: #b5402e; font-weight: 700; white-space: nowrap; }
+
+/* —— 账本工具行(加行预设 / 导出 / 导入) —— */
+.buli-practice-ledger-controls { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.buli-ledger-button {
+  font-size: 12.5px;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 7px 14px;
+  background: #b5272b;
+  color: #f8e6c8;
+  border: 1px solid #8e1f22;
+  box-shadow: 0 4px 12px rgba(150, 30, 35, 0.24);
+}
+.buli-ledger-button.ghost { background: rgba(181, 39, 43, 0.08); color: #b5272b; border: 1px solid rgba(181, 39, 43, 0.4); box-shadow: none; }
+
+/* —— 功课页按钮统一喇荣怀业红 —— */
+.practice-counter-card .module-action-button.buli-quick-add,
+#practiceCounterForm button[type="submit"],
+#practiceCounterForm .module-action-button {
+  background: #b5272b !important;
+  background-image: none !important;
+  color: #f8e6c8 !important;
+  border: 1px solid #8e1f22 !important;
+}
+.practice-counter-card .module-action-button:not(.buli-quick-add):not(.danger) {
+  background: rgba(181, 39, 43, 0.08) !important;
+  color: #b5272b !important;
+  border: 1px solid rgba(181, 39, 43, 0.34) !important;
+}
+.practice-target-editor .module-action-button {
+  background: #b5272b !important;
+  color: #f8e6c8 !important;
+  border: 1px solid #8e1f22 !important;
+}
+.practice-unit-select {
+  border: 1px solid rgba(183, 121, 24, 0.4);
+  border-radius: 8px;
+  padding: 5px 9px;
+  font-size: 13px;
+  background: #fffdf7;
+  color: #2c3135;
+}
+
+/* ========================================================================== */
+/* 设计整理:索引去重清爽 + 课堂理顺层次 + 供灯灯火更生动 + 遍地开花按钮红    */
+/* 仅 CSS，可逆；功能元素一律保留                                              */
+/* ========================================================================== */
+
+/* —— 索引:统一面板已接管,隐藏与之重复的原 hero / 筛选条 / 平铺列表(保留搜索) —— */
+.notebook-index-page:has(#buliUnifiedIndex) .index-hero,
+.notebook-index-page:has(#buliUnifiedIndex) .type-filter,
+.notebook-index-page:has(#buliUnifiedIndex) .note-list {
+  display: none !important;
+}
+.notebook-index-page:has(#buliUnifiedIndex) .index-command-panel {
+  margin-bottom: 12px;
+}
+.buli-unified-index { display: grid; gap: 12px; }
+.buli-index-groups { display: grid; gap: 12px; }
+.buli-index-group { display: grid; gap: 6px; }
+
+/* —— 课堂:理顺层次(不隐藏功能元素),分区清爽、选中态明确 —— */
+.buli-classroom-shell { display: grid; gap: 12px; }
+.buli-classroom-tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.buli-classroom-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+/* 当前所处页签 → 喇荣怀业红,清楚知道在哪一页 */
+.buli-classroom-tabs button.active {
+  background: #b5272b !important;
+  background-image: none !important;
+  color: #f8e6c8 !important;
+  border-color: #8e1f22 !important;
+  box-shadow: 0 4px 12px rgba(150, 30, 35, 0.24) !important;
+}
+/* 真实笔记卡片留白一致、彼此分隔更清楚 */
+.ppt-organizer-page.buli-classroom-enhanced .ppt-note-list { display: grid; gap: 10px; margin-top: 4px; }
+.ppt-organizer-page.buli-classroom-enhanced .ppt-note-card { border-radius: 14px; }
+
+/* —— 供灯:点灯后火焰轻颤 + 光晕呼吸(只动亮度/透明度,不改位置,稳妥) —— */
+@keyframes buli-flame-flicker {
+  0%, 100% { opacity: 1; filter: brightness(1); }
+  28% { opacity: 0.9; filter: brightness(1.14); }
+  52% { opacity: 0.98; filter: brightness(0.95); }
+  76% { opacity: 0.93; filter: brightness(1.08); }
+}
+@keyframes buli-glow-breathe {
+  0%, 100% { opacity: 1; filter: brightness(1); }
+  50% { opacity: 0.8; filter: brightness(1.18); }
+}
+.offering-lamp-scene.is-lit .lamp-flame,
+.offering-lamp-scene.is-lit .offering-flame {
+  animation: buli-flame-flicker 1.8s ease-in-out infinite;
+  will-change: opacity, filter;
+}
+.offering-lamp-scene.is-lit .lamp-aura,
+.offering-lamp-scene.is-lit .lamp-glow {
+  animation: buli-glow-breathe 3s ease-in-out infinite;
+  will-change: opacity, filter;
+}
+@media (prefers-reduced-motion: reduce) {
+  .offering-lamp-scene.is-lit .lamp-flame,
+  .offering-lamp-scene.is-lit .offering-flame,
+  .offering-lamp-scene.is-lit .lamp-aura,
+  .offering-lamp-scene.is-lit .lamp-glow { animation: none; }
+}
+
+/* —— 不离:遍地开花按钮 → 喇荣怀业红 —— */
+#bloomGardenButton {
+  background: #b5272b !important;
+  background-image: none !important;
+  color: #f8e6c8 !important;
+  border: 1px solid #8e1f22 !important;
+  box-shadow: 0 4px 12px rgba(150, 30, 35, 0.26) !important;
+}
+
+/* ========================================================================== */
+/* 设计重塑 v2:目录 & 课堂 —— 扁平降噪、统一气质、清爽有条理(仅 CSS、可逆)  */
+/* ========================================================================== */
+
+/* 1) 外层"盒中盒"扁平化:面板/索引/当前区去框去底,让内容透气 */
+.buli-unified-index,
+.buli-classroom-index,
+.buli-classroom-current {
+  border: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+  margin: 12px 0 14px !important;
+}
+
+/* 2) 分组扁平:只留清晰的分组标题线 + 卡片,不再每组一个框 */
+.buli-index-group,
+.buli-classroom-group {
+  border: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+}
+.buli-index-group h3,
+.buli-classroom-group h3 {
+  margin: 4px 2px 8px !important;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(183, 121, 24, 0.28);
+  color: #1a5390 !important;
+  font-size: 0.92rem !important;
+  font-weight: 800;
+}
+.buli-index-group h3 small,
+.buli-classroom-group h3 small { color: #9a8e78 !important; font-weight: 600; }
+
+/* 3) 卡片更克制:浅描边、统一圆角、清爽留白、轻悬浮 */
+.buli-index-card,
+.buli-classroom-card {
+  grid-template-columns: 28px 1fr auto !important;
+  gap: 11px !important;
+  padding: 11px 12px !important;
+  border-radius: 13px !important;
+  border: 1px solid rgba(124, 82, 33, 0.16) !important;
+  background: #fffdf8 !important;
+  box-shadow: 0 1px 2px rgba(80, 60, 30, 0.04) !important;
+  margin-top: 8px !important;
+}
+.buli-index-card:hover,
+.buli-classroom-card:hover {
+  transform: translateY(-1px);
+  border-color: rgba(181, 39, 43, 0.4) !important;
+  box-shadow: 0 6px 16px rgba(80, 40, 20, 0.1) !important;
+}
+.buli-index-card > span,
+.buli-classroom-card > span { color: #b5402e !important; font-size: 0.9rem !important; }
+.buli-index-card b,
+.buli-classroom-card b { color: #b5272b !important; font-size: 1.1rem !important; }
+
+/* 4) 分类/页签:干净的分段式胶囊条,选中 = 喇荣怀业红(目录与课堂统一) */
+.buli-classroom-tabs,
+.buli-index-modes {
+  gap: 6px !important;
+  padding: 4px !important;
+  background: rgba(26, 83, 144, 0.05) !important;
+  border-radius: 999px;
+}
+.buli-classroom-tabs button,
+.buli-index-modes button {
+  padding: 7px 15px !important;
+  border-radius: 999px !important;
+  border: 1px solid transparent !important;
+  background: transparent !important;
+  color: #5a5045 !important;
+  font-weight: 700;
+  box-shadow: none !important;
+}
+.buli-classroom-tabs button.active,
+.buli-index-modes button.active {
+  background: #b5272b !important;
+  background-image: none !important;
+  color: #f8e6c8 !important;
+  border-color: #8e1f22 !important;
+  box-shadow: 0 3px 10px rgba(150, 30, 35, 0.22) !important;
+}
+
+/* 5) 统计条:臃肿薄荷块 → 纤巧、贴主题(暖底 + 红数字);课堂四格保持喇荣红不动 */
+.buli-index-stats,
+.buli-classroom-summary,
+.ppt-organizer-summary { gap: 7px !important; margin: 10px 0 12px !important; }
+.buli-index-stats span,
+.buli-classroom-summary span {
+  min-height: 46px !important;
+  border-radius: 12px !important;
+  background: rgba(216, 154, 50, 0.1) !important;
+  border: 1px solid rgba(216, 154, 50, 0.26) !important;
+  color: #6f6255 !important;
+  font-size: 0.76rem !important;
+  gap: 2px !important;
+}
+.buli-index-stats strong,
+.buli-classroom-summary strong { color: #b5402e !important; font-size: 1.1rem !important; }
+
+/* 课堂筛选条更轻 */
+.ppt-note-commandbar { gap: 7px !important; }
+
+/* ========================================================================== */
+/* 供灯:点灯后整景暖光轻漾(只动场景自身阴影,不碰灯具各层,稳妥)            */
+/* ========================================================================== */
+@keyframes buli-scene-glow {
+  0%, 100% {
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 214, 120, 0.1),
+      inset 0 60px 120px rgba(255, 150, 40, 0.1),
+      0 18px 36px rgba(64, 47, 23, 0.18);
+  }
+  50% {
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 214, 120, 0.16),
+      inset 0 64px 150px rgba(255, 150, 40, 0.2),
+      0 18px 36px rgba(64, 47, 23, 0.18);
+  }
+}
+.offering-lamp-scene.is-lit { animation: buli-scene-glow 3.4s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .offering-lamp-scene.is-lit { animation: none; }
+}
+
+/* ========================================================================== */
+/* 不离:照片座描金圆光 + 花园更精致的描金内框(锦上添花,不动既有场景)      */
+/* ========================================================================== */
+.garden-photo-seat {
+  box-shadow:
+    0 0 0 2px rgba(216, 165, 52, 0.55),
+    0 8px 20px rgba(20, 40, 60, 0.22) !important;
+}
+.bloom-garden {
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.24),
+    inset 0 0 0 4px rgba(216, 165, 52, 0.34),
+    0 16px 32px rgba(64, 47, 23, 0.16) !important;
+}
+
+/* ========================================================================== */
+/* 全局风格统一:四页眉同款 + 文档类卡片同一清爽语言(仅 CSS、可逆)         */
+/* 供灯/不离为沉浸式场景,保留各自气质,仅共享配色                            */
+/* ========================================================================== */
+
+/* —— 四处页眉统一:药师蓝贴顶横幅 + 坛城金徽 + 金色底边 —— */
+.editor-paper-head,
+.buli-classroom-top,
+.buli-index-heading,
+.buli-practice-banner {
+  position: relative !important;
+  background: #1a5390 !important;
+  background-image: none !important;
+  border: none !important;
+  border-bottom: 2px solid #d4a534 !important;
+  border-radius: 14px 14px 0 0 !important;
+  box-shadow: 0 6px 16px rgba(26, 83, 144, 0.16) !important;
+  padding: 12px 14px 12px 58px !important;
+  margin-bottom: 12px !important;
+}
+.editor-paper-head::before,
+.buli-classroom-top::before,
+.buli-index-heading::before,
+.buli-practice-banner::before {
+  content: "" !important;
+  position: absolute !important;
+  left: 12px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 50% !important;
+  border: 2px solid #d4a534 !important;
+  background: url("assets/mandala-emblem.jpg") center / cover no-repeat !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.28) !important;
+}
+
+/* —— 文档类卡片统一:清爽语言(浅棕细描边 / 14px / 干净底 / 轻阴影) —— */
+.practice-counter-card,
+.ppt-note-card {
+  border-color: rgba(124, 82, 33, 0.18) !important;
+  border-radius: 14px !important;
+  background: #fffdf8 !important;
+  box-shadow: 0 2px 8px rgba(80, 60, 30, 0.06) !important;
+}
+/* 课堂笔记状态色保留(只调整为更清爽的描边) */
+.ppt-note-card.status-done { border-color: rgba(42, 132, 92, 0.34) !important; background: #fdfff9 !important; }
+.ppt-note-card.status-review { border-color: rgba(181, 39, 43, 0.3) !important; background: #fffdf8 !important; }
+
+/* —— 功课总览/时间线对齐同一组令牌 —— */
+.buli-practice-overview-list {
+  border-color: rgba(124, 82, 33, 0.18) !important;
+  border-radius: 14px !important;
+  background: #fffdf8 !important;
+}
+.buli-practice-timeline { border-radius: 14px !important; }
