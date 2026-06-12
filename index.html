@@ -345,7 +345,7 @@
         <section class="notebook-index-page">
           <section class="index-hero" aria-label="笔记索引封面">
             <div>
-              <span class="eyebrow">དཀར་ཆག ། 笔记索引</span>
+              <span class="eyebrow">དཀར་ཆག། 笔记索引</span>
               <h2 id="listTitle">ཚང་མ། 全部笔记</h2>
               <p>按时间、人物、地点与标签把每一页收拢起来。</p>
             </div>
@@ -486,15 +486,20 @@
                 <span>ཟླ་ཚེས། 日期</span>
                 <input id="noteDate" type="date" />
               </label>
-              <label>
-                <span>སྐྱེས་བུ། 人物</span>
-                <input id="notePerson" type="text" placeholder="" autocomplete="off" />
-              </label>
-              <label>
-                <span>གནས། 地点 / 来源</span>
-                <input id="noteSource" type="text" placeholder="色达、五台山、书名或讲记" autocomplete="off" />
-              </label>
             </div>
+            <details class="meta-more">
+              <summary>更多 · 人物 / 地点 · 来源</summary>
+              <div class="meta-grid meta-grid-more">
+                <label>
+                  <span>སྐྱེས་བུ། 人物</span>
+                  <input id="notePerson" type="text" placeholder="" autocomplete="off" />
+                </label>
+                <label>
+                  <span>གནས། 地点 / 来源</span>
+                  <input id="noteSource" type="text" placeholder="色达、五台山、书名或讲记" autocomplete="off" />
+                </label>
+              </div>
+            </details>
             <label class="tags-field">
               <span>མཚོན་རྟགས། 标签</span>
               <input id="noteTags" type="text" placeholder="信心, 弘法, 色达, 读书摘录" autocomplete="off" />

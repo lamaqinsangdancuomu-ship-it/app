@@ -1724,7 +1724,7 @@ svg {
   border-color: rgba(111, 150, 90, 0.36);
   background:
     linear-gradient(180deg, rgba(255, 252, 236, 0.1), rgba(31, 79, 29, 0.16)),
-    url("assets/buli-real-garden.png") center / cover no-repeat;
+    url("assets/buli-real-garden.jpg") center / cover no-repeat;
   box-shadow:
     inset 0 0 0 1px rgba(255, 255, 255, 0.28),
     inset 0 -90px 120px rgba(18, 66, 22, 0.12),
@@ -3469,7 +3469,7 @@ svg {
   background:
     radial-gradient(ellipse at 50% 26%, rgba(255, 220, 103, 0.34), transparent 32%),
     linear-gradient(180deg, transparent 0%, rgba(24, 7, 4, 0.1) 28%, rgba(18, 4, 3, 0.68) 100%),
-    url("assets/offering-real-lamps.png") center bottom / cover no-repeat;
+    url("assets/offering-real-lamps.jpg") center bottom / cover no-repeat;
   -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 22%, #000 100%);
   mask-image: linear-gradient(180deg, transparent 0, #000 22%, #000 100%);
   opacity: 0.96;
@@ -3518,7 +3518,7 @@ svg {
   background:
     radial-gradient(ellipse at 50% 24%, rgba(255, 232, 127, 0.48), transparent 34%),
     linear-gradient(180deg, transparent 0%, rgba(255, 185, 54, 0.08) 28%, rgba(18, 4, 3, 0.56) 100%),
-    url("assets/offering-real-lamps.png") center bottom / cover no-repeat;
+    url("assets/offering-real-lamps.jpg") center bottom / cover no-repeat;
 }
 
 .offering-lamp.just-lit {
@@ -3584,7 +3584,7 @@ svg {
   min-height: clamp(340px, 45svh, 430px);
   background:
     linear-gradient(180deg, rgba(255, 252, 236, 0.1), rgba(31, 79, 29, 0.1)),
-    url("assets/buli-meadow-before.png") center / cover no-repeat;
+    url("assets/buli-meadow-before.jpg") center / cover no-repeat;
 }
 
 .bloom-garden::after {
@@ -3597,7 +3597,7 @@ svg {
   z-index: 2;
   background:
     linear-gradient(180deg, rgba(255, 250, 220, 0.08), rgba(24, 96, 34, 0.05)),
-    url("assets/buli-real-garden.png") center / cover no-repeat;
+    url("assets/buli-real-garden.jpg") center / cover no-repeat;
   mix-blend-mode: normal;
   opacity: 0;
   transform: translateY(18px) scale(1.04);
@@ -3800,7 +3800,7 @@ svg {
   background:
     radial-gradient(ellipse at 50% 14%, rgba(255, 232, 127, 0.44), transparent 34%),
     linear-gradient(180deg, transparent 0%, rgba(255, 185, 54, 0.08) 28%, rgba(18, 4, 3, 0.54) 100%),
-    url("assets/offering-real-lamps.png") center bottom / 118% auto no-repeat;
+    url("assets/offering-real-lamps.jpg") center bottom / 118% auto no-repeat;
   opacity: 0;
   transform: translateY(22px) scale(0.98);
   transition: none;
@@ -4145,7 +4145,7 @@ svg {
   border-radius: 0 0 8px 8px;
   background:
     linear-gradient(180deg, rgba(43, 9, 5, 0.04) 0%, rgba(31, 7, 4, 0.18) 34%, rgba(12, 3, 2, 0.2) 100%),
-    url("assets/offering-lamps-symmetric-real.png") center bottom / cover no-repeat;
+    url("assets/offering-lamps-symmetric-real.jpg") center bottom / cover no-repeat;
   box-shadow: inset 0 -70px 95px rgba(12, 3, 2, 0.46);
   pointer-events: none;
   -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 13%, #000 100%);
@@ -4447,7 +4447,7 @@ svg {
   overflow: visible;
   background:
     linear-gradient(180deg, rgba(255, 252, 236, 0.08), rgba(31, 79, 29, 0.1)),
-    url("assets/buli-meadow-before.png") center / cover no-repeat;
+    url("assets/buli-meadow-before.jpg") center / cover no-repeat;
 }
 
 .notebook-overview-page .notebook-page-footer {
@@ -4493,7 +4493,7 @@ svg {
   left: -10%;
   z-index: 2;
   height: 58%;
-  background-image: url("assets/buli-real-garden.png");
+  background-image: url("assets/buli-real-garden.jpg");
   background-position: center bottom;
   background-size: 124% auto;
   opacity: 0.88;
@@ -4534,7 +4534,7 @@ svg {
 .garden-photo-seat::after {
   background:
     linear-gradient(180deg, transparent 0, rgba(21, 96, 34, 0.12) 24%, rgba(15, 79, 31, 0.58) 100%),
-    url("assets/buli-real-garden.png") center bottom / cover no-repeat;
+    url("assets/buli-real-garden.jpg") center bottom / cover no-repeat;
   -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 24%, #000 100%);
   mask-image: linear-gradient(180deg, transparent 0, #000 24%, #000 100%);
 }
@@ -4629,7 +4629,7 @@ svg {
   background:
     radial-gradient(ellipse at 53% 13%, rgba(255, 255, 255, 0.58), rgba(255, 247, 213, 0.2) 18%, transparent 34%),
     linear-gradient(180deg, #8dddf4 0%, #c8f2ff 27%, #d9f4d3 42%, rgba(119, 188, 74, 0.7) 57%, rgba(37, 109, 42, 0.9) 100%),
-    url("assets/buli-meadow-before.png") center bottom / auto 100% no-repeat;
+    url("assets/buli-meadow-before.jpg") center bottom / auto 100% no-repeat;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.35),
     inset 0 -120px 150px rgba(19, 86, 33, 0.16),
@@ -4692,7 +4692,7 @@ svg {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 245, 221, 0.02) 28%, rgba(26, 94, 36, 0.08) 100%),
     radial-gradient(ellipse at 50% 43%, rgba(255, 207, 221, 0.16), transparent 31%),
-    url("assets/buli-real-garden.png") center bottom / auto 116% no-repeat;
+    url("assets/buli-real-garden.jpg") center bottom / auto 116% no-repeat;
   mix-blend-mode: normal;
   opacity: 0;
   transform: translateY(24px) scale(1.02);
@@ -4733,7 +4733,7 @@ svg {
   z-index: 2;
   display: block;
   height: 34%;
-  background: url("assets/buli-real-garden.png") center bottom / 96% auto no-repeat;
+  background: url("assets/buli-real-garden.jpg") center bottom / 96% auto no-repeat;
   opacity: 0.7;
   filter: saturate(1.05) brightness(1.02);
   -webkit-mask-image: linear-gradient(180deg, transparent 0, rgba(0, 0, 0, 0.52) 22%, #000 72%, transparent 100%);
@@ -4803,7 +4803,7 @@ svg {
   display: none;
   inset: -28% -24px 36%;
   z-index: 1;
-  background-image: url("assets/buli-real-garden.png");
+  background-image: url("assets/buli-real-garden.jpg");
   background-position: center bottom;
   background-size: auto 106%;
   opacity: 0.34;
@@ -4819,7 +4819,7 @@ svg {
   left: -32px;
   z-index: 2;
   height: 66%;
-  background-image: url("assets/buli-real-garden.png");
+  background-image: url("assets/buli-real-garden.jpg");
   background-position: center bottom;
   background-size: auto 105%;
   opacity: 0.42;
@@ -4835,7 +4835,7 @@ svg {
   left: -28px;
   z-index: 3;
   height: 32%;
-  background-image: url("assets/buli-real-garden.png");
+  background-image: url("assets/buli-real-garden.jpg");
   background-position: center bottom;
   background-size: 112% auto;
   opacity: 0.76;
@@ -5335,7 +5335,7 @@ svg {
   border-radius: 8px;
   background:
     linear-gradient(180deg, rgba(43, 9, 5, 0.02) 0%, rgba(31, 7, 4, 0.12) 38%, rgba(12, 3, 2, 0.16) 100%),
-    url("assets/offering-lamps-symmetric-real.png") center bottom / contain no-repeat;
+    url("assets/offering-lamps-symmetric-real.jpg") center bottom / contain no-repeat;
   box-shadow: inset 0 -38px 68px rgba(12, 3, 2, 0.34);
   -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 8%, #000 100%);
   mask-image: linear-gradient(180deg, transparent 0, #000 8%, #000 100%);
@@ -7865,7 +7865,7 @@ textarea:focus,
   z-index: 7;
   background:
     linear-gradient(180deg, rgba(42, 9, 5, 0) 0%, rgba(31, 7, 4, 0.08) 34%, rgba(13, 3, 2, 0.32) 100%),
-    url("assets/offering-lamps-symmetric-real.png") center bottom / cover no-repeat;
+    url("assets/offering-lamps-symmetric-real.jpg") center bottom / cover no-repeat;
   box-shadow: none;
   opacity: 1;
   filter: none;
@@ -7891,7 +7891,7 @@ textarea:focus,
   position: absolute;
   inset: 0;
   z-index: 3;
-  background: url("assets/offering-lamps-symmetric-lit.png") center bottom / cover no-repeat;
+  background: url("assets/offering-lamps-symmetric-lit.jpg") center bottom / cover no-repeat;
   mix-blend-mode: normal;
   opacity: 0;
   pointer-events: none;
@@ -8019,7 +8019,7 @@ textarea:focus,
 .offering-lamp-scene.is-lit .offering-lamp-stage {
   background:
     linear-gradient(180deg, rgba(42, 9, 5, 0) 0%, rgba(31, 7, 4, 0.08) 34%, rgba(13, 3, 2, 0.32) 100%),
-    url("assets/offering-lamps-symmetric-lit.png") center bottom / cover no-repeat;
+    url("assets/offering-lamps-symmetric-lit.jpg") center bottom / cover no-repeat;
 }
 
 .offering-lamp-stage::after,
@@ -8299,7 +8299,7 @@ textarea:focus,
   background:
     radial-gradient(ellipse at 52% 12%, rgba(255, 255, 255, 0.42), rgba(255, 246, 213, 0.18) 18%, transparent 34%),
     linear-gradient(180deg, rgba(203, 241, 251, 0.18) 0%, rgba(228, 249, 214, 0.08) 38%, rgba(37, 109, 42, 0.18) 100%),
-    url("assets/buli-real-garden.png") center bottom / 230% auto no-repeat;
+    url("assets/buli-real-garden.jpg") center bottom / 230% auto no-repeat;
 }
 
 .notebook-overview-page .bloom-field {
@@ -8602,7 +8602,7 @@ textarea:focus,
   background:
     radial-gradient(ellipse at 52% 10%, rgba(255, 255, 255, 0.42), rgba(255, 246, 213, 0.14) 19%, transparent 35%),
     linear-gradient(180deg, rgba(203, 241, 251, 0.12) 0%, rgba(234, 250, 218, 0.07) 36%, rgba(35, 105, 42, 0.16) 100%),
-    url("assets/buli-real-garden.png") center calc(100% - 8px) / 250% auto no-repeat !important;
+    url("assets/buli-real-garden.jpg") center calc(100% - 8px) / 250% auto no-repeat !important;
 }
 
 .notebook-overview-page .bloom-field {
@@ -8637,7 +8637,7 @@ textarea:focus,
   height: 39% !important;
   background:
     linear-gradient(180deg, transparent 0%, rgba(245, 247, 214, 0.2) 18%, rgba(31, 105, 38, 0.04) 100%),
-    url("assets/buli-real-garden.png") center bottom / 134% auto no-repeat !important;
+    url("assets/buli-real-garden.jpg") center bottom / 134% auto no-repeat !important;
   opacity: 0.48 !important;
   filter: saturate(1.05) brightness(1.02) !important;
   clip-path: polygon(0 16%, 7% 8%, 15% 17%, 24% 9%, 34% 20%, 45% 10%, 56% 19%, 66% 8%, 77% 17%, 88% 10%, 100% 18%, 100% 100%, 0 100%) !important;
@@ -8794,7 +8794,7 @@ textarea:focus,
   overflow: hidden !important;
   background:
     linear-gradient(180deg, rgba(255, 253, 247, 0.84) 0 19%, rgba(255, 253, 247, 0.12) 34%, transparent 52%),
-    url("assets/buli-real-garden.png") center bottom / 330% auto no-repeat,
+    url("assets/buli-real-garden.jpg") center bottom / 330% auto no-repeat,
     #eaf5dc !important;
 }
 
@@ -8927,7 +8927,7 @@ textarea:focus,
 .notebook-overview-page.notebook-page {
   background:
     linear-gradient(180deg, rgba(255, 253, 247, 0.84) 0 18%, rgba(255, 253, 247, 0.18) 32%, transparent 52%),
-    url("assets/buli-meadow-before.png") center bottom / 320% auto no-repeat,
+    url("assets/buli-meadow-before.jpg") center bottom / 320% auto no-repeat,
     #dfeec5 !important;
 }
 
@@ -8935,7 +8935,7 @@ textarea:focus,
   background:
     radial-gradient(ellipse at 51% 12%, rgba(255, 255, 255, 0.42), rgba(255, 246, 213, 0.1) 18%, transparent 34%),
     linear-gradient(180deg, rgba(209, 242, 246, 0.08) 0%, rgba(225, 245, 206, 0.06) 38%, rgba(40, 112, 45, 0.1) 100%),
-    url("assets/buli-meadow-before.png") center center / cover no-repeat !important;
+    url("assets/buli-meadow-before.jpg") center center / cover no-repeat !important;
 }
 
 .notebook-overview-page .bloom-garden::after {
@@ -8973,7 +8973,7 @@ textarea:focus,
   background:
     radial-gradient(ellipse at 51% 12%, rgba(255, 255, 255, 0.34), rgba(255, 246, 213, 0.1) 18%, transparent 34%),
     linear-gradient(180deg, rgba(209, 242, 246, 0.06) 0%, rgba(225, 245, 206, 0.04) 38%, rgba(40, 112, 45, 0.06) 100%),
-    url("assets/buli-meadow-before.png") center center / cover no-repeat !important;
+    url("assets/buli-meadow-before.jpg") center center / cover no-repeat !important;
 }
 
 .notebook-overview-page .bloom-garden.is-blooming::after {
@@ -9336,7 +9336,7 @@ textarea:focus,
     radial-gradient(circle at 41% 40%, rgba(255, 255, 255, 0.48) 0 6%, transparent 15%),
     radial-gradient(circle at 62% 46%, rgba(225, 213, 255, 0.42) 0 7%, transparent 17%),
     radial-gradient(circle at 82% 34%, rgba(255, 214, 229, 0.52) 0 8%, transparent 18%),
-    url("assets/buli-real-garden.png") center bottom / 126% auto no-repeat !important;
+    url("assets/buli-real-garden.jpg") center bottom / 126% auto no-repeat !important;
   opacity: var(--lower-opacity) !important;
   transform: translateX(var(--lower-x)) translateY(var(--lower-y)) scale(var(--lower-scale)) !important;
   transform-origin: center bottom !important;
@@ -9435,7 +9435,7 @@ textarea:focus,
   transform-origin: 50% 76%;
   background-image:
     linear-gradient(180deg, rgba(42, 9, 5, 0) 0%, rgba(31, 7, 4, 0.08) 34%, rgba(13, 3, 2, 0.32) 100%),
-    url("assets/offering-lamps-final-real-v1.png") !important;
+    url("assets/offering-lamps-final-real-v1.jpg") !important;
   background-position: 0 0, center bottom !important;
   background-repeat: no-repeat, no-repeat !important;
   background-size: auto, 100% auto !important;
@@ -9444,7 +9444,7 @@ textarea:focus,
 .offering-lamp-scene.is-lit .offering-lamp-stage {
   background-image:
     linear-gradient(180deg, rgba(42, 9, 5, 0) 0%, rgba(31, 7, 4, 0.08) 34%, rgba(13, 3, 2, 0.32) 100%),
-    url("assets/offering-lamps-final-lit-v2.png") !important;
+    url("assets/offering-lamps-final-lit-v2.jpg") !important;
   background-position: 0 0, center bottom !important;
   background-repeat: no-repeat, no-repeat !important;
   background-size: auto, 100% auto !important;
@@ -12020,6 +12020,7 @@ textarea:focus,
   height: 100vh !important;
   height: 100svh !important;
   overflow: hidden !important;
+  background: #07241a !important;   /* 与封面外缘深绿相近的衬底,完整显示时上下留边自然 */
 }
 .journey-cover::after { display: none !important; }
 .journey-cover.notebook-page .cover-image {
@@ -12036,7 +12037,7 @@ textarea:focus,
   border-radius: 0 !important;
   box-shadow: none !important;
   transform: none !important;
-  object-fit: cover !important;
+  object-fit: contain !important;   /* 完整显示整张封面,不裁切 */
   object-position: center !important;
 }
 
@@ -12047,6 +12048,7 @@ textarea:focus,
   height: 100vh !important;
   height: 100svh !important;
   overflow: hidden !important;
+  background: #07241a !important;   /* 同首页:深绿衬底,完整显示 */
 }
 .back-cover.notebook-page::after { display: none !important; }
 .back-cover.notebook-page > img {
@@ -12063,7 +12065,7 @@ textarea:focus,
   border-radius: 0 !important;
   box-shadow: none !important;
   transform: none !important;
-  object-fit: cover !important;
+  object-fit: contain !important;   /* 完整显示整张封面,不裁切 */
   object-position: center !important;
 }
 
@@ -12088,3 +12090,61 @@ textarea:focus,
   margin: 0;
   border-radius: 0;
 }
+
+/* 编辑器:把「人物/地点·来源」收进可折叠「更多」,默认聚焦类型+日期(参照成熟笔记) */
+.editor-form .meta-more { margin: 0; }
+.editor-form .meta-more > summary {
+  list-style: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  width: max-content;
+  padding: 2px 2px;
+  color: #8a7d6a;
+  font-size: 11.5px;
+  font-weight: 700;
+  user-select: none;
+}
+.editor-form .meta-more > summary::-webkit-details-marker { display: none; }
+.editor-form .meta-more > summary::before {
+  content: "\25B8";            /* ▸ */
+  font-size: 10px;
+  transition: transform 0.15s ease;
+}
+.editor-form .meta-more[open] > summary::before { transform: rotate(90deg); }
+.editor-form .meta-more[open] > summary { margin-bottom: 6px; }
+.editor-form .meta-grid-more { margin: 0; }
+
+/* 课堂笔记 · 状态看板(4 列贴合屏宽,不横向滚动→不与翻页冲突) */
+.buli-board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; align-items: start; }
+.buli-board-col { min-width: 0; background: rgba(124,82,33,0.05); border: 1px solid rgba(124,82,33,0.14); border-radius: 10px; padding: 6px 5px; }
+.buli-board-col > h4 { display: flex; align-items: center; justify-content: space-between; gap: 3px; margin: 0 0 6px; padding: 3px 5px; border-radius: 7px; font-size: 11.5px; font-weight: 800; color: #fff; background: #8a7d6a; line-height: 1.2; }
+.buli-board-col > h4 > span { flex: 0 0 auto; min-width: 16px; text-align: center; padding: 0 4px; border-radius: 999px; background: rgba(255,255,255,0.28); font-size: 10px; }
+.buli-board-col[data-status="capture"] > h4 { background: #7c8a99; }
+.buli-board-col[data-status="organizing"] > h4 { background: #1a5390; }
+.buli-board-col[data-status="review"] > h4 { background: #c08a1e; }
+.buli-board-col[data-status="done"] > h4 { background: #3f9168; }
+.buli-board-cards { display: flex; flex-direction: column; gap: 5px; }
+.buli-board-card { position: relative; display: block; width: 100%; padding: 6px 6px 24px; border: 1px solid rgba(124,82,33,0.16); border-radius: 8px; background: #fffef9; cursor: pointer; box-shadow: 0 1px 2px rgba(64,47,23,0.06); }
+.buli-board-card > strong { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; font-size: 12px; font-weight: 700; color: #2c3135; line-height: 1.3; }
+.buli-board-card > small { display: block; margin-top: 2px; font-size: 10px; color: #8a7d6a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.buli-board-card > time { display: block; margin-top: 2px; font-size: 9.5px; color: #c0392b; }
+.buli-board-advance { position: absolute; right: 4px; bottom: 4px; width: 21px; height: 18px; display: grid; place-items: center; padding: 0; border: 1px solid rgba(26,83,144,0.3); border-radius: 6px; background: rgba(26,83,144,0.1); color: #1a5390; font-size: 12px; font-weight: 800; cursor: pointer; line-height: 1; }
+.buli-board-empty { margin: 4px 0; text-align: center; color: #b9ac98; font-size: 11px; }
+
+/* ============================================================
+   手机卡顿优化 2026-06-12
+   关掉毛玻璃 backdrop-filter —— 它在移动端滚动/翻页时会持续重绘,
+   是卡顿主因。相关半透明栏改为更不透明,去掉模糊后文字依然清晰;
+   观感几乎不变,但滑动/翻页明显更顺。
+   ============================================================ */
+*, *::before, *::after {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+/* 底部翻页胶囊:原靠毛玻璃保证清晰,去模糊后提高不透明度(不加 !important,
+   以免盖掉封面页那种深色专用页脚) */
+.notebook-page-footer { background: rgba(255, 253, 247, 0.93); }
+/* 编辑器顶部工具条同理 */
+.editor-card .editor-toolbar { background: rgba(255, 253, 247, 0.97); }

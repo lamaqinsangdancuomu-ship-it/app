@@ -633,19 +633,32 @@ const BuliImageLayer = (function () {
   var nativeGet = null;
   var nativeSet = null;
 
-  function openDb() {
+  function openDbOnce() {
     return new Promise(function (resolve) {
       try {
         if (typeof indexedDB === "undefined" || !indexedDB) { resolve(false); return; }
+        var settled = false;
+        var done = function (ok) { if (settled) return; settled = true; resolve(ok); };
         var req = indexedDB.open(DB_NAME, 1);
         req.onupgradeneeded = function () {
           var d = req.result;
           if (!d.objectStoreNames.contains(STORE)) d.createObjectStore(STORE);
         };
-        req.onsuccess = function () { db = req.result; available = true; resolve(true); };
-        req.onerror = function () { resolve(false); };
-        req.onblocked = function () { resolve(false); };
+        req.onsuccess = function () { db = req.result; available = true; done(true); };
+        req.onerror = function () { done(false); };
+        req.onblocked = function () { done(false); };
+        // iOS Safari / 部分安卓 WebView 首次加载时 open 回调偶发不触发(挂起)。
+        // 超时当作本次失败,交由上层稍后重试——这是“添加佛像/壁纸保存不上”的常见根因之一。
+        setTimeout(function () { done(false); }, 1200);
       } catch (e) { resolve(false); }
+    });
+  }
+
+  function openDb(retries) {
+    retries = (retries == null) ? 3 : retries;
+    return openDbOnce().then(function (ok) {
+      if (ok || available || retries <= 0) return ok || available;
+      return new Promise(function (r) { setTimeout(r, 260); }).then(function () { return openDb(retries - 1); });
     });
   }
 
@@ -806,6 +819,17 @@ const BuliImageLayer = (function () {
 BuliImageLayer.boot().then(init).catch(function () {
   try { init(); } catch (err) { console.error(err); }
 });
+
+// 安全网:App 被切到后台/关闭前,把挂起的图片写入落盘,避免“刚添加的佛像/壁纸/配图”丢失。
+(function flushImagesOnHide() {
+  function doFlush() { try { BuliImageLayer.flush(); } catch (e) { /* ignore */ } }
+  try {
+    document.addEventListener("visibilitychange", function () {
+      if (document.visibilityState === "hidden") doFlush();
+    });
+    window.addEventListener("pagehide", doFlush);
+  } catch (e) { /* ignore */ }
+})();
 
 function init() {
   prepareStaticImages();
@@ -1820,7 +1844,7 @@ function scheduleSave() {
   state.saveTimer = setTimeout(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state.notes));
-      els.saveState.textContent = "已保存";
+      els.saveState.textContent = "已保存 · " + new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" });
     } catch (error) {
       console.warn("Failed to save notes", error);
       els.saveState.textContent = "图片过大，保存失败";
@@ -1867,6 +1891,9 @@ function renderEditor() {
   els.noteDate.value = note.date;
   els.notePerson.value = note.person;
   els.noteSource.value = note.source;
+  // 若该笔记已填人物/地点,自动展开「更多」,不让已有内容被折叠藏起
+  const metaMore = els.editorForm && els.editorForm.querySelector(".meta-more");
+  if (metaMore) metaMore.open = Boolean(note.person || note.source);
   els.noteTags.value = note.tags.join(", ");
   els.noteBody.value = note.body;
   els.pinButton.classList.toggle("active", note.pinned);
@@ -5354,6 +5381,9 @@ async function addPageWallpapers(event) {
       return;
     }
 
+    // 确保壁纸图片真正落盘后再继续(与“添加佛像”一致),防止切走/关闭后丢失。
+    try { await BuliImageLayer.flush(); } catch (e) { /* ignore */ }
+
     const firstAdded = added[0];
     if (firstAdded) {
       updatePageTheme(firstAdded.id);
@@ -5938,7 +5968,7 @@ async function addPageWallpapers(event) {
 
     panel.innerHTML = `
       <div class="buli-index-heading">
-        <div><span>དཀར་ཆག ། 修行手账索引</span><strong>${modeLabels[mode] || "全部索引"}</strong></div>
+        <div><span>དཀར་ཆག། 修行手账索引</span><strong>${modeLabels[mode] || "全部索引"}</strong></div>
         <small>日记按时间，读书按法本，教言按主题，备忘按状态，闻思按类型与复习状态。</small>
       </div>
       <nav class="buli-index-modes" aria-label="索引分类">
@@ -5992,6 +6022,7 @@ async function addPageWallpapers(event) {
       </div>
       <nav class="buli-classroom-tabs" aria-label="课堂笔记页面">
         <button type="button" class="active" data-buli-classroom-mode="index">索引</button>
+        <button type="button" data-buli-classroom-mode="board">看板</button>
         <button type="button" data-buli-classroom-mode="outline">提纲</button>
         <button type="button" data-buli-classroom-mode="cornell">闻思</button>
         <button type="button" data-buli-classroom-mode="review">温习</button>
@@ -6009,7 +6040,7 @@ async function addPageWallpapers(event) {
     commandbar.after(shell);
 
     shell.addEventListener("click", (event) => {
-      const tab = event.target.closest("[data-buli-classroom-mode]");
+      const tab = event.target.closest("button[data-buli-classroom-mode]");
       if (tab) {
         switchClassroomMode(tab.dataset.buliClassroomMode);
         return;
@@ -6034,6 +6065,12 @@ async function addPageWallpapers(event) {
       }
       if (event.target.closest("[data-buli-classroom-clear]")) {
         if (confirm("清空当前课堂笔记草稿？已保存的笔记不会删除。")) resetClassroomDraft(false);
+        return;
+      }
+      const adv = event.target.closest("[data-buli-ppt-advance]");
+      if (adv) {
+        event.stopPropagation();
+        if (typeof cyclePptNoteStatus === "function") cyclePptNoteStatus(adv.dataset.buliPptAdvance);
         return;
       }
       const open = event.target.closest("[data-buli-ppt-open]");
@@ -6110,8 +6147,9 @@ async function addPageWallpapers(event) {
     const due = allNotes.filter((note) => typeof isPptReviewDue === "function" && isPptReviewDue(note)).length;
     const done = allNotes.filter((note) => note.status === "done").length;
     const attachments = allNotes.filter((note) => note.attachment).length;
-    index.hidden = mode !== "index";
-    current.hidden = mode === "index";
+    const isBoardMode = mode === "board";
+    index.hidden = !(mode === "index" || isBoardMode);
+    current.hidden = mode === "index" || isBoardMode;
 
     if (mode === "index") {
       const groups = new Map();
@@ -6138,6 +6176,31 @@ async function addPageWallpapers(event) {
                   <b>›</b>
                 </article>`).join("")}
             </section>`).join("") : `<p class="buli-empty-note">暂无课堂笔记。可点击“提纲 / 闻思 / 温习 / 法本”新建一页。</p>`}
+        </div>
+      `;
+    } else if (isBoardMode) {
+      const cols = (typeof PPT_NOTE_STATUS_OPTIONS !== "undefined" && PPT_NOTE_STATUS_OPTIONS.length)
+        ? PPT_NOTE_STATUS_OPTIONS
+        : [{ id: "capture", label: "速记" }, { id: "organizing", label: "整理中" }, { id: "review", label: "待复习" }, { id: "done", label: "已完成" }];
+      const colIds = new Set(cols.map((c) => c.id));
+      const buckets = {};
+      cols.forEach((c) => { buckets[c.id] = []; });
+      allNotes.forEach((note) => { buckets[colIds.has(note.status) ? note.status : cols[0].id].push(note); });
+      index.innerHTML = `
+        <div class="buli-board" aria-label="课堂笔记状态看板">
+          ${cols.map((col) => `
+            <section class="buli-board-col" data-status="${col.id}">
+              <h4>${col.label}<span>${buckets[col.id].length}</span></h4>
+              <div class="buli-board-cards">
+                ${buckets[col.id].length ? buckets[col.id].map((note) => `
+                  <article class="buli-board-card" data-buli-ppt-open="${note.id}">
+                    <strong>${safeText(note.title) || "未命名"}</strong>
+                    ${note.subtitle ? `<small>${safeText(note.subtitle)}</small>` : ""}
+                    ${note.status === "review" && note.reviewDate ? `<time>复习 ${safeText(note.reviewDate)}</time>` : ""}
+                    <button type="button" class="buli-board-advance" data-buli-ppt-advance="${note.id}" title="${typeof getPptStatusOption === "function" ? safeText(getPptStatusOption(note.status).action) : "推进"}">${col.id === "done" ? "↺" : "→"}</button>
+                  </article>`).join("") : `<p class="buli-board-empty">—</p>`}
+              </div>
+            </section>`).join("")}
         </div>
       `;
     } else {
