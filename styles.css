@@ -12009,83 +12009,82 @@ textarea:focus,
 }
 .buli-practice-timeline { border-radius: 14px !important; }
 
-/* Cover upload swap: keep the three replacement images complete. */
-.journey-cover.notebook-page,
-.back-cover.notebook-page,
-.teaching-page.notebook-page {
+/* ============================================================
+   首/尾页满屏(full-bleed) + 扉页一整图替换  2026-06-12
+   纯追加覆盖,不改动以上原有规则
+   ============================================================ */
+/* —— 首页封面:绝对铺满整屏,清掉「悬浮书本」的 max-width/transform/border/阴影 —— */
+.journey-cover.notebook-page {
+  padding: 0 !important;
+  position: relative !important;
+  height: 100vh !important;
+  height: 100svh !important;
+  overflow: hidden !important;
+}
+.journey-cover::after { display: none !important; }
+.journey-cover.notebook-page .cover-image {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  transform: none !important;
+  object-fit: cover !important;
+  object-position: center !important;
+}
+
+/* —— 尾页封面:同样绝对铺满整屏 —— */
+.back-cover.notebook-page {
+  padding: 0 !important;
+  position: relative !important;
+  height: 100vh !important;
+  height: 100svh !important;
+  overflow: hidden !important;
+}
+.back-cover.notebook-page::after { display: none !important; }
+.back-cover.notebook-page > img {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  transform: none !important;
+  object-fit: cover !important;
+  object-position: center !important;
+}
+
+/* —— 扉页一:整张设计图替换原拼版(避免图内文字与页面文字重复) —— */
+.teaching-page.teaching-page-art {
+  padding: 0 !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  box-sizing: border-box !important;
-  width: 100% !important;
-  min-width: 100% !important;
-  height: 100dvh !important;
-  min-height: 100dvh !important;
-  max-height: 100dvh !important;
-  padding: max(8px, env(safe-area-inset-top)) 0 max(58px, calc(env(safe-area-inset-bottom) + 52px)) !important;
+  min-height: 100svh !important;
+  background: #6e1f12 !important;   /* 与图外缘深红边框相近,上下留白自然衔接 */
   overflow: hidden !important;
-  background: #fff !important;
 }
-
-.journey-cover.notebook-page::before,
-.journey-cover.notebook-page::after,
-.back-cover.notebook-page::before,
-.back-cover.notebook-page::after,
-.teaching-page.notebook-page::before,
-.teaching-page.notebook-page::after {
-  display: none !important;
-}
-
-.teaching-page.notebook-page > :not(.flyleaf-full-image):not(.notebook-page-footer) {
-  display: none !important;
-}
-
-.journey-cover.notebook-page .cover-image,
-.back-cover.notebook-page > img,
-.teaching-page.notebook-page > .flyleaf-full-image {
-  position: relative !important;
-  inset: auto !important;
-  z-index: 2 !important;
-  display: block !important;
-  width: auto !important;
-  height: auto !important;
-  max-width: 100% !important;
-  max-height: calc(100dvh - max(82px, calc(env(safe-area-inset-top) + env(safe-area-inset-bottom) + 66px))) !important;
-  min-width: 0 !important;
-  min-height: 0 !important;
-  border: 0 !important;
-  border-radius: 0 !important;
-  object-fit: contain !important;
-  object-position: center center !important;
-  transform: none !important;
-  box-shadow: none !important;
-}
-
-.teaching-page.notebook-page > .notebook-page-footer {
-  position: absolute !important;
-  right: 16px !important;
-  bottom: max(2px, env(safe-area-inset-bottom)) !important;
-  left: 16px !important;
-  z-index: 80 !important;
-  width: auto !important;
-  margin: 0 !important;
-}
-
-@media (max-width: 520px) {
-  .journey-cover.notebook-page,
-  .back-cover.notebook-page,
-  .teaching-page.notebook-page {
-    height: 100dvh !important;
-    min-height: 100dvh !important;
-    max-height: 100dvh !important;
-    padding-top: max(6px, env(safe-area-inset-top)) !important;
-    padding-bottom: max(52px, calc(env(safe-area-inset-bottom) + 48px)) !important;
-  }
-
-  .journey-cover.notebook-page .cover-image,
-  .back-cover.notebook-page > img,
-  .teaching-page.notebook-page > .flyleaf-full-image {
-    max-width: 100% !important;
-    max-height: calc(100dvh - max(74px, calc(env(safe-area-inset-top) + env(safe-area-inset-bottom) + 58px))) !important;
-  }
+.teaching-page.teaching-page-art::before,
+.teaching-page.teaching-page-art::after { display: none !important; }
+.flyleaf-full-art {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  max-height: 100svh;
+  height: auto;
+  margin: 0;
+  border-radius: 0;
 }
