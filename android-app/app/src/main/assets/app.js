@@ -1,3 +1,44 @@
+/* ============================================================================
+ * 不离手账 (Buli Shouzhang) · app.js — 结构导航 (2026-06-11 优化)
+ *
+ *   核心代码         约 1 – 4860 行 : 状态/存储、渲染、编辑器、功课、课堂、供灯、遍地花开
+ *   补丁层一          约 4865 – 5200 : 分类空白页模板 (IIFE + 包裹 createNote/renderEditor)
+ *   壁纸上传修复补丁    约 5202 – 5374 : 顶层重声明 createAddPageWallpaperOption/addPageWallpapers
+ *   补丁层二          约 5376 – 6170 : buliCompleteLogicFix(笔记索引/成熟模板/课堂页)
+ *   功课·一生账本      约 6172 – 6410 : 记录 / 各功课分开总览 / 合并时间线 / 加行预设 / 导入
+ *   数据管家 + 年份筛选 约 6412 – 末尾  : 年份快速筛选 + 一生数据管家(占用/持久/备份提醒)
+ *
+ *   维护提示:补丁层以「运行时包裹 + 末尾追加」方式叠加,顺序敏感;正逐层收敛进核心。
+ * ========================================================================== */
+
+/* [兼容垫片 2026-06-11] 旧安卓 WebView / 老浏览器可能没有 crypto.randomUUID,
+   而本 App 多处用到它,缺失会直接抛错。此处最前面安全补齐(已存在则原样不动)。 */
+(function ensureRandomUUID() {
+  try {
+    var g = (typeof globalThis !== "undefined") ? globalThis : (typeof window !== "undefined") ? window : this;
+    if (!g.crypto) { try { g.crypto = {}; } catch (e) {} }
+    if (g.crypto && typeof g.crypto.randomUUID !== "function") {
+      g.crypto.randomUUID = function randomUUID() {
+        var c = g.crypto, hex = [];
+        for (var i = 0; i < 256; i++) hex[i] = (i + 0x100).toString(16).slice(1);
+        if (c && typeof c.getRandomValues === "function") {
+          var b = new Uint8Array(16);
+          c.getRandomValues(b);
+          b[6] = (b[6] & 0x0f) | 0x40;
+          b[8] = (b[8] & 0x3f) | 0x80;
+          return hex[b[0]] + hex[b[1]] + hex[b[2]] + hex[b[3]] + "-" + hex[b[4]] + hex[b[5]] + "-" +
+                 hex[b[6]] + hex[b[7]] + "-" + hex[b[8]] + hex[b[9]] + "-" +
+                 hex[b[10]] + hex[b[11]] + hex[b[12]] + hex[b[13]] + hex[b[14]] + hex[b[15]];
+        }
+        return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (ch) {
+          var r = (Math.random() * 16) | 0;
+          return (ch === "x" ? r : (r & 0x3) | 0x8).toString(16);
+        });
+      };
+    }
+  } catch (e) { /* 垫片本身绝不影响主流程 */ }
+})();
+
 const STORAGE_KEY = "jigmeyPhuntsokNotebook.v5";
 const TEACHING_STORAGE_KEY = "jigmeyPhuntsokTeachings.v1";
 const MODULE_STORAGE_KEY = "jigmeyPhuntsokModules.v1";
@@ -7,6 +48,7 @@ const OFFERING_BUDDHA_WALL_STORAGE_KEY = "buliOfferingBuddhaWall.v1";
 const BLOOM_GARDEN_PHOTOS_STORAGE_KEY = "buliBloomGardenPhotos.v1";
 const PAGE_WALLPAPER_STORAGE_KEY = "buliPageWallpapers.v2";
 const PPT_DEFAULT_PROJECT_ID = "ppt-project-default";
+var stewardEstimateCache = { at: 0, text: "" };
 const TEACHING_DEFAULT_TEACHER = "晋美彭措法王";
 const PPT_NOTE_STATUS_OPTIONS = [
   { id: "capture", label: "速记", action: "标为整理中" },
@@ -31,6 +73,20 @@ const PPT_NOTE_TEMPLATES = {
   slides: {
     label: "课件",
     body: "可整理成课件：\n封面标题：\n\n三页大纲：\n1. \n2. \n3. \n\n引用原文：\n-\n\n结尾提醒：\n-"
+  }
+};
+const NOTE_BODY_TEMPLATES = {
+  daily: {
+    label: "日记提纲",
+    body: "今日所见：\n-\n\n心里想记住的一句：\n-\n\n可以落实的一件小事：\n-"
+  },
+  reading: {
+    label: "读书摘录",
+    body: "书名 / 讲记：\n页码 / 章节：\n\n摘录：\n「」\n\n我的理解：\n-\n\n待复习：\n-"
+  },
+  teaching: {
+    label: "教言整理",
+    body: "教言原文：\n「」\n\n人物 / 来源：\n\n关键词：\n-\n\n落到修行：\n-"
   }
 };
 
@@ -100,20 +156,20 @@ const defaultModules = {
   focusGallery: [
     {
       id: "focus-gallery-1",
-      image: "assets/larung-real-panorama.jpg",
+      image: "assets/flyleaf-teaching-2026.jpg",
       title: "夜色山谷",
       subtitle: "喇荣",
       feature: true
     },
     {
       id: "focus-gallery-2",
-      image: "assets/larung-real-lights.jpg",
+      image: "assets/flyleaf-teaching-2026.jpg",
       title: "灯火红屋",
       subtitle: "灯火"
     },
     {
       id: "focus-gallery-3",
-      image: "assets/larung-real-snow.jpg",
+      image: "assets/flyleaf-teaching-2026.jpg",
       title: "雪落山坡",
       subtitle: "雪景"
     }
@@ -121,20 +177,20 @@ const defaultModules = {
   portraits: [
     {
       id: "portrait-1",
-      image: "assets/fawang-portrait-seat.jpg",
+      image: "assets/flyleaf-teaching-2026.jpg",
       title: "ཡིད་བཞིན་ནོར་བུ། 法王如意宝",
       subtitle: "如意宝",
       feature: true
     },
     {
       id: "portrait-2",
-      image: "assets/fawang-langlang-mountain.jpg",
+      image: "assets/flyleaf-teaching-2026.jpg",
       title: "ལྷ་རི། 朗朗神山",
       subtitle: "朗朗神山"
     },
     {
       id: "portrait-3",
-      image: "assets/fawang-radiance.jpg",
+      image: "assets/flyleaf-teaching-2026.jpg",
       title: "འོད་གསལ། 光明留影",
       subtitle: "加持"
     }
@@ -142,26 +198,26 @@ const defaultModules = {
   academy: [
     {
       id: "academy-1",
-      image: "assets/larung-real-stairs-night.jpg",
+      image: "assets/flyleaf-teaching-2026.jpg",
       title: "བླ་རུང་། 夜色阶梯",
       subtitle: "喇荣",
       layout: "tall"
     },
     {
       id: "academy-2",
-      image: "assets/larung-real-temple-mist.jpg",
+      image: "assets/flyleaf-teaching-2026.jpg",
       title: "སྨུག་པ། 晨雾寺院",
       subtitle: "晨雾"
     },
     {
       id: "academy-3",
-      image: "assets/larung-real-red-valley.jpg",
+      image: "assets/flyleaf-teaching-2026.jpg",
       title: "རི་ཁྲོད། 红色山谷",
       subtitle: "山谷"
     },
     {
       id: "academy-4",
-      image: "assets/larung-real-snow.jpg",
+      image: "assets/flyleaf-teaching-2026.jpg",
       title: "ཁ་བ། 雪景红屋",
       subtitle: "雪景",
       layout: "wide"
@@ -200,31 +256,31 @@ const defaultModules = {
   colorPages: [
     {
       id: "color-1",
-      image: "assets/color-page-boulder.jpg",
+      image: "assets/flyleaf-teaching-2026.jpg",
       title: "ན་བཟའ། 红衣",
       subtitle: "红衣"
     },
     {
       id: "color-2",
-      image: "assets/color-page-yogurt.jpg",
+      image: "assets/flyleaf-teaching-2026.jpg",
       title: "ཞོ། 酸奶",
       subtitle: "酸奶"
     },
     {
       id: "color-3",
-      image: "assets/color-page-bodhisattva.jpg",
+      image: "assets/flyleaf-teaching-2026.jpg",
       title: "འཇམ་དཔལ། 文殊静修",
       subtitle: "文殊静修"
     },
     {
       id: "color-4",
-      image: "assets/color-page-new-york.jpg",
+      image: "assets/flyleaf-teaching-2026.jpg",
       title: "དབང་བསྐུར། 灌顶",
       subtitle: "灌顶"
     },
     {
       id: "color-5",
-      image: "assets/color-page-confidence.jpg",
+      image: "assets/flyleaf-teaching-2026.jpg",
       title: "དད་པ། 信心所依",
       subtitle: "信心所依"
     }
@@ -337,61 +393,61 @@ const pageThemes = new Set(pageThemeClassNames.map((className) => className.repl
 
 const pageDecorations = [
   {
-    image: "assets/decor-crystal-point.jpg",
+    image: "assets/mandala-emblem.jpg",
     kind: "crystal",
     position: "center 36%",
     size: "148%"
   },
   {
-    image: "assets/decor-crystal-stupa.jpg",
+    image: "assets/mandala-emblem.jpg",
     kind: "crystal",
     position: "center 48%",
     size: "118%"
   },
   {
-    image: "assets/decor-flower-meadow.jpg",
+    image: "assets/buli-meadow-before.png",
     kind: "flower",
     position: "center bottom",
     size: "cover"
   },
   {
-    image: "assets/decor-flower-rock.jpg",
+    image: "assets/buli-real-garden.png",
     kind: "flower",
     position: "left bottom",
     size: "cover"
   },
   {
-    image: "assets/decor-flower-white.jpg",
+    image: "assets/notebook-decor-flower-horizontal.png",
     kind: "flower",
     position: "center bottom",
     size: "cover"
   },
   {
-    image: "assets/decor-flower-yellow.jpg",
+    image: "assets/notebook-decor-flower-horizontal.png",
     kind: "flower",
     position: "center bottom",
     size: "cover"
   },
   {
-    image: "assets/decor-star-butterflies.jpg",
+    image: "assets/mandala-emblem.jpg",
     kind: "star",
     position: "center 22%",
     size: "cover"
   },
   {
-    image: "assets/decor-star-hanging.jpg",
+    image: "assets/mandala-emblem.jpg",
     kind: "star",
     position: "center 16%",
     size: "cover"
   },
   {
-    image: "assets/decor-flower-scroll.jpg",
+    image: "assets/notebook-decor-flower-horizontal.png",
     kind: "flower",
     position: "center 42%",
     size: "cover"
   },
   {
-    image: "assets/decor-flower-garden.jpg",
+    image: "assets/buli-real-garden.png",
     kind: "flower",
     position: "center bottom",
     size: "cover"
@@ -450,11 +506,18 @@ const els = {
   searchInput: document.querySelector("#searchInput"),
   tocJumpButton: document.querySelector("#tocJumpButton"),
   newNoteButton: document.querySelector("#newNoteButton"),
+  indexNewNoteButton: document.querySelector("#indexNewNoteButton"),
+  indexOpenEditorButton: document.querySelector("#indexOpenEditorButton"),
   editorNewNoteButton: document.querySelector("#editorNewNoteButton"),
   exportButton: document.querySelector("#exportButton"),
   installButton: document.querySelector("#installButton"),
   typeButtons: [...document.querySelectorAll(".type-button")],
   listTitle: document.querySelector("#listTitle"),
+  indexResultCount: document.querySelector("#indexResultCount"),
+  indexInsightTotal: document.querySelector("#indexInsightTotal"),
+  indexInsightPinned: document.querySelector("#indexInsightPinned"),
+  indexInsightTagged: document.querySelector("#indexInsightTagged"),
+  indexInsightRecent: document.querySelector("#indexInsightRecent"),
   sortSelect: document.querySelector("#sortSelect"),
   noteToc: document.querySelector("#noteToc"),
   noteList: document.querySelector("#noteList"),
@@ -465,6 +528,11 @@ const els = {
   editorForm: document.querySelector("#editorForm"),
   timelineView: document.querySelector("#timelineView"),
   saveState: document.querySelector("#saveState"),
+  editorPaperMeta: document.querySelector("#editorPaperMeta"),
+  noteWordCount: document.querySelector("#noteWordCount"),
+  noteTemplateButtons: [...document.querySelectorAll("[data-note-template]")],
+  editorPrevNoteButton: document.querySelector("#editorPrevNoteButton"),
+  editorNextNoteButton: document.querySelector("#editorNextNoteButton"),
   pinButton: document.querySelector("#pinButton"),
   deleteButton: document.querySelector("#deleteButton"),
   noteTitle: document.querySelector("#noteTitle"),
@@ -529,7 +597,240 @@ function prepareImage(image, options = {}) {
   return image;
 }
 
-init();
+/* ============================================================================
+ * Buli 图片存储层 (IndexedDB)  —  根治“图片塞进 localStorage 超出 ~5MB 配额
+ * 导致添加壁纸/供灯佛像/笔记配图静默保存失败”的问题。
+ *
+ * 原理：透明拦截 localStorage 的 setItem/getItem。
+ *   - setItem：把 JSON 里体积较大的 data: 图片外置到 IndexedDB（容量大几百倍），
+ *     localStorage 里只留一个极小的令牌 "idb::img::<hash>-<len>"。
+ *   - getItem：把令牌还原成原始 data: 图片（从启动时预载的内存缓存读取，同步返回）。
+ * 渲染代码完全无需改动；启动时自动把已有的 base64 迁移进 IndexedDB，当场释放空间。
+ * 若设备不支持 IndexedDB（极少数），自动退回原行为，绝不报错。
+ * ==========================================================================*/
+const BuliImageLayer = (function () {
+  // —— crypto.randomUUID 兼容垫片：老安卓 WebView 缺失会导致添加计数/笔记崩溃 ——
+  try {
+    if (typeof crypto !== "undefined" && crypto && typeof crypto.randomUUID !== "function") {
+      crypto.randomUUID = function () {
+        return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+          var r = (Math.random() * 16) | 0;
+          var v = c === "x" ? r : (r & 0x3) | 0x8;
+          return v.toString(16);
+        });
+      };
+    }
+  } catch (e) { /* ignore */ }
+
+  var DB_NAME = "buli-image-store";
+  var STORE = "images";
+  var TOKEN_PREFIX = "idb::img::";
+  var MIN_INLINE = 514; // 含两个引号；约 512 字符以上的 data: 才外置，极小内联图保持原样
+
+  var cache = new Map();        // token -> dataURL
+  var urlToToken = new Map();   // dataURL -> token
+  var db = null;
+  var available = false;
+  var nativeGet = null;
+  var nativeSet = null;
+
+  function openDbOnce() {
+    return new Promise(function (resolve) {
+      try {
+        if (typeof indexedDB === "undefined" || !indexedDB) { resolve(false); return; }
+        var settled = false;
+        var done = function (ok) { if (settled) return; settled = true; resolve(ok); };
+        var req = indexedDB.open(DB_NAME, 1);
+        req.onupgradeneeded = function () {
+          var d = req.result;
+          if (!d.objectStoreNames.contains(STORE)) d.createObjectStore(STORE);
+        };
+        req.onsuccess = function () { db = req.result; available = true; done(true); };
+        req.onerror = function () { done(false); };
+        req.onblocked = function () { done(false); };
+        // iOS Safari / 部分安卓 WebView 首次加载时 open 回调偶发不触发(挂起)。
+        // 超时当作本次失败,交由上层稍后重试——这是“添加佛像/壁纸保存不上”的常见根因之一。
+        setTimeout(function () { done(false); }, 1200);
+      } catch (e) { resolve(false); }
+    });
+  }
+
+  function openDb(retries) {
+    retries = (retries == null) ? 3 : retries;
+    return openDbOnce().then(function (ok) {
+      if (ok || available || retries <= 0) return ok || available;
+      return new Promise(function (r) { setTimeout(r, 260); }).then(function () { return openDb(retries - 1); });
+    });
+  }
+
+  var pending = [];
+  function idbPut(token, dataUrl) {
+    if (!db) return Promise.resolve();
+    var p = new Promise(function (resolve) {
+      try {
+        var tx = db.transaction(STORE, "readwrite");
+        tx.oncomplete = function () { resolve(); };
+        tx.onerror = function () { resolve(); };
+        tx.onabort = function () { resolve(); };
+        tx.objectStore(STORE).put(dataUrl, token);
+      } catch (e) { resolve(); }
+    });
+    pending.push(p);
+    p.then(function () {
+      var i = pending.indexOf(p);
+      if (i >= 0) pending.splice(i, 1);
+    });
+    return p;
+  }
+
+  // 等待所有挂起的 IndexedDB 写入提交完成（供保存后调用，确保照片真正落盘）
+  function flush() {
+    if (!pending.length) return Promise.resolve();
+    return Promise.all(pending.slice()).then(function () {}, function () {});
+  }
+
+  function loadAll() {
+    return new Promise(function (resolve) {
+      if (!db) { resolve(); return; }
+      try {
+        var tx = db.transaction(STORE, "readonly");
+        var store = tx.objectStore(STORE);
+        var req = store.openCursor();
+        req.onsuccess = function () {
+          var cur = req.result;
+          if (cur) {
+            var token = String(cur.key);
+            var val = cur.value;
+            if (typeof val === "string") {
+              cache.set(token, val);
+              urlToToken.set(val, token);
+            }
+            cur.continue();
+          } else {
+            resolve();
+          }
+        };
+        req.onerror = function () { resolve(); };
+      } catch (e) { resolve(); }
+    });
+  }
+
+  // 稳定的 53-bit 哈希（cyrb53），输出 base36，使同一图片始终映射到同一令牌
+  function hash53(str) {
+    var h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+    for (var i = 0; i < str.length; i++) {
+      var ch = str.charCodeAt(i);
+      h1 = Math.imul(h1 ^ ch, 2654435761);
+      h2 = Math.imul(h2 ^ ch, 1597334677);
+    }
+    h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+    h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+    var num = 4294967296 * (2097151 & h2) + (h1 >>> 0);
+    return num.toString(36);
+  }
+
+  function tokenFor(dataUrl) {
+    if (urlToToken.has(dataUrl)) return urlToToken.get(dataUrl);
+    var token = TOKEN_PREFIX + hash53(dataUrl) + "-" + dataUrl.length;
+    cache.set(token, dataUrl);
+    urlToToken.set(dataUrl, token);
+    idbPut(token, dataUrl);
+    return token;
+  }
+
+  // 把 JSON 字符串里较大的 data: 图片替换成令牌
+  function tokenizeJson(str) {
+    if (!available || typeof str !== "string" || str.indexOf("data:") === -1) return str;
+    return str.replace(/"data:[^"\\]+"/g, function (m) {
+      if (m.length < MIN_INLINE) return m;
+      var url = m.slice(1, -1);
+      return JSON.stringify(tokenFor(url));
+    });
+  }
+
+  // 把 JSON 字符串里的令牌还原成原始 data: 图片
+  function resolveJson(str) {
+    if (typeof str !== "string" || str.indexOf(TOKEN_PREFIX) === -1) return str;
+    return str.replace(/"idb::img::[0-9a-z]+-[0-9]+"/g, function (m) {
+      var token = m.slice(1, -1);
+      var url = cache.get(token);
+      return url ? JSON.stringify(url) : m;
+    });
+  }
+
+  function installOverride() {
+    try {
+      var ls = window.localStorage;
+      if (!ls) return;
+      nativeGet = ls.getItem.bind(ls);
+      nativeSet = ls.setItem.bind(ls);
+      ls.setItem = function (key, value) {
+        var v = value;
+        if (typeof v === "string") {
+          try { v = tokenizeJson(v); } catch (e) { v = value; }
+        }
+        return nativeSet(key, v);
+      };
+      ls.getItem = function (key) {
+        var raw = nativeGet(key);
+        if (typeof raw === "string") {
+          try { return resolveJson(raw); } catch (e) { return raw; }
+        }
+        return raw;
+      };
+    } catch (e) { /* 拦截失败则保持原生行为，应用仍可用 */ }
+  }
+
+  // 启动时把已有的 base64 一次性迁入 IndexedDB，立即给 localStorage 腾出空间
+  function migrateExisting() {
+    if (!available || !nativeGet || !nativeSet) return;
+    try {
+      var keys = [];
+      for (var i = 0; i < window.localStorage.length; i++) {
+        keys.push(window.localStorage.key(i));
+      }
+      keys.forEach(function (k) {
+        if (k == null) return;
+        var raw = nativeGet(k);
+        if (typeof raw === "string" && raw.indexOf("data:") !== -1) {
+          var tokenized = tokenizeJson(raw);
+          if (tokenized !== raw) {
+            try { nativeSet(k, tokenized); } catch (e) { /* ignore */ }
+          }
+        }
+      });
+    } catch (e) { /* ignore */ }
+  }
+
+  function boot() {
+    return openDb().then(function () {
+      return loadAll();
+    }).then(function () {
+      installOverride();
+      migrateExisting();
+    }).catch(function () {
+      // 兜底：即便出错也安装拦截（此时为透明直通），不阻塞应用启动
+      try { installOverride(); } catch (e) { /* ignore */ }
+    });
+  }
+
+  return { boot: boot, flush: flush };
+})();
+
+BuliImageLayer.boot().then(init).catch(function () {
+  try { init(); } catch (err) { console.error(err); }
+});
+
+// 安全网:App 被切到后台/关闭前,把挂起的图片写入落盘,避免“刚添加的佛像/壁纸/配图”丢失。
+(function flushImagesOnHide() {
+  function doFlush() { try { BuliImageLayer.flush(); } catch (e) { /* ignore */ } }
+  try {
+    document.addEventListener("visibilitychange", function () {
+      if (document.visibilityState === "hidden") doFlush();
+    });
+    window.addEventListener("pagehide", doFlush);
+  } catch (e) { /* ignore */ }
+})();
 
 function init() {
   prepareStaticImages();
@@ -545,6 +846,8 @@ function init() {
 
   state.activeId = state.notes[0]?.id ?? createNote({ silent: true }).id;
   bindEvents();
+  setupNoteYearFilter();
+  setupDataSteward();
   render();
   registerServiceWorker();
   updateInstallButton();
@@ -557,7 +860,22 @@ function bindEvents() {
   });
 
   els.newNoteButton.addEventListener("click", createAndOpenNote);
+  els.indexNewNoteButton?.addEventListener("click", createAndOpenNote);
+  els.indexOpenEditorButton?.addEventListener("click", scrollToEditor);
   els.editorNewNoteButton?.addEventListener("click", createAndOpenNote);
+  // 笔记翻页箭头：用事件委托绑定，按钮即使被重新渲染/替换也始终有效
+  document.addEventListener("click", (event) => {
+    const target = event.target instanceof Element ? event.target : null;
+    if (!target) return;
+    if (target.closest("#editorPrevNoteButton")) {
+      turnToRelativeNote(-1);
+    } else if (target.closest("#editorNextNoteButton")) {
+      turnToRelativeNote(1);
+    }
+  });
+  els.noteTemplateButtons.forEach((button) => {
+    button.addEventListener("click", () => applyNoteTemplate(button.dataset.noteTemplate));
+  });
 
   els.exportButton?.addEventListener("click", exportNotes);
   els.installButton?.addEventListener("click", installApp);
@@ -698,6 +1016,10 @@ function setupNotebookPager() {
   notebookPager.pages.forEach((page, index) => {
     page.classList.add("notebook-page");
     page.dataset.notebookPage = String(index + 1);
+    // 滚动安全网：无论样式表如何，强制每页可竖向滚动（含 iOS 惯性滚动），
+    // 防止任何补丁层 CSS 覆盖导致“无法下拉页面”。
+    page.style.overflowY = "auto";
+    page.style.webkitOverflowScrolling = "touch";
   });
 
   promoteNotebookPages();
@@ -1063,8 +1385,15 @@ function bindPageTurn() {
   );
 }
 
+function getNoteTurnList() {
+  // 翻页箭头与“第 x / y 篇”指示共用的笔记顺序
+  let notes = getFilteredNotes();
+  if (notes.length < 2) notes = state.notes; // 当前筛选下不足两篇时回退到全部笔记，保证箭头可用
+  return notes;
+}
+
 function turnToRelativeNote(direction) {
-  const notes = getFilteredNotes();
+  const notes = getNoteTurnList();
   if (notes.length < 2) return;
 
   const activeIndex = Math.max(0, notes.findIndex((note) => note.id === state.activeId));
@@ -1279,6 +1608,7 @@ function normalizePptProject(item) {
     id: item.id || crypto.randomUUID(),
     title,
     subtitle: removeVisibleEnglish(item.subtitle),
+    archived: Boolean(item.archived),
     createdAt: item.createdAt || Date.now(),
     updatedAt: item.updatedAt || item.createdAt || Date.now()
   };
@@ -1401,6 +1731,17 @@ function createNote(options = {}) {
   if (!options.silent) {
     scheduleSave();
   }
+  // [收敛层一] 原 patchedCreateNote 的逻辑内联进核心:新建笔记按类型套空白页模板。
+  // 由就绪标志守护——init() 阶段(标志尚为 false)创建的默认笔记不套模板,与原版时机一致。
+  if (window.__buliTypeTemplatesReady && typeof getTypeTemplate === "function") {
+    const typeTpl = getTypeTemplate(note.type);
+    if (!options.body && isBlankOrKnownTemplate(note.body)) {
+      note.body = typeTpl.body;
+      note.updatedAt = Date.now();
+      if (state.activeId === note.id && els.noteBody) els.noteBody.value = note.body;
+      if (!options.silent) scheduleSave();
+    }
+  }
   return note;
 }
 
@@ -1462,6 +1803,7 @@ function updateActiveNote() {
   note.pageTheme = normalizePageTheme(note.pageTheme);
   note.calendarMode = note.calendarMode || "gregorian";
   note.updatedAt = Date.now();
+  renderEditorStatus(note);
   scheduleSave();
   scheduleNoteRender(note);
 }
@@ -1470,6 +1812,7 @@ function scheduleIndexRender() {
   scheduleRender(() => {
     renderToc();
     renderList();
+    renderIndexSummary();
     renderTimeline();
   });
 }
@@ -1479,6 +1822,7 @@ function scheduleNoteRender(note = getActiveNote()) {
     renderMemoCalendar(note);
     renderToc();
     renderList();
+    renderIndexSummary();
     renderStats();
     renderFocus();
     renderTimeline();
@@ -1501,7 +1845,7 @@ function scheduleSave() {
   state.saveTimer = setTimeout(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state.notes));
-      els.saveState.textContent = "已保存";
+      els.saveState.textContent = "已保存 · " + new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" });
     } catch (error) {
       console.warn("Failed to save notes", error);
       els.saveState.textContent = "图片过大，保存失败";
@@ -1510,6 +1854,7 @@ function scheduleSave() {
 }
 
 function render() {
+  if (window.BuliEnhance) window.BuliEnhance.afterRender();
   els.typeButtons.forEach((button) => {
     button.classList.toggle("active", button.dataset.filter === state.filter);
   });
@@ -1526,6 +1871,7 @@ function render() {
   renderEditor();
   renderToc();
   renderList();
+  renderIndexSummary();
   renderStats();
   renderFocus();
   renderModules();
@@ -1537,19 +1883,78 @@ function render() {
 
 function renderEditor() {
   const note = getActiveNote();
-  if (!note) return;
+  if (!note) {
+    if (window.__buliTypeTemplatesReady && typeof renderTypeTemplateUI === "function") renderTypeTemplateUI();
+    return;
+  }
   els.noteTitle.value = note.title;
   els.noteType.value = note.type;
   els.noteDate.value = note.date;
   els.notePerson.value = note.person;
   els.noteSource.value = note.source;
+  // 若该笔记已填人物/地点,自动展开「更多」,不让已有内容被折叠藏起
+  const metaMore = els.editorForm && els.editorForm.querySelector(".meta-more");
+  if (metaMore) metaMore.open = Boolean(note.person || note.source);
   els.noteTags.value = note.tags.join(", ");
   els.noteBody.value = note.body;
   els.pinButton.classList.toggle("active", note.pinned);
+  renderEditorStatus(note);
   renderPageTheme(note.pageTheme || PLAIN_PAGE_THEME);
   renderMemoCalendar(note);
   renderNoteImages(note);
   renderPageDecoration(note);
+  // [收敛层一] 复刻原 patchedRenderEditor:渲染编辑器后刷新分类模板 UI(就绪后才生效)。
+  if (window.__buliTypeTemplatesReady && typeof renderTypeTemplateUI === "function") renderTypeTemplateUI();
+}
+
+function renderEditorStatus(note = getActiveNote()) {
+  if (!note) return;
+  const pieces = [
+    typeLabels[note.type] || "笔记",
+    displayDate(note.date),
+    note.person,
+    note.source
+  ].filter(Boolean);
+  const turnList = getNoteTurnList();
+  const turnPosition = turnList.findIndex((item) => item.id === note.id);
+  if (turnPosition >= 0) {
+    pieces.push(`第 ${turnPosition + 1} / ${turnList.length} 篇`);
+  }
+  if (els.editorPaperMeta) els.editorPaperMeta.textContent = pieces.join(" · ");
+  if (els.noteWordCount) {
+    const textCount = Array.from(String(note.body || "").replace(/\s/g, "")).length;
+    const tagText = note.tags?.length ? `${note.tags.length} 标签` : "未加标签";
+    const imageText = note.images?.length ? `${note.images.length} 图` : "无图片";
+    els.noteWordCount.textContent = `${textCount} 字 · ${tagText} · ${imageText}`;
+  }
+
+  const hasSiblings = turnList.length > 1;
+  const prevButton = document.querySelector("#editorPrevNoteButton") || els.editorPrevNoteButton;
+  const nextButton = document.querySelector("#editorNextNoteButton") || els.editorNextNoteButton;
+  if (prevButton) prevButton.disabled = !hasSiblings;
+  if (nextButton) nextButton.disabled = !hasSiblings;
+}
+
+function applyNoteTemplate(templateId) {
+  const template = NOTE_BODY_TEMPLATES[templateId];
+  const note = getActiveNote();
+  if (!template || !note || !els.noteBody) return;
+
+  const start = els.noteBody.selectionStart ?? els.noteBody.value.length;
+  const end = els.noteBody.selectionEnd ?? els.noteBody.value.length;
+  const current = els.noteBody.value;
+  const prefix = current.slice(0, start);
+  const suffix = current.slice(end);
+  const needsBeforeBreak = prefix && !prefix.endsWith("\n") ? "\n\n" : "";
+  const needsAfterBreak = suffix && !suffix.startsWith("\n") ? "\n\n" : "";
+  const inserted = `${needsBeforeBreak}${template.body}${needsAfterBreak}`;
+
+  els.noteBody.value = `${prefix}${inserted}${suffix}`;
+  const nextCursor = prefix.length + inserted.length;
+  els.noteBody.setSelectionRange(nextCursor, nextCursor);
+  els.noteBody.focus();
+  updateActiveNote();
+  els.saveState.textContent = `已插入「${template.label}」`;
 }
 
 function renderPageDecoration(note) {
@@ -1656,7 +2061,7 @@ function renderNoteImages(note) {
   });
 }
 
-function readImageFile(file) {
+function readImageFile(file, options = {}) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.addEventListener("load", () => {
@@ -1664,7 +2069,8 @@ function readImageFile(file) {
       image.addEventListener("load", () => {
         const width = image.naturalWidth || image.width;
         const height = image.naturalHeight || image.height;
-        const maxSide = 1400;
+        const maxSide = options.maxSide || 1400;
+        const quality = options.quality || 0.82;
         const scale = Math.min(1, maxSide / Math.max(width, height));
         const canvas = document.createElement("canvas");
         canvas.width = Math.max(1, Math.round(width * scale));
@@ -1676,7 +2082,7 @@ function readImageFile(file) {
         }
 
         context.drawImage(image, 0, 0, canvas.width, canvas.height);
-        resolve(canvas.toDataURL("image/jpeg", 0.82));
+        resolve(canvas.toDataURL("image/jpeg", quality));
       });
       image.addEventListener("error", () => resolve(String(reader.result)));
       image.src = String(reader.result);
@@ -1885,48 +2291,10 @@ function createPageWallpaperOption(wallpaper, selectedTheme) {
   return card;
 }
 
-function createAddPageWallpaperOption() {
-  const label = document.createElement("label");
-  label.className = "page-theme-option page-theme-add";
-  const input = document.createElement("input");
-  input.type = "file";
-  input.accept = "image/*";
-  input.multiple = true;
-  input.addEventListener("change", addPageWallpapers);
-  const text = document.createElement("span");
-  text.textContent = "添加壁纸";
-  label.append(input, text);
-  return label;
-}
-
-async function addPageWallpapers(event) {
-  const input = event.currentTarget;
-  const files = [...(input.files || [])].filter((file) => file.type.startsWith("image/"));
-  if (!files.length) return;
-  try {
-    const added = [];
-    for (const file of files.slice(0, 12)) {
-      added.push({
-        id: `wallpaper-${crypto.randomUUID()}`,
-        title: file.name.replace(/\.[^.]+$/, "") || "自定义壁纸",
-        image: await readImageFile(file)
-      });
-    }
-    pageWallpapers = [...pageWallpapers, ...added];
-    if (!savePageWallpapers()) {
-      pageWallpapers = pageWallpapers.filter((wallpaper) => !added.some((item) => item.id === wallpaper.id));
-      state.pageWallpapers = pageWallpapers;
-      return;
-    }
-    if (added[0]) updatePageTheme(added[0].id);
-    renderPageWallpaperPicker(added[0]?.id);
-  } catch (error) {
-    console.warn("Failed to add page wallpapers", error);
-    alert("壁纸读取失败，请换一张图片再试。");
-  } finally {
-    input.value = "";
-  }
-}
+/* [优化·死代码删除 2026-06-11] 此处原有 createAddPageWallpaperOption / addPageWallpapers
+   两个核心版函数，已被后面「空白页壁纸上传修复补丁」(约 5246/5274 行) 的同名顶层函数
+   声明覆盖(JS 函数提升后声明者生效)，且旧版直接调用 crypto.randomUUID 在老安卓 WebView
+   会报错。经真实浏览器运行时确认有效版本是补丁版后，整段删除。deletePageWallpaper 保留。 */
 
 function deletePageWallpaper(id) {
   const wallpaper = getPageWallpaper(id);
@@ -2384,24 +2752,32 @@ function renderPracticeCounters() {
   if (!els.practiceCounterGrid || !els.practiceSummary) return;
   els.practiceCounterGrid.replaceChildren();
 
-  const total = state.modules.practiceCounters.reduce((sum, item) => sum + (Number(item.count) || 0), 0);
-  const target = state.modules.practiceCounters.reduce((sum, item) => sum + (Number(item.target) || 0), 0);
-  els.practiceSummary.textContent = `总计 ${formatNumber(total)} / ${formatNumber(target)} · ${state.modules.practiceCounters.length} 项功课`;
+  const counters = state.modules.practiceCounters;
+  counters.forEach(ensurePracticeLedgerFields);
 
-  if (!state.modules.practiceCounters.length) {
+  const todaySum = counters.reduce((sum, item) => sum + practiceTodayTotal(item), 0);
+  els.practiceSummary.textContent = counters.length
+    ? `共 ${counters.length} 门功课 · 今日合计 +${formatNumber(todaySum)}`
+    : "尚未添加功课";
+
+  els.practiceCounterGrid.append(buildPracticeOverview());
+
+  if (!counters.length) {
     const empty = document.createElement("div");
     empty.className = "module-empty";
-    empty.textContent = "暂无计数功课，可先添加一项。";
+    empty.textContent = "暂无计数功课，可在下方添加一项，或用「加行·五十万预设」一键建立四加行。";
     els.practiceCounterGrid.append(empty);
     return;
   }
 
-  state.modules.practiceCounters.forEach((item) => {
+  counters.forEach((item) => {
     els.practiceCounterGrid.append(createPracticeCounterCard(item));
   });
+  els.practiceCounterGrid.append(buildPracticeTimeline());
 }
 
 function createPracticeCounterCard(item) {
+  ensurePracticeLedgerFields(item);
   const card = document.createElement("article");
   card.className = "practice-counter-card";
 
@@ -2413,29 +2789,49 @@ function createPracticeCounterCard(item) {
   const title = document.createElement("strong");
   title.textContent = item.title || "未命名功课";
   titleWrap.append(subtitle, title);
+  const numericCount = Number(item.count) || 0;
+  const numericTarget = Number(item.target) || 0;
+  const unit = item.unit || "遍";
+  const complete = numericTarget > 0 && numericCount >= numericTarget;
+  if (complete) card.classList.add("is-complete");
+
+  const countWrap = document.createElement("div");
+  countWrap.className = "practice-counter-total";
   const count = document.createElement("b");
   count.textContent = formatNumber(item.count);
-  head.append(titleWrap, count);
+  const countUnit = document.createElement("small");
+  countUnit.textContent = `${unit} · 一生累计`;
+  countWrap.append(count, countUnit);
+  head.append(titleWrap, countWrap);
+  if (complete) {
+    const badge = document.createElement("span");
+    badge.className = "practice-complete-badge";
+    badge.textContent = "已圆满 ✓";
+    head.append(badge);
+  }
 
   const progress = document.createElement("div");
   progress.className = "practice-progress";
   const bar = document.createElement("span");
-  const percent = item.target ? Math.min(100, Math.round((item.count / item.target) * 100)) : 0;
+  const percent = numericTarget ? Math.min(100, Math.round((numericCount / numericTarget) * 100)) : 0;
   bar.style.width = `${percent}%`;
   progress.append(bar);
 
+  const today = practiceTodayTotal(item);
   const meta = document.createElement("p");
-  meta.textContent = `目标 ${formatNumber(item.target)} · ${percent}% · 每次 +${formatNumber(item.step)}`;
+  const milestoneText = complete ? `已圆满（目标 ${formatNumber(item.target)}），仍可继续增长` : `目标 ${formatNumber(item.target)} · ${percent}%`;
+  meta.textContent = `${milestoneText} · 今日 +${formatNumber(today)}`;
 
+  const bigStep = (Number(item.step) || 108) * 10;
   const actions = document.createElement("div");
   actions.className = "practice-counter-actions";
   const manualInput = document.createElement("input");
   manualInput.className = "practice-counter-manual";
   manualInput.type = "number";
   manualInput.inputMode = "numeric";
-  manualInput.placeholder = "输入数量";
+  manualInput.placeholder = "自定义数量";
   manualInput.title = "输入正数增加，负数减少";
-  manualInput.setAttribute("aria-label", "手动输入本次功课数量");
+  manualInput.setAttribute("aria-label", "自定义本次功课数量");
   manualInput.addEventListener("keydown", (event) => {
     if (event.key !== "Enter") return;
     event.preventDefault();
@@ -2443,24 +2839,26 @@ function createPracticeCounterCard(item) {
     manualInput.value = "";
   });
   const targetEditor = createPracticeTargetEditor(item);
-  const targetButton = createActionButton("目标", () => {
+  const targetButton = createActionButton("目标·单位", () => {
     const shouldOpen = targetEditor.classList.contains("hidden");
     targetEditor.classList.toggle("hidden", !shouldOpen);
     if (shouldOpen) targetEditor.querySelector("input[name='target']")?.focus();
   });
   actions.append(
-    createActionButton(`+${item.step}`, () => updatePracticeCounter(item.id, item.step)),
+    createActionButton(`−${formatNumber(item.step)}`, () => updatePracticeCounter(item.id, -item.step)),
+    createActionButton(`+${formatNumber(item.step)}`, () => updatePracticeCounter(item.id, item.step), "buli-quick-add"),
+    createActionButton(`+${formatNumber(bigStep)}`, () => updatePracticeCounter(item.id, bigStep), "buli-quick-add"),
     manualInput,
-    createActionButton("手动", () => {
+    createActionButton("记一笔", () => {
       customPracticeCounterDelta(item.id, manualInput.value);
       manualInput.value = "";
-    }),
+    }, "buli-quick-add"),
     targetButton,
     createActionButton("清零", () => resetPracticeCounter(item.id), "danger"),
     createActionButton("删除", () => deleteModuleItem("practiceCounters", item.id), "danger")
   );
 
-  card.append(head, progress, meta, actions, targetEditor);
+  card.append(head, progress, meta, actions, targetEditor, buildPracticeRecords(item));
   return card;
 }
 
@@ -2488,21 +2886,33 @@ function createPracticeTargetEditor(item) {
   stepInput.value = String(item.step || 108);
   stepInput.setAttribute("aria-label", "每次增加数量");
 
+  const unitInput = document.createElement("select");
+  unitInput.name = "unit";
+  unitInput.className = "practice-unit-select";
+  unitInput.setAttribute("aria-label", "计数单位");
+  ["遍", "个", "座", "次", "字", "小时"].forEach((u) => {
+    const opt = document.createElement("option");
+    opt.value = u;
+    opt.textContent = u;
+    unitInput.append(opt);
+  });
+  unitInput.value = item.unit || "遍";
+
   const actions = document.createElement("div");
   actions.className = "practice-target-editor-actions";
   const saveButton = document.createElement("button");
   saveButton.type = "submit";
   saveButton.className = "module-action-button";
-  saveButton.textContent = "保存目标";
+  saveButton.textContent = "保存";
   const cancelButton = createActionButton("取消", () => form.classList.add("hidden"));
   actions.append(saveButton, cancelButton);
 
   form.addEventListener("submit", (event) => {
     event.preventDefault();
-    savePracticeCounterTarget(item.id, targetInput.value, stepInput.value);
+    savePracticeCounterTarget(item.id, targetInput.value, stepInput.value, unitInput.value);
   });
 
-  form.append(targetInput, stepInput, actions);
+  form.append(targetInput, stepInput, unitInput, actions);
   return form;
 }
 
@@ -2512,13 +2922,18 @@ function addPracticeCounter(event) {
   const title = form.elements.title.value.trim();
   if (!title) return;
 
+  const unitField = form.elements.unit;
+  const unit = (unitField && String(unitField.value || "").trim()) || "遍";
   state.modules.practiceCounters.push({
     id: crypto.randomUUID(),
     title,
     subtitle: "自定义",
+    unit,
     count: 0,
     target: Math.max(1, Number(form.elements.target.value) || 100000),
     step: Math.max(1, Number(form.elements.step.value) || 108),
+    sessions: [],
+    createdAt: Date.now(),
     updatedAt: Date.now()
   });
   if (saveModules()) {
@@ -2530,8 +2945,13 @@ function addPracticeCounter(event) {
 function updatePracticeCounter(id, delta) {
   const item = findModuleItem("practiceCounters", id);
   if (!item) return;
-  item.count = Math.max(0, (Number(item.count) || 0) + delta);
+  ensurePracticeLedgerFields(item);
+  const before = Number(item.count) || 0;
+  const after = Math.max(0, before + delta); // 无上限:圆满后仍可继续增长
+  const actual = after - before;
+  item.count = after;
   item.updatedAt = Date.now();
+  if (actual !== 0) logPracticeSession(item, actual);
   if (saveModules()) renderPracticeCounters();
 }
 
@@ -2549,7 +2969,7 @@ function customPracticeCounterDelta(id, rawValue) {
   updatePracticeCounter(id, Math.trunc(delta));
 }
 
-function savePracticeCounterTarget(id, targetValue, stepValue) {
+function savePracticeCounterTarget(id, targetValue, stepValue, unitValue) {
   const item = findModuleItem("practiceCounters", id);
   if (!item) return;
   const target = Number(String(targetValue || "").trim());
@@ -2560,6 +2980,8 @@ function savePracticeCounterTarget(id, targetValue, stepValue) {
   }
   item.target = Math.trunc(target);
   item.step = Math.trunc(step);
+  const unit = String(unitValue || "").trim();
+  if (unit) item.unit = unit;
   item.updatedAt = Date.now();
   if (saveModules()) renderPracticeCounters();
 }
@@ -2567,9 +2989,11 @@ function savePracticeCounterTarget(id, targetValue, stepValue) {
 function resetPracticeCounter(id) {
   const item = findModuleItem("practiceCounters", id);
   if (!item) return;
-  const ok = confirm(`清零「${item.title}」的计数？`);
+  const ok = confirm(`确定清零「${item.title}」吗？\n这会把一生累计与全部记录都归零，且不可恢复（建议先导出备份）。`);
   if (!ok) return;
+  ensurePracticeLedgerFields(item);
   item.count = 0;
+  item.sessions = [];
   item.updatedAt = Date.now();
   if (saveModules()) renderPracticeCounters();
 }
@@ -2679,8 +3103,12 @@ function changeOfferingBuddhaWall() {
   input.accept = "image/*";
   input.multiple = true;
   input.style.position = "fixed";
-  input.style.left = "-9999px";
-  input.style.top = "-9999px";
+  input.style.top = "0";
+  input.style.left = "0";
+  input.style.width = "1px";
+  input.style.height = "1px";
+  input.style.opacity = "0";
+  input.style.zIndex = "-1";
   document.body.append(input);
   input.addEventListener(
     "change",
@@ -2690,7 +3118,7 @@ function changeOfferingBuddhaWall() {
     },
     { once: true }
   );
-  window.setTimeout(() => input.remove(), 10000);
+  input.addEventListener("cancel", () => input.remove(), { once: true });
   input.click();
 }
 
@@ -2701,9 +3129,10 @@ async function saveOfferingBuddhaFiles(fileList, options = {}) {
     const current = options.replace ? [] : loadOfferingBuddhaImages();
     const added = [];
     for (const file of files.slice(0, 8)) {
-      added.push(await readImageFile(file));
+      added.push(await readImageFile(file, { maxSide: 900, quality: 0.72 }));
     }
-    if (saveOfferingBuddhaImages([...current, ...added].slice(-12))) {
+    if (saveOfferingBuddhaImages([...current, ...added].slice(-8))) {
+      try { await BuliImageLayer.flush(); } catch (e) { /* ignore */ }
       renderOfferingBuddhaWall();
     }
   } catch (error) {
@@ -2790,9 +3219,67 @@ function renderPptProjectTabs() {
   els.pptProjectTabs.replaceChildren();
 
   const counts = getPptProjectCounts();
-  els.pptProjectTabs.append(createPptProjectFilterChip({ id: "all", title: "全部项目", count: state.modules.pptNotes.length }));
-  getPptProjects().forEach((project) => {
+  const projects = getPptProjects();
+  const activeProjects = projects.filter((project) => !project.archived);
+  const archivedProjects = projects.filter((project) => project.archived);
+
+  // 若当前正查看某个已归档项目，自动展开归档区，避免“选中却看不见”
+  if (archivedProjects.some((project) => project.id === state.pptProjectFilter)) {
+    state.pptShowArchived = true;
+  }
+
+  els.pptProjectTabs.append(createPptProjectFilterChip({ id: "all", title: "全部项目", count: getPptAllScopeNotes().length }));
+  activeProjects.forEach((project) => {
     els.pptProjectTabs.append(createPptProjectFilterChip({ ...project, count: counts.get(project.id) || 0 }));
+  });
+
+  if (archivedProjects.length) {
+    const toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.className = "ppt-archived-toggle";
+    toggle.textContent = `${state.pptShowArchived ? "▾" : "▸"} 已归档 ${archivedProjects.length} 个项目`;
+    toggle.addEventListener("click", () => {
+      state.pptShowArchived = !state.pptShowArchived;
+      renderPptProjectManager();
+    });
+    els.pptProjectTabs.append(toggle);
+
+    if (state.pptShowArchived) {
+      archivedProjects.forEach((project) => {
+        const chip = createPptProjectFilterChip({ ...project, count: counts.get(project.id) || 0 });
+        chip.classList.add("archived");
+        els.pptProjectTabs.append(chip);
+      });
+    }
+  }
+}
+
+function togglePptProjectArchive(projectId) {
+  const project = getPptProjects().find((item) => item.id === projectId);
+  if (!project || project.id === PPT_DEFAULT_PROJECT_ID) return;
+  project.archived = !project.archived;
+  project.updatedAt = Date.now();
+  if (project.archived && state.pptProjectFilter === project.id) {
+    state.pptShowArchived = true; // 归档后仍能看到当前选中的项目
+  }
+  saveModules();
+  renderPptProjectManager();
+  renderPptNotes();
+}
+
+function getPptArchivedProjectIds() {
+  return new Set(getPptProjects().filter((project) => project.archived).map((project) => project.id));
+}
+
+// “全部项目”视野：不包含只属于已归档项目的课（点开归档项目本身仍可看全）
+function getPptAllScopeNotes() {
+  const notes = state.modules.pptNotes || [];
+  const archivedIds = getPptArchivedProjectIds();
+  if (!archivedIds.size) return notes;
+  return notes.filter((note) => {
+    const ids = getPptNoteProjectIds(note);
+    if (!ids.length) return true;
+    return ids.some((projectId) => !archivedIds.has(projectId));
   });
 }
 
@@ -2811,7 +3298,7 @@ function getPptProjectCounts() {
 
 function getPptProjectScopedNotes() {
   const notes = state.modules.pptNotes || [];
-  if (state.pptProjectFilter === "all") return notes;
+  if (state.pptProjectFilter === "all") return getPptAllScopeNotes();
   return notes.filter((note) => getPptNoteProjectIds(note).includes(state.pptProjectFilter));
 }
 
@@ -2872,6 +3359,7 @@ function createPptProjectFilterChip(project) {
   if (project.id !== "all") {
     chip.append(
       createPptProjectAction("改名", () => renamePptProject(project.id)),
+      createPptProjectAction(project.archived ? "还原" : "归档", () => togglePptProjectArchive(project.id), project.id === PPT_DEFAULT_PROJECT_ID),
       createPptProjectAction("删", () => deletePptProject(project.id), project.id === PPT_DEFAULT_PROJECT_ID)
     );
   }
@@ -2984,6 +3472,7 @@ function sortPptNotes(a, b) {
 }
 
 function renderPptNotes() {
+  if (window.BuliEnhance) window.BuliEnhance.afterPpt();
   if (!els.pptNoteList) return;
   els.pptNoteList.replaceChildren();
   const scopedNotes = getPptProjectScopedNotes();
@@ -3010,14 +3499,25 @@ function renderPptOrganizerSummary(scopedNotes = [], filteredNotes = []) {
   const due = scopedNotes.filter(isPptReviewDue).length;
   const attachments = scopedNotes.filter((note) => normalizePptAttachment(note.attachment)).length;
   const visible = filteredNotes.length;
-  [
-    ["当前", visible, "条"],
-    ["待复习", due, "条"],
-    ["已完成", completed, "条"],
-    ["有附件", attachments, "条"]
-  ].forEach(([label, value, unit]) => {
+  const years = scopedNotes
+    .map((note) => new Date(Number(note.createdAt) || Date.now()).getFullYear())
+    .filter((year) => Number.isFinite(year) && year > 1970);
+  const stats = [
+    ["当前", visible],
+    ["待复习", due],
+    ["已完成", completed],
+    ["有附件", attachments]
+  ];
+  if (years.length) {
+    const minYear = Math.min(...years);
+    const maxYear = Math.max(...years);
+    stats.push(["年份", minYear === maxYear ? String(minYear) : `${minYear}–${maxYear}`]);
+  }
+  stats.forEach(([label, value]) => {
     const item = document.createElement("span");
-    item.innerHTML = `<strong>${value}</strong>${label}${unit}`;
+    const count = document.createElement("strong");
+    count.textContent = value;
+    item.append(count, label);
     els.pptOrganizerSummary.append(item);
   });
 }
@@ -3877,6 +4377,19 @@ function renderToc() {
   count.textContent = `${pages.length} 页 · ${notes.length} 篇`;
   head.append(titleWrap, count);
 
+  const ledger = document.createElement("div");
+  ledger.className = "note-toc-ledger";
+  const allTags = new Set(state.notes.flatMap((note) => note.tags));
+  [
+    ["全部笔记", state.notes.length],
+    ["置顶", state.notes.filter((note) => note.pinned).length],
+    ["标签", allTags.size]
+  ].forEach(([label, value]) => {
+    const item = document.createElement("span");
+    item.innerHTML = `<strong>${value}</strong><small>${label}</small>`;
+    ledger.append(item);
+  });
+
   const pageSection = createTocSection("页面目录", `${pages.length} 页`);
   const pageList = pageSection.querySelector(".note-toc-list");
   pages.forEach((entry) => {
@@ -3910,7 +4423,7 @@ function renderToc() {
       const itemTitle = document.createElement("strong");
       itemTitle.textContent = getNoteDisplayTitle(note);
       const meta = document.createElement("small");
-      meta.textContent = `${note.date || "未定日期"} · ${typeLabels[note.type] || "笔记"}${note.images?.length ? ` · ${note.images.length} 图` : ""}`;
+      meta.textContent = getNoteMetaLine(note);
       content.append(itemTitle, meta);
 
       item.append(order, content);
@@ -3918,7 +4431,7 @@ function renderToc() {
     });
   }
 
-  els.noteToc.append(head, pageSection, noteSection);
+  els.noteToc.append(head, ledger, pageSection, noteSection);
   updateTocPageActiveState();
 }
 
@@ -4023,7 +4536,12 @@ function getNoteDisplayTitle(note) {
   return "未命名笔记";
 }
 
+const NOTE_LIST_RENDER_STEP = 60;
+let noteListRenderLimit = NOTE_LIST_RENDER_STEP;
+let noteListRenderSignature = "";
+
 function renderList() {
+  if (window.BuliEnhance) window.BuliEnhance.afterList();
   const notes = getFilteredNotes();
   els.noteList.replaceChildren();
 
@@ -4035,7 +4553,15 @@ function renderList() {
     return;
   }
 
-  notes.forEach((note) => {
+  // 一生尺度的性能保护：筛选条件变化时重置分页；默认只渲染最近一批
+  const signature = [state.filter, state.query, state.sort, state.yearFilter || "all"].join("|");
+  if (signature !== noteListRenderSignature) {
+    noteListRenderSignature = signature;
+    noteListRenderLimit = NOTE_LIST_RENDER_STEP;
+  }
+  const visibleNotes = notes.slice(0, noteListRenderLimit);
+
+  visibleNotes.forEach((note) => {
     const fragment = els.noteCardTemplate.content.cloneNode(true);
     const card = fragment.querySelector(".note-card");
     const button = fragment.querySelector(".note-card-button");
@@ -4045,21 +4571,90 @@ function renderList() {
     const body = fragment.querySelector("p");
     const person = fragment.querySelector(".person-chip");
     const pin = fragment.querySelector(".pin-chip");
+    const tags = fragment.querySelector(".note-card-tags");
+    const pageMark = fragment.querySelector(".note-page-mark");
+    const imageCount = fragment.querySelector(".note-image-count");
 
     card.classList.toggle("active", note.id === state.activeId);
+    card.dataset.noteType = note.type;
     type.textContent = typeLabels[note.type];
     type.classList.add(note.type);
     date.textContent = displayDate(note.date);
     title.textContent = note.title || "未命名笔记";
-    body.textContent = note.body || note.source || " ";
+    body.textContent = getNoteExcerpt(note);
     person.textContent = note.person || "";
+    person.classList.toggle("hidden", !note.person);
     pin.classList.toggle("hidden", !note.pinned);
+    pageMark.textContent = note.pinned ? "置顶" : displayDate(note.date).slice(0, 5);
+    imageCount.textContent = note.images?.length ? `${note.images.length} 图` : note.source ? "来源" : "";
+    imageCount.classList.toggle("hidden", !note.images?.length && !note.source);
+    renderTagChips(tags, note.tags, 3);
     button.addEventListener("click", () => {
       selectNote(note.id);
       scrollToEditor();
     });
     els.noteList.append(fragment);
   });
+
+  if (notes.length > visibleNotes.length) {
+    const rest = notes.length - visibleNotes.length;
+    const more = document.createElement("button");
+    more.type = "button";
+    more.className = "note-list-more";
+    more.textContent = `显示更早的 ${Math.min(NOTE_LIST_RENDER_STEP, rest)} 篇（还有 ${rest} 篇）`;
+    more.addEventListener("click", () => {
+      noteListRenderLimit += NOTE_LIST_RENDER_STEP;
+      renderList();
+    });
+    els.noteList.append(more);
+  }
+}
+
+function renderTagChips(container, tags, limit = 4) {
+  if (!container) return;
+  container.replaceChildren();
+  const visibleTags = (Array.isArray(tags) ? tags : []).filter(Boolean).slice(0, limit);
+  container.classList.toggle("hidden", !visibleTags.length);
+  visibleTags.forEach((tag) => {
+    const chip = document.createElement("span");
+    chip.textContent = `#${tag}`;
+    container.append(chip);
+  });
+}
+
+function getNoteExcerpt(note) {
+  const body = String(note.body || "").replace(/\s+/g, " ").trim();
+  if (body) return body;
+  if (note.source) return `来源：${note.source}`;
+  if (note.tags?.length) return `标签：${note.tags.join("、")}`;
+  return " ";
+}
+
+function getNoteMetaLine(note) {
+  return [
+    note.date || "未定日期",
+    typeLabels[note.type] || "笔记",
+    note.person,
+    note.source,
+    note.images?.length ? `${note.images.length} 图` : ""
+  ]
+    .filter(Boolean)
+    .join(" · ");
+}
+
+function renderIndexSummary() {
+  const notes = getFilteredNotes();
+  const tags = new Set(state.notes.flatMap((note) => note.tags));
+  const pinned = state.notes.filter((note) => note.pinned).length;
+  const latest = [...state.notes].sort((a, b) => b.updatedAt - a.updatedAt)[0];
+
+  if (els.indexResultCount) els.indexResultCount.textContent = `${notes.length} 篇`;
+  if (els.indexInsightTotal) els.indexInsightTotal.textContent = state.notes.length;
+  if (els.indexInsightPinned) els.indexInsightPinned.textContent = pinned;
+  if (els.indexInsightTagged) els.indexInsightTagged.textContent = tags.size;
+  if (els.indexInsightRecent) els.indexInsightRecent.textContent = latest ? displayDate(latest.date).replace(/\s+/g, "") : "无日期";
+  try { refreshNoteYearOptions(); } catch (e) { /* ignore */ }
+  try { renderDataSteward(); } catch (e) { /* ignore */ }
 }
 
 function renderStats() {
@@ -4157,6 +4752,7 @@ async function updateBloomGardenPhoto(event) {
     photos[key] = image;
     if (saveBloomGardenPhotos(photos)) {
       bloomGardenFlowers();
+      try { await BuliImageLayer.flush(); } catch (e) { /* ignore */ }
     }
   } catch (error) {
     console.warn("Failed to update bloom garden photo", error);
@@ -4193,6 +4789,7 @@ function getActiveNote() {
 function getFilteredNotes() {
   return state.notes
     .filter((note) => state.filter === "all" || note.type === state.filter)
+    .filter((note) => (state.yearFilter || "all") === "all" || String(note.date || "").slice(0, 4) === state.yearFilter)
     .filter((note) => {
       if (!state.query) return true;
       const haystack = [
@@ -4236,10 +4833,19 @@ function displayDate(value) {
   }).format(parsed);
 }
 
+const BACKUP_STAMP_KEY = "buliLastBackup.v1";
+
 function exportNotes() {
   const data = {
     exportedAt: new Date().toISOString(),
     appName: "不离手账",
+    backupVersion: 2,
+    counts: {
+      notes: state.notes.length,
+      teachingQuotes: state.teachingQuotes.length,
+      pptNotes: state.modules.pptNotes?.length || 0,
+      practiceCounters: state.modules.practiceCounters?.length || 0
+    },
     notes: state.notes,
     teachingQuotes: state.teachingQuotes,
     modules: state.modules
@@ -4251,6 +4857,10 @@ function exportNotes() {
   link.download = `不离手账-完整备份-${new Date().toISOString().slice(0, 10)}.json`;
   link.click();
   window.setTimeout(() => URL.revokeObjectURL(url), 0);
+  try {
+    localStorage.setItem(BACKUP_STAMP_KEY, new Date().toISOString());
+  } catch (e) { /* ignore */ }
+  try { renderDataSteward(); } catch (e) { /* ignore */ }
 }
 
 function registerServiceWorker() {
@@ -4298,4 +4908,2014 @@ async function installApp() {
   }
 
   alert("安卓 Chrome：点右上角菜单，选择“添加到主屏幕”或“安装应用”。\n苹果 Safari：点分享按钮，选择“添加到主屏幕”。\n请使用 HTTPS 地址或 localhost 打开，file:// 页面不能安装。");
+}
+
+/* === [收敛层一 2026-06-11] 分类空白页模板 ==========================================
+   原为 IIFE + 对 createNote/renderEditor 的运行时包裹(monkey-patch)。现已并入核心:
+   下面的数据与 helper 提升为顶层;新建/渲染逻辑改在核心 createNote/renderEditor 内显式调用,
+   由 window.__buliTypeTemplatesReady 守护,复刻"init 期间尚未生效"的原加载时机。
+   仅作用于笔记编辑页,不影响供灯/相册/导出/保存/翻页等。
+*/
+const TYPE_TEMPLATE_PAGES = {
+  diary: {
+    label: "日记",
+    badge: "ཉིན་ཐོ། 日记",
+    title: "日记空白页",
+    subtitle: "记录今日所见、心绪觉察、感恩与明日愿望。",
+    placeholder: "从今天的一件小事、一点心绪或一个愿望开始写。",
+    sourcePlaceholder: "地点、缘起或今日关键词",
+    body: [
+      "日期：",
+      "天气 / 地点：",
+      "今日心绪：",
+      "",
+      "一、今日所见",
+      "- ",
+      "",
+      "二、今日所感",
+      "- ",
+      "",
+      "三、今日感恩",
+      "1. ",
+      "2. ",
+      "3. ",
+      "",
+      "四、可以落实的一件小事",
+      "- ",
+      "",
+      "明日一愿："
+    ].join("\n"),
+    sections: [
+      { label: "所见所感", text: "今日所见：\n- \n\n今日所感：\n- " },
+      { label: "三件感恩", text: "今日感恩：\n1. \n2. \n3. " },
+      { label: "明日一愿", text: "明日一愿：\n- " }
+    ]
+  },
+  reading: {
+    label: "读书笔记",
+    badge: "ཀློག་ཐོ། 读书",
+    title: "读书摘录空白页",
+    subtitle: "按书目信息、原文摘录、理解、待查问题分区整理。",
+    placeholder: "摘录原文、页码和自己的理解，适合读书笔记与讲记整理。",
+    sourcePlaceholder: "书名、讲记、课程或页码",
+    body: [
+      "书名 / 讲记：",
+      "作者 / 讲者：",
+      "章节 / 页码：",
+      "阅读日期：",
+      "",
+      "一、原文摘录",
+      "「」",
+      "",
+      "二、关键词",
+      "- ",
+      "",
+      "三、我的理解",
+      "- ",
+      "",
+      "四、可引用句",
+      "- ",
+      "",
+      "五、待查 / 待复习",
+      "- "
+    ].join("\n"),
+    sections: [
+      { label: "书目信息", text: "书名 / 讲记：\n作者 / 讲者：\n章节 / 页码：\n阅读日期：" },
+      { label: "原文摘录", text: "原文摘录：\n「」\n\n页码 / 章节：" },
+      { label: "理解复盘", text: "我的理解：\n- \n\n可引用句：\n- \n\n待查 / 待复习：\n- " }
+    ]
+  },
+  memo: {
+    label: "备忘录",
+    badge: "དྲན་ཐོ། 备忘",
+    title: "备忘录空白页",
+    subtitle: "突出待办、提醒、清单与完成回看，适合手机端快速记录。",
+    placeholder: "写下待办、提醒、清单、灵感或当天需要完成的小事。",
+    sourcePlaceholder: "事项来源、地点或提醒对象",
+    body: [
+      "备忘日期：",
+      "重要程度：□ 今日必做  □ 本周完成  □ 以后处理",
+      "提醒时间：",
+      "",
+      "一、重要事项",
+      "☐ ",
+      "☐ ",
+      "☐ ",
+      "",
+      "二、补充说明",
+      "- ",
+      "",
+      "三、完成后记录",
+      "- "
+    ].join("\n"),
+    sections: [
+      { label: "今日待办", text: "今日待办：\n☐ \n☐ \n☐ " },
+      { label: "提醒事项", text: "提醒时间：\n提醒对象：\n事项：" },
+      { label: "完成回看", text: "完成后记录：\n- \n\n下一步：\n- " }
+    ]
+  },
+  timeline: {
+    label: "教言摘录",
+    badge: "གདམས་ངག 教言",
+    title: "教言整理空白页",
+    subtitle: "按原文、来源、关键词、要义与落实方式分区。",
+    placeholder: "整理教言原文、出处、关键词和自己可以落实的一点。",
+    sourcePlaceholder: "上师、讲记、开示、出处或章节",
+    body: [
+      "教言原文：",
+      "「」",
+      "",
+      "上师 / 来源：",
+      "时间 / 章节：",
+      "",
+      "一、关键词",
+      "- ",
+      "",
+      "二、要义整理",
+      "1. ",
+      "2. ",
+      "",
+      "三、与我相关",
+      "- ",
+      "",
+      "四、今日落实",
+      "- ",
+      "",
+      "回向 / 发愿："
+    ].join("\n"),
+    sections: [
+      { label: "教言原文", text: "教言原文：\n「」\n\n上师 / 来源：\n时间 / 章节：" },
+      { label: "要义整理", text: "关键词：\n- \n\n要义整理：\n1. \n2. " },
+      { label: "今日落实", text: "与我相关：\n- \n\n今日落实：\n- \n\n回向 / 发愿：" }
+    ]
+  }
+};
+
+const LEGACY_TEMPLATE_BODIES = Object.values(typeof NOTE_BODY_TEMPLATES === "object" ? NOTE_BODY_TEMPLATES : {})
+  .map((item) => item?.body)
+  .filter(Boolean);
+
+function normalizeTemplateText(value) {
+  return String(value || "").replace(/\r\n/g, "\n").trim();
+}
+
+function getTypeTemplate(type) {
+  return TYPE_TEMPLATE_PAGES[type] || TYPE_TEMPLATE_PAGES.diary;
+}
+
+function knownFullTemplates() {
+  return [
+    ...Object.values(TYPE_TEMPLATE_PAGES).map((item) => item.body),
+    ...LEGACY_TEMPLATE_BODIES
+  ].map(normalizeTemplateText);
+}
+
+function isBlankOrKnownTemplate(value) {
+  const normalized = normalizeTemplateText(value);
+  return !normalized || knownFullTemplates().includes(normalized);
+}
+
+function escapeHtml(value) {
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function ensureTemplatePanel() {
+  let panel = document.querySelector("#noteTypeTemplatePanel");
+  if (!panel) {
+    panel = document.createElement("section");
+    panel.id = "noteTypeTemplatePanel";
+    panel.className = "note-type-template-panel";
+    panel.setAttribute("aria-label", "分类空白页模板");
+    const assist = els.editorForm.querySelector(".writing-assist");
+    if (assist) {
+      assist.insertAdjacentElement("afterend", panel);
+    } else {
+      els.noteBody.insertAdjacentElement("beforebegin", panel);
+    }
+  }
+  return panel;
+}
+
+function insertTextAtCursor(text, label = "模板") {
+  if (!els.noteBody) return;
+  const start = els.noteBody.selectionStart ?? els.noteBody.value.length;
+  const end = els.noteBody.selectionEnd ?? els.noteBody.value.length;
+  const current = els.noteBody.value;
+  const prefix = current.slice(0, start);
+  const suffix = current.slice(end);
+  const needsBeforeBreak = prefix && !prefix.endsWith("\n") ? "\n\n" : "";
+  const needsAfterBreak = suffix && !suffix.startsWith("\n") ? "\n\n" : "";
+  const inserted = `${needsBeforeBreak}${text}${needsAfterBreak}`;
+  els.noteBody.value = `${prefix}${inserted}${suffix}`;
+  const nextCursor = prefix.length + inserted.length;
+  els.noteBody.setSelectionRange(nextCursor, nextCursor);
+  els.noteBody.focus();
+  updateActiveNote();
+  if (els.saveState) els.saveState.textContent = `已插入「${label}」`;
+}
+
+function applyFullTypeTemplate(forceReplace = false) {
+  const note = getActiveNote();
+  if (!note) return;
+  const template = getTypeTemplate(note.type || els.noteType.value);
+  const current = els.noteBody.value;
+
+  if (!forceReplace && !isBlankOrKnownTemplate(current)) {
+    const ok = confirm("当前页面已有正文。是否把该模板插入到光标处？\n\n选择“确定”：插入模板，不覆盖原文。\n选择“取消”：保留原文，不插入。");
+    if (!ok) return;
+    insertTextAtCursor(template.body, template.label);
+    return;
+  }
+
+  els.noteBody.value = template.body;
+  note.body = template.body;
+  note.type = els.noteType.value || note.type;
+  note.updatedAt = Date.now();
+  renderEditorStatus(note);
+  scheduleSave();
+  scheduleNoteRender(note);
+  if (els.saveState) els.saveState.textContent = `已套用「${template.label}」模板`;
+}
+
+function renderTypeTemplateUI() {
+  const note = getActiveNote();
+  const activeType = note?.type || els.noteType.value || "diary";
+  const template = getTypeTemplate(activeType);
+  const panel = ensureTemplatePanel();
+
+  els.editorForm.dataset.noteKind = activeType;
+  els.noteBody.placeholder = template.placeholder;
+  if (els.noteSource) els.noteSource.placeholder = template.sourcePlaceholder;
+
+  const buttonBox = els.editorForm.querySelector(".writing-assist-buttons");
+  if (buttonBox) {
+    buttonBox.innerHTML = "";
+    const fullButton = document.createElement("button");
+    fullButton.type = "button";
+    fullButton.className = "note-template-action primary";
+    fullButton.textContent = `套用${template.label}模板`;
+    fullButton.addEventListener("click", () => applyFullTypeTemplate(false));
+    buttonBox.append(fullButton);
+
+    template.sections.forEach((section) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "note-template-action";
+      button.textContent = section.label;
+      button.addEventListener("click", () => insertTextAtCursor(section.text, section.label));
+      buttonBox.append(button);
+    });
+  }
+
+  panel.innerHTML = `
+    <div class="note-type-template-head">
+      <span class="note-type-template-badge">${escapeHtml(template.badge)}</span>
+      <div>
+        <strong>${escapeHtml(template.title)}</strong>
+        <small>${escapeHtml(template.subtitle)}</small>
+      </div>
+    </div>
+    <div class="note-type-template-lines" aria-label="当前模板分区">
+      ${template.sections.map((section) => `<span>${escapeHtml(section.label)}</span>`).join("")}
+    </div>
+  `;
+}
+
+function ensureActiveNoteTemplate() {
+  const note = getActiveNote();
+  if (!note) return;
+  const template = getTypeTemplate(note.type);
+  if (isBlankOrKnownTemplate(note.body)) {
+    note.body = template.body;
+    if (els.noteBody) els.noteBody.value = template.body;
+    note.updatedAt = Date.now();
+    renderEditorStatus(note);
+    scheduleSave();
+    scheduleNoteRender(note);
+  }
+}
+
+// [收敛层一] 原对 createNote / renderEditor 的运行时包裹(monkey-patch)已删除;
+// 等效逻辑已内联进核心 createNote / renderEditor,由 window.__buliTypeTemplatesReady 守护。
+
+// 模块初始化(原 IIFE 尾部):编辑器元素就绪时安装「类型切换」监听、置就绪标志、套用初始模板。
+if (typeof els !== "undefined" && els && els.editorForm && els.noteType && els.noteBody
+    && !window.__buliTypeTemplatesReady) {
+  els.noteType.addEventListener("change", () => {
+    const note = getActiveNote();
+    if (!note) return;
+    const newType = els.noteType.value || "diary";
+    const nextTemplate = getTypeTemplate(newType);
+    note.type = newType;
+
+    if (isBlankOrKnownTemplate(els.noteBody.value)) {
+      els.noteBody.value = nextTemplate.body;
+      note.body = nextTemplate.body;
+      note.updatedAt = Date.now();
+      renderEditorStatus(note);
+      scheduleSave();
+      scheduleNoteRender(note);
+    }
+
+    renderTypeTemplateUI();
+  });
+
+  window.__buliTypeTemplatesReady = true;
+  ensureActiveNoteTemplate();
+  renderTypeTemplateUI();
+}
+/*
+ * 空白页壁纸上传修复补丁
+ * 作用：修复安卓端 / WebView 中“添加壁纸”点击不稳定、图片过大保存失败、部分机型 crypto.randomUUID 不兼容等问题。
+ * 使用：复制到 app.js 最末尾；或者直接替换补丁包里的完整 app.js。
+ */
+
+function createNotebookSafeId(prefix = "id") {
+  try {
+    if (window.crypto && typeof window.crypto.randomUUID === "function") {
+      return `${prefix}-${window.crypto.randomUUID()}`;
+    }
+  } catch (error) {
+    console.warn("crypto.randomUUID unavailable", error);
+  }
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function getWallpaperUploadTitle(file) {
+  const name = String(file?.name || "").replace(/\.[^.]+$/, "").trim();
+  return name || "自定义壁纸";
+}
+
+function canvasToNotebookWallpaperDataUrl(image, width, height, quality = 0.72) {
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.max(1, Math.round(width));
+  canvas.height = Math.max(1, Math.round(height));
+  const context = canvas.getContext("2d", { alpha: false });
+  if (!context) throw new Error("Canvas is not supported");
+  context.fillStyle = "#f8f1df";
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  context.drawImage(image, 0, 0, canvas.width, canvas.height);
+  return canvas.toDataURL("image/jpeg", quality);
+}
+
+function readWallpaperImageFile(file) {
+  return new Promise((resolve, reject) => {
+    if (!file || !String(file.type || "").startsWith("image/")) {
+      reject(new Error("不是可用的图片文件"));
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.addEventListener("load", () => {
+      const source = String(reader.result || "");
+      if (!source) {
+        reject(new Error("图片读取为空"));
+        return;
+      }
+
+      const image = new Image();
+      image.addEventListener("load", () => {
+        try {
+          const width = image.naturalWidth || image.width || 1;
+          const height = image.naturalHeight || image.height || 1;
+          const profiles = [
+            { maxSide: 1280, quality: 0.74, maxLength: 760000 },
+            { maxSide: 1080, quality: 0.72, maxLength: 640000 },
+            { maxSide: 900, quality: 0.7, maxLength: 520000 },
+            { maxSide: 760, quality: 0.68, maxLength: 420000 }
+          ];
+          let fallback = source;
+          for (const profile of profiles) {
+            const scale = Math.min(1, profile.maxSide / Math.max(width, height));
+            const nextWidth = width * scale;
+            const nextHeight = height * scale;
+            const dataUrl = canvasToNotebookWallpaperDataUrl(image, nextWidth, nextHeight, profile.quality);
+            fallback = dataUrl;
+            if (dataUrl.length <= profile.maxLength) {
+              resolve(dataUrl);
+              return;
+            }
+          }
+          resolve(fallback);
+        } catch (error) {
+          reject(error);
+        }
+      });
+      image.addEventListener("error", () => {
+        reject(new Error("图片格式暂不支持，请换 JPG、PNG 或 WebP 图片"));
+      });
+      image.src = source;
+    });
+    reader.addEventListener("error", () => reject(new Error("图片读取失败")));
+    reader.readAsDataURL(file);
+  });
+}
+
+function createAddPageWallpaperOption() {
+  const card = document.createElement("div");
+  card.className = "page-theme-option page-theme-add page-theme-upload-fixed";
+
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = "image/jpeg,image/png,image/webp,image/gif,image/*";
+  input.multiple = true;
+  input.id = createNotebookSafeId("page-wallpaper-input");
+  input.addEventListener("change", addPageWallpapers);
+
+  const label = document.createElement("label");
+  label.className = "page-theme-select page-theme-add-button";
+  label.htmlFor = input.id;
+  label.setAttribute("role", "button");
+  label.setAttribute("tabindex", "0");
+  label.innerHTML = "<span>添加壁纸</span><small>从相册选择</small>";
+  label.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      input.click();
+    }
+  });
+
+  card.append(input, label);
+  return card;
+}
+
+async function addPageWallpapers(event) {
+  const input = event.currentTarget;
+  const files = [...(input.files || [])].filter((file) => String(file.type || "").startsWith("image/"));
+  if (!files.length) return;
+
+  const previousWallpapers = Array.isArray(pageWallpapers) ? [...pageWallpapers] : [];
+  const added = [];
+  const skipped = [];
+
+  try {
+    for (const file of files.slice(0, 12)) {
+      try {
+        const image = await readWallpaperImageFile(file);
+        added.push({
+          id: createNotebookSafeId("wallpaper"),
+          title: getWallpaperUploadTitle(file),
+          image
+        });
+      } catch (error) {
+        console.warn("Skipped wallpaper image", file?.name, error);
+        skipped.push(file?.name || "未命名图片");
+      }
+    }
+
+    if (!added.length) {
+      alert("壁纸添加失败：图片格式可能不受支持，建议换 JPG、PNG 或 WebP 图片再试。");
+      return;
+    }
+
+    pageWallpapers = [...previousWallpapers, ...added];
+    state.pageWallpapers = pageWallpapers;
+
+    if (!savePageWallpapers()) {
+      pageWallpapers = previousWallpapers;
+      state.pageWallpapers = pageWallpapers;
+      renderPageWallpaperPicker(normalizePageTheme(getActiveNote()?.pageTheme));
+      return;
+    }
+
+    // 确保壁纸图片真正落盘后再继续(与“添加佛像”一致),防止切走/关闭后丢失。
+    try { await BuliImageLayer.flush(); } catch (e) { /* ignore */ }
+
+    const firstAdded = added[0];
+    if (firstAdded) {
+      updatePageTheme(firstAdded.id);
+      renderPageTheme(firstAdded.id);
+    } else {
+      renderPageWallpaperPicker(normalizePageTheme(getActiveNote()?.pageTheme));
+    }
+
+    if (skipped.length) {
+      alert(`已添加 ${added.length} 张壁纸；另有 ${skipped.length} 张图片格式不支持，未添加。`);
+    }
+  } catch (error) {
+    pageWallpapers = previousWallpapers;
+    state.pageWallpapers = pageWallpapers;
+    console.warn("Failed to add page wallpapers", error);
+    alert("壁纸读取失败，请换一张 JPG、PNG 或 WebP 图片再试。");
+  } finally {
+    input.value = "";
+  }
+}
+/* === Buli Complete Logic Fix: note index, mature templates, classroom pages, offering buttons === */
+(function buliCompleteLogicFix() {
+  if (window.__BULI_COMPLETE_LOGIC_FIX_V1__) return;
+  window.__BULI_COMPLETE_LOGIC_FIX_V1__ = true;
+
+  const $ = (selector, root = document) => root.querySelector(selector);
+  const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
+  const today = () => new Date().toISOString().slice(0, 10);
+  const safeText = (value) => String(value || "").trim();
+  const id = () => (globalThis.crypto?.randomUUID?.() || `buli-${Date.now()}-${Math.random().toString(16).slice(2)}`);
+
+  const NOTE_TEMPLATES_MATURE = {
+    diary: {
+      label: "日课日记",
+      title: "日课日记",
+      sourcePlaceholder: "地点 / 今日因缘",
+      tags: ["日课", "反观", "感恩"],
+      body: `日期：
+天气：
+地点：
+今日心境：
+
+一、今日所历
+记录今天重要的人、事、因缘。
+
+二、今日所感
+记录内心触动、烦恼、欢喜、惭愧、感恩。
+
+三、今日修持
+□ 念诵
+□ 闻法
+□ 供灯
+□ 放生
+□ 忏悔
+□ 回向
+□ 其他：
+
+四、今日反观
+今天我在哪一处起了执著？
+今天我有没有伤害众生？
+今天我有没有生起一念善心？
+
+五、今日感恩
+-
+
+六、明日一愿
+愿我明日：
+-`
+    },
+    reading: {
+      label: "法本读书笔记",
+      title: "法本读书笔记",
+      sourcePlaceholder: "书名 / 法本 / 讲记",
+      tags: ["法本", "读书", "待复习"],
+      body: `书名 / 法本：
+作者 / 译者：
+章节 / 品名：
+页码 / 位置：
+阅读日期：
+
+一、原文摘录
+「」
+
+二、关键词
+#无常  #菩提心  #空性  #出离心
+
+三、我的理解
+这段文字主要说明：
+-
+
+四、与修行的关系
+它提醒我：
+它对治我：
+它可以落实在：
+
+五、疑问与待查
+-
+
+六、复习标记
+□ 需要重读
+□ 需要背诵
+□ 需要请教
+□ 已理解
+□ 已落实`
+    },
+    memo: {
+      label: "备忘录",
+      title: "备忘录",
+      sourcePlaceholder: "地点 / 相关事项",
+      tags: ["备忘", "待办"],
+      body: `事项标题：
+日期：
+提醒时间：
+重要程度：普通 / 重要 / 紧急
+
+一、待办事项
+□ 
+□ 
+□ 
+
+二、所需准备
+-
+
+三、相关联系人 / 地点
+-
+
+四、完成记录
+-`
+    },
+    timeline: {
+      label: "教言摘录",
+      title: "教言摘录",
+      sourcePlaceholder: "上师 / 来源 / 法本 / 开示",
+      tags: ["教言", "闻思", "待落实"],
+      body: `教言标题：
+上师 / 来源：
+法本 / 开示：
+日期：
+
+一、教言原文
+「」
+
+二、关键词
+#菩提心  #无常  #依止上师
+
+三、要义整理
+这句教言的核心是：
+-
+
+四、对我的提醒
+我应当反观：
+-
+
+五、落实方式
+今天可以落实的一件事：
+-
+
+六、回向 / 发愿
+愿以此闻思善根：
+-`
+    }
+  };
+
+  const CLASSROOM_TEMPLATES_MATURE = {
+    index: {
+      label: "索引",
+      title: "闻思修学目录",
+      hint: "自动汇集已保存的闻法、闻思、温习与法本整理。"
+    },
+    outline: {
+      label: "提纲",
+      title: "闻法提纲",
+      status: "capture",
+      tags: "闻法提纲, 待整理",
+      body: `闻法主题：
+法本 / 开示来源：
+上师 / 法师：
+日期：
+
+一、本课主旨
+-
+
+二、前后文脉络
+-
+
+三、主要教言
+1.
+2.
+3.
+
+四、关键词 / 法义名相
+-
+
+五、我当下最受触动之处
+-
+
+六、待请教 / 待查阅
+-`
+    },
+    cornell: {
+      label: "闻思",
+      title: "闻思整理",
+      status: "organizing",
+      tags: "闻思整理, 待复习",
+      body: `闻法主题：
+日期：
+
+【线索 / 提问区】
+- 本课最核心的问题是：
+- 上师反复强调的是：
+- 我还没有真正理解的是：
+
+【闻法记录区】
+1.
+2.
+3.
+
+【关键词】
+-
+
+【思维整理】
+这段法义对治的是：
+我过去的执著点是：
+可以如何落实到日常：
+
+【总结】
+用三句话总结今日闻思：
+1.
+2.
+3.`
+    },
+    review: {
+      label: "温习",
+      title: "温习复习",
+      status: "review",
+      tags: "温习复习, 待背诵",
+      body: `复习主题：
+复习日期：
+
+一、今日应熟记的教言 / 偈颂
+-
+
+二、必须理解的法义
+1.
+2.
+3.
+
+三、容易忘失 / 混淆之处
+-
+
+四、今日反观
+我是否真正用在身语意中：
+-
+
+五、下一步
+□ 重听开示
+□ 背诵原文
+□ 查阅法本
+□ 请教师兄 / 法师
+□ 落实一件善行`
+    },
+    slides: {
+      label: "法本",
+      title: "法本 / 开示整理",
+      status: "organizing",
+      tags: "法本整理, 共修分享",
+      body: `整理标题：
+适用场景：□ 自修  □ 共修  □ 分享  □ 汇报
+
+一、主题标题
+-
+
+二、三段式结构
+第一部分：
+第二部分：
+第三部分：
+
+三、可引用原文 / 教言
+「」
+
+四、相关公案 / 譬喻
+-
+
+五、图片 / 法本资料
+-
+
+六、结尾回向 / 发愿
+-`
+    }
+  };
+
+  const legacyTemplatePhrases = [
+    "今日所见", "心里想记住的一句", "书名 / 讲记", "摘录：", "教言原文", "落到修行",
+    "线索 / 提问：", "笔记区：", "课后总结：", "可整理成课件", "今日三条收获"
+  ];
+
+  function isEmptyOrTemplateText(value) {
+    const text = safeText(value);
+    if (!text) return true;
+    return legacyTemplatePhrases.some((phrase) => text.includes(phrase)) ||
+      Object.values(NOTE_TEMPLATES_MATURE).some((tpl) => safeText(tpl.body) === text) ||
+      Object.values(CLASSROOM_TEMPLATES_MATURE).some((tpl) => safeText(tpl.body) === text);
+  }
+
+  function setSaveMessage(message) {
+    const target = $("#saveState");
+    if (target) target.textContent = message;
+  }
+
+  function applyOrdinaryTemplate(type, options = {}) {
+    const tpl = NOTE_TEMPLATES_MATURE[type] || NOTE_TEMPLATES_MATURE.diary;
+    const note = typeof getActiveNote === "function" ? getActiveNote() : null;
+    if (!note) return;
+    const shouldReplace = options.force || isEmptyOrTemplateText(note.body) || isEmptyOrTemplateText($("#noteBody")?.value);
+    note.type = type;
+    if (!note.title && options.setTitle !== false) note.title = tpl.title;
+    if (!note.source && $("#noteSource")) $("#noteSource").placeholder = tpl.sourcePlaceholder || "";
+    if ((!Array.isArray(note.tags) || !note.tags.length) && Array.isArray(tpl.tags)) note.tags = [...tpl.tags];
+    if (shouldReplace) note.body = tpl.body;
+    note.updatedAt = Date.now();
+    syncOrdinaryFields(note);
+    if (typeof scheduleSave === "function") scheduleSave();
+    if (typeof render === "function") render();
+    renderEnhancedOrdinaryPanels();
+  }
+
+  function syncOrdinaryFields(note) {
+    if (!note) return;
+    const fields = {
+      noteTitle: note.title || "",
+      noteType: note.type || "diary",
+      noteDate: note.date || today(),
+      notePerson: note.person || "",
+      noteSource: note.source || "",
+      noteTags: Array.isArray(note.tags) ? note.tags.join(", ") : "",
+      noteBody: note.body || ""
+    };
+    Object.entries(fields).forEach(([key, value]) => {
+      const el = $(`#${key}`);
+      if (!el) return;
+      el.value = value;
+    });
+  }
+
+  function createManagedNote(type) {
+    const nextType = type || $("#noteType")?.value || (typeof getActiveNote === "function" ? getActiveNote()?.type : "") || "diary";
+    const tpl = NOTE_TEMPLATES_MATURE[nextType] || NOTE_TEMPLATES_MATURE.diary;
+    const note = typeof createNote === "function" ? createNote({ type: nextType }) : null;
+    if (!note) return;
+    note.type = nextType;
+    note.title = tpl.title;
+    note.date = today();
+    note.source = "";
+    note.tags = [...tpl.tags];
+    note.body = tpl.body;
+    note.updatedAt = Date.now();
+    if (typeof selectNote === "function") selectNote(note.id);
+    syncOrdinaryFields(note);
+    if (typeof scheduleSave === "function") scheduleSave();
+    if (typeof scrollToEditor === "function") scrollToEditor();
+    if (typeof render === "function") render();
+    setSaveMessage("已新建一页");
+  }
+
+  function saveCurrentOrdinaryNote() {
+    if (typeof updateActiveNote === "function") updateActiveNote();
+    try {
+      if (typeof state !== "undefined" && Array.isArray(state.notes)) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state.notes));
+      }
+      setSaveMessage("已保存");
+      renderAllEnhanced();
+    } catch (error) {
+      console.warn("Buli save note failed", error);
+      setSaveMessage("保存失败");
+      alert("保存失败。若刚添加了图片，请换较小图片后再试。");
+    }
+  }
+
+  function deleteCurrentOrdinaryNote() {
+    const note = typeof getActiveNote === "function" ? getActiveNote() : null;
+    if (!note) return;
+    if (!confirm(`确定删除「${note.title || "当前笔记"}」吗？删除后不可恢复。`)) return;
+    if (typeof state !== "undefined" && Array.isArray(state.notes)) {
+      state.notes = state.notes.filter((item) => item.id !== note.id);
+      if (!state.notes.length && typeof createNote === "function") createNote({ silent: true, type: "diary" });
+      state.activeId = state.notes[0]?.id;
+      if (typeof scheduleSave === "function") scheduleSave();
+      if (typeof render === "function") render();
+      renderAllEnhanced();
+    } else {
+      $("#deleteButton")?.click();
+    }
+  }
+
+  function returnToIndex() {
+    if (typeof updateActiveNote === "function") updateActiveNote();
+    const indexPage = $(".notebook-index-page") || $(".note-toc-feature");
+    if (typeof scrollToNotebookPage === "function" && indexPage) {
+      scrollToNotebookPage(indexPage);
+    } else if (indexPage) {
+      indexPage.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }
+
+  function enhanceOrdinaryEditor() {
+    const editor = $(".editor-card");
+    const toolbar = $(".editor-toolbar", editor);
+    const form = $("#editorForm");
+    if (!editor || !toolbar || !form || editor.dataset.buliEnhanced === "true") return;
+    editor.dataset.buliEnhanced = "true";
+    editor.classList.add("buli-enhanced-editor");
+
+    const returnBar = document.createElement("section");
+    returnBar.className = "buli-editor-returnbar";
+    returnBar.innerHTML = `
+      <button type="button" class="buli-return-button" data-buli-note-back>‹ 返回索引</button>
+      <div><strong>修行手账 · 笔记编辑</strong><span>新建内容另起一页，保存后自动进入目录</span></div>
+    `;
+    toolbar.before(returnBar);
+    returnBar.querySelector("[data-buli-note-back]")?.addEventListener("click", returnToIndex);
+
+    const actionBar = document.createElement("section");
+    actionBar.className = "buli-editor-actionbar";
+    actionBar.innerHTML = `
+      <button type="button" class="primary" data-buli-note-new>＋ 新建</button>
+      <button type="button" data-buli-note-save>保存</button>
+      <button type="button" data-buli-note-edit>编辑</button>
+      <button type="button" class="danger" data-buli-note-delete>删除</button>
+    `;
+    toolbar.after(actionBar);
+    actionBar.querySelector("[data-buli-note-new]")?.addEventListener("click", () => createManagedNote($("#noteType")?.value || "diary"));
+    actionBar.querySelector("[data-buli-note-save]")?.addEventListener("click", saveCurrentOrdinaryNote);
+    actionBar.querySelector("[data-buli-note-edit]")?.addEventListener("click", () => $("#noteBody")?.focus());
+    actionBar.querySelector("[data-buli-note-delete]")?.addEventListener("click", deleteCurrentOrdinaryNote);
+    ["#editorNewNoteButton", "#deleteButton"].forEach((selector) => {
+      const duplicate = $(selector);
+      if (!duplicate) return;
+      duplicate.hidden = true;
+      duplicate.setAttribute("aria-hidden", "true");
+      duplicate.tabIndex = -1;
+    });
+
+    const typeTabs = document.createElement("nav");
+    typeTabs.className = "buli-note-type-tabs";
+    typeTabs.setAttribute("aria-label", "笔记分类页面");
+    typeTabs.innerHTML = [
+      ["diary", "日记"],
+      ["reading", "读书"],
+      ["memo", "备忘"],
+      ["timeline", "教言"]
+    ].map(([value, label]) => `<button type="button" data-buli-note-type="${value}">${label}</button>`).join("");
+    actionBar.after(typeTabs);
+    typeTabs.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-buli-note-type]");
+      if (!button) return;
+      const type = button.dataset.buliNoteType;
+      const select = $("#noteType");
+      if (select) select.value = type;
+      applyOrdinaryTemplate(type);
+    });
+
+    const panel = document.createElement("section");
+    panel.className = "buli-current-template-panel";
+    panel.id = "buliCurrentTemplatePanel";
+    typeTabs.after(panel);
+
+    $("#noteType")?.addEventListener("change", () => {
+      const type = $("#noteType")?.value || "diary";
+      applyOrdinaryTemplate(type);
+    });
+
+    ["#newNoteButton", "#indexNewNoteButton", "#editorNewNoteButton"].forEach((selector) => {
+      const button = $(selector);
+      if (!button || button.dataset.buliIntercepted === "true") return;
+      button.dataset.buliIntercepted = "true";
+      button.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        createManagedNote($("#noteType")?.value || "diary");
+      }, true);
+    });
+  }
+
+  function renderEnhancedOrdinaryPanels() {
+    const note = typeof getActiveNote === "function" ? getActiveNote() : null;
+    const type = note?.type || $("#noteType")?.value || "diary";
+    const tpl = NOTE_TEMPLATES_MATURE[type] || NOTE_TEMPLATES_MATURE.diary;
+    $$("[data-buli-note-type]").forEach((button) => {
+      button.classList.toggle("active", button.dataset.buliNoteType === type);
+    });
+    const panel = $("#buliCurrentTemplatePanel");
+    if (panel) {
+      panel.innerHTML = `
+        <div class="buli-template-title"><span>${tpl.label}</span><strong>${type === "diary" ? "日课 · 反观 · 发愿" : type === "reading" ? "法本 · 摘录 · 落实" : type === "memo" ? "事项 · 提醒 · 完成" : "教言 · 要义 · 实修"}</strong></div>
+        <p>${type === "diary" ? "适合记录一日因缘、心境、修持、反观与明日善愿。" : type === "reading" ? "适合法本、论典、开示的摘录、理解、疑问和复习。" : type === "memo" ? "适合快速记录待办事项、提醒时间、重要程度与完成情况。" : "适合保存上师教言、来源、关键词、要义整理与落实发愿。"}</p>
+      `;
+    }
+  }
+
+  function noteMatchesQuery(note, query) {
+    if (!query) return true;
+    return [note.title, note.source, note.person, note.body, ...(note.tags || [])].join(" ").toLowerCase().includes(query);
+  }
+
+  function noteIndexGroupLabel(note, mode) {
+    if (mode === "diary") return getTimeGroup(note.date);
+    if (mode === "reading") return safeText(note.source) || extractField(note.body, "书名 / 法本") || "未分类读书";
+    if (mode === "timeline") return (note.tags || [])[0] || extractField(note.body, "关键词") || "未分类教言";
+    if (mode === "memo") {
+      const body = safeText(note.body);
+      if (/已完成|完成记录[^\n]*\S/.test(body)) return "已完成";
+      if (/紧急|重要/.test(body)) return "重要事项";
+      return "今日待办";
+    }
+    return "最近记录";
+  }
+
+  function extractField(body, label) {
+    const lines = String(body || "").split(/\n/);
+    const line = lines.find((item) => item.includes(label));
+    if (!line) return "";
+    return line.split(/[：:]/).slice(1).join("：").trim();
+  }
+
+  function getTimeGroup(date) {
+    const value = safeText(date);
+    if (!value) return "无日期";
+    const now = new Date();
+    const d = new Date(`${value}T00:00:00`);
+    if (Number.isNaN(d.getTime())) return "更早";
+    const diff = Math.floor((new Date(now.toISOString().slice(0, 10)) - d) / 86400000);
+    if (diff <= 0) return "今日";
+    if (diff <= 7) return "本周";
+    if (d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()) return "本月";
+    return "更早";
+  }
+
+  function enhanceUnifiedIndex() {
+    const indexPage = $(".notebook-index-page");
+    if (!indexPage || $("#buliUnifiedIndex")) return;
+    const panel = document.createElement("section");
+    panel.className = "buli-unified-index";
+    panel.id = "buliUnifiedIndex";
+    const command = $(".index-command-panel", indexPage);
+    (command || $(".index-hero", indexPage) || indexPage).after(panel);
+    panel.addEventListener("click", (event) => {
+      const modeButton = event.target.closest("[data-buli-index-mode]");
+      if (modeButton) {
+        indexPage.dataset.buliIndexMode = modeButton.dataset.buliIndexMode;
+        renderUnifiedIndex();
+        return;
+      }
+      const card = event.target.closest("[data-buli-note-open]");
+      if (card) {
+        if (typeof selectNote === "function") selectNote(card.dataset.buliNoteOpen);
+        if (typeof scrollToEditor === "function") scrollToEditor();
+      }
+    });
+  }
+
+  function renderUnifiedIndex() {
+    const panel = $("#buliUnifiedIndex");
+    if (!panel || typeof state === "undefined") return;
+    const indexPage = $(".notebook-index-page");
+    const mode = indexPage?.dataset.buliIndexMode || state.filter || "all";
+    const query = safeText($("#searchInput")?.value || state.query).toLowerCase();
+    const notes = [...(state.notes || [])]
+      .filter((note) => mode === "all" || note.type === mode)
+      .filter((note) => noteMatchesQuery(note, query))
+      .sort((a, b) => (b.updatedAt || b.createdAt || 0) - (a.updatedAt || a.createdAt || 0));
+
+    const modeLabels = {
+      all: "全部索引",
+      diary: "日记目录",
+      reading: "读书目录",
+      memo: "备忘目录",
+      timeline: "教言目录"
+    };
+    const groups = new Map();
+    notes.forEach((note) => {
+      const group = noteIndexGroupLabel(note, mode);
+      if (!groups.has(group)) groups.set(group, []);
+      groups.get(group).push(note);
+    });
+    const tagged = notes.filter((note) => note.tags?.length).length;
+    const withImages = notes.filter((note) => note.images?.length).length;
+    const reviewLike = notes.filter((note) => /复习|背诵|待查|请教/.test([note.body, ...(note.tags || [])].join(" "))).length;
+
+    panel.innerHTML = `
+      <div class="buli-index-heading">
+        <div><span>དཀར་ཆག། 修行手账索引</span><strong>${modeLabels[mode] || "全部索引"}</strong></div>
+        <small>日记按时间，读书按法本，教言按主题，备忘按状态，闻思按类型与复习状态。</small>
+      </div>
+      <nav class="buli-index-modes" aria-label="索引分类">
+        ${[["all", "全部"], ["diary", "日记"], ["reading", "读书"], ["memo", "备忘"], ["timeline", "教言"]].map(([value, label]) => `<button type="button" class="${value === mode ? "active" : ""}" data-buli-index-mode="${value}">${label}</button>`).join("")}
+      </nav>
+      <div class="buli-index-stats">
+        <span><strong>${notes.length}</strong>当前</span>
+        <span><strong>${tagged}</strong>有标签</span>
+        <span><strong>${reviewLike}</strong>待复习/背诵</span>
+        <span><strong>${withImages}</strong>有图片</span>
+      </div>
+      <div class="buli-index-groups">
+        ${notes.length ? [...groups.entries()].map(([group, items]) => `
+          <section class="buli-index-group">
+            <h3>▼ ${group} <small>${items.length} 条</small></h3>
+            ${items.map((note, index) => `
+              <article class="buli-index-card" data-buli-note-open="${note.id}">
+                <span>${String(index + 1).padStart(2, "0")}</span>
+                <div><strong>${safeText(note.title) || "未命名笔记"}</strong><small>${typeLabels?.[note.type] || "笔记"} · ${safeText(note.date) || "无日期"}${note.source ? ` · ${note.source}` : ""}</small>${note.tags?.length ? `<em>${note.tags.slice(0, 4).map((tag) => `#${tag}`).join(" ")}</em>` : ""}</div>
+                <b>›</b>
+              </article>
+            `).join("")}
+          </section>
+        `).join("") : `<p class="buli-empty-note">暂无匹配内容。点击“新建”开始记录。</p>`}
+      </div>
+    `;
+  }
+
+  function enhanceClassroom() {
+    const page = $(".ppt-organizer-page");
+    const form = $("#pptNoteForm");
+    const commandbar = $(".ppt-note-commandbar", page);
+    if (!page || !form || !commandbar || page.dataset.buliClassroomEnhanced === "true") return;
+    page.dataset.buliClassroomEnhanced = "true";
+    page.classList.add("buli-classroom-enhanced");
+    page.dataset.buliClassroomMode = "index";
+
+    if (typeof PPT_NOTE_TEMPLATES !== "undefined") {
+      PPT_NOTE_TEMPLATES.outline = { label: "闻法提纲", body: CLASSROOM_TEMPLATES_MATURE.outline.body };
+      PPT_NOTE_TEMPLATES.cornell = { label: "闻思整理", body: CLASSROOM_TEMPLATES_MATURE.cornell.body };
+      PPT_NOTE_TEMPLATES.review = { label: "温习复习", body: CLASSROOM_TEMPLATES_MATURE.review.body };
+      PPT_NOTE_TEMPLATES.slides = { label: "法本整理", body: CLASSROOM_TEMPLATES_MATURE.slides.body };
+    }
+
+    const shell = document.createElement("section");
+    shell.className = "buli-classroom-shell";
+    shell.innerHTML = `
+      <div class="buli-classroom-top">
+        <div><span>སློབ་ཁྲིད། 闻思修学</span><strong>课堂笔记系统</strong></div>
+        <small>新建另起一页，保存后进入索引目录</small>
+      </div>
+      <nav class="buli-classroom-tabs" aria-label="课堂笔记页面">
+        <button type="button" class="active" data-buli-classroom-mode="index">索引</button>
+        <button type="button" data-buli-classroom-mode="board">看板</button>
+        <button type="button" data-buli-classroom-mode="outline">提纲</button>
+        <button type="button" data-buli-classroom-mode="cornell">闻思</button>
+        <button type="button" data-buli-classroom-mode="review">温习</button>
+        <button type="button" data-buli-classroom-mode="slides">法本</button>
+      </nav>
+      <div class="buli-classroom-actions">
+        <button type="button" class="primary" data-buli-classroom-new>＋ 新建</button>
+        <button type="button" data-buli-classroom-save>保存</button>
+        <button type="button" data-buli-classroom-edit>编辑</button>
+        <button type="button" class="danger" data-buli-classroom-clear>清空草稿</button>
+      </div>
+      <section class="buli-classroom-index" id="buliClassroomIndex"></section>
+      <section class="buli-classroom-current" id="buliClassroomCurrent"></section>
+    `;
+    commandbar.after(shell);
+
+    shell.addEventListener("click", (event) => {
+      const tab = event.target.closest("button[data-buli-classroom-mode]");
+      if (tab) {
+        switchClassroomMode(tab.dataset.buliClassroomMode);
+        return;
+      }
+      const insertBtn = event.target.closest("[data-buli-template-insert]");
+      if (insertBtn) {
+        insertClassroomTemplate(insertBtn.dataset.buliTemplateInsert);
+        return;
+      }
+      if (event.target.closest("[data-buli-classroom-new]")) {
+        resetClassroomDraft(true);
+        return;
+      }
+      if (event.target.closest("[data-buli-classroom-save]")) {
+        if (typeof form.requestSubmit === "function") form.requestSubmit();
+        else form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+        return;
+      }
+      if (event.target.closest("[data-buli-classroom-edit]")) {
+        form.elements.body?.focus();
+        return;
+      }
+      if (event.target.closest("[data-buli-classroom-clear]")) {
+        if (confirm("清空当前课堂笔记草稿？已保存的笔记不会删除。")) resetClassroomDraft(false);
+        return;
+      }
+      const adv = event.target.closest("[data-buli-ppt-advance]");
+      if (adv) {
+        event.stopPropagation();
+        if (typeof cyclePptNoteStatus === "function") cyclePptNoteStatus(adv.dataset.buliPptAdvance);
+        return;
+      }
+      const open = event.target.closest("[data-buli-ppt-open]");
+      if (open) {
+        const card = document.querySelector(`[data-module-key="pptNotes"][data-module-id="${open.dataset.buliPptOpen}"]`);
+        card?.scrollIntoView({ behavior: "smooth", block: "center" });
+        card?.classList.add("buli-highlight");
+        setTimeout(() => card?.classList.remove("buli-highlight"), 1200);
+      }
+    });
+
+    form.elements.body?.classList.add("buli-classroom-body-input");
+    renderClassroomPanels();
+  }
+
+  function switchClassroomMode(mode) {
+    const page = $(".ppt-organizer-page");
+    if (!page) return;
+    page.dataset.buliClassroomMode = mode;
+    $$("[data-buli-classroom-mode]").forEach((button) => button.classList.toggle("active", button.dataset.buliClassroomMode === mode));
+    if (mode !== "index") applyClassroomTemplate(mode);
+    renderClassroomPanels();
+  }
+
+  function applyClassroomTemplate(mode) {
+    const form = $("#pptNoteForm");
+    const tpl = CLASSROOM_TEMPLATES_MATURE[mode];
+    if (!form || !tpl) return;
+    if (!safeText(form.elements.title.value)) form.elements.title.value = tpl.title;
+    if (form.elements.status && tpl.status) form.elements.status.value = tpl.status;
+    if (form.elements.tags && !safeText(form.elements.tags.value)) form.elements.tags.value = tpl.tags || "";
+    const body = form.elements.body;
+    if (body && isEmptyOrTemplateText(body.value)) body.value = tpl.body;
+    body?.focus();
+  }
+
+  function insertClassroomTemplate(mode) {
+    const form = $("#pptNoteForm");
+    const tpl = CLASSROOM_TEMPLATES_MATURE[mode];
+    if (!form || !tpl) return;
+    if (!safeText(form.elements.title?.value)) form.elements.title.value = tpl.title;
+    if (form.elements.status && tpl.status) form.elements.status.value = tpl.status;
+    if (form.elements.tags && !safeText(form.elements.tags.value)) form.elements.tags.value = tpl.tags || "";
+    const body = form.elements.body;
+    if (body) {
+      if (isEmptyOrTemplateText(body.value)) {
+        body.value = tpl.body;
+      } else {
+        body.value = body.value.replace(/\s+$/, "") + "\n\n" + tpl.body;
+      }
+      body.dispatchEvent(new Event("input", { bubbles: true }));
+      body.focus();
+    }
+    try { form.scrollIntoView({ behavior: "smooth", block: "center" }); } catch (e) { /* ignore */ }
+  }
+
+  function resetClassroomDraft(applyTemplate = true) {
+    const form = $("#pptNoteForm");
+    if (!form) return;
+    const mode = $(".ppt-organizer-page")?.dataset.buliClassroomMode || "outline";
+    form.reset();
+    if (applyTemplate && mode !== "index") applyClassroomTemplate(mode);
+    form.elements.title?.focus();
+  }
+
+  function renderClassroomPanels() {
+    const page = $(".ppt-organizer-page");
+    const index = $("#buliClassroomIndex");
+    const current = $("#buliClassroomCurrent");
+    if (!page || !index || !current || typeof state === "undefined") return;
+    const mode = page.dataset.buliClassroomMode || "index";
+    $$("[data-buli-classroom-mode]").forEach((button) => button.classList.toggle("active", button.dataset.buliClassroomMode === mode));
+    const allNotes = [...(state.modules?.pptNotes || [])].sort((a, b) => (b.updatedAt || b.createdAt || 0) - (a.updatedAt || a.createdAt || 0));
+    const due = allNotes.filter((note) => typeof isPptReviewDue === "function" && isPptReviewDue(note)).length;
+    const done = allNotes.filter((note) => note.status === "done").length;
+    const attachments = allNotes.filter((note) => note.attachment).length;
+    const isBoardMode = mode === "board";
+    index.hidden = !(mode === "index" || isBoardMode);
+    current.hidden = mode === "index" || isBoardMode;
+
+    if (mode === "index") {
+      const groups = new Map();
+      allNotes.forEach((note) => {
+        const group = getTimeGroup(note.reviewDate || new Date(note.updatedAt || note.createdAt || Date.now()).toISOString().slice(0, 10));
+        if (!groups.has(group)) groups.set(group, []);
+        groups.get(group).push(note);
+      });
+      index.innerHTML = `
+        <div class="buli-classroom-summary">
+          <span><strong>${allNotes.length}</strong>全部</span>
+          <span><strong>${due}</strong>待复习</span>
+          <span><strong>${done}</strong>已圆满</span>
+          <span><strong>${attachments}</strong>有附件</span>
+        </div>
+        <div class="buli-classroom-groups">
+          ${allNotes.length ? [...groups.entries()].map(([group, items]) => `
+            <section class="buli-classroom-group">
+              <h3>▼ ${group} <small>${items.length} 条</small></h3>
+              ${items.map((note, index) => `
+                <article class="buli-classroom-card" data-buli-ppt-open="${note.id}">
+                  <span>${String(index + 1).padStart(2, "0")}</span>
+                  <div><strong>${safeText(note.title) || "未命名课堂笔记"}</strong><small>${typeof getPptStatusOption === "function" ? getPptStatusOption(note.status).label : note.status || "整理中"} · ${safeText(note.subtitle) || "课堂笔记"}</small>${(note.tags || []).length ? `<em>${(note.tags || []).slice(0, 4).map((tag) => `#${tag}`).join(" ")}</em>` : ""}</div>
+                  <b>›</b>
+                </article>`).join("")}
+            </section>`).join("") : `<p class="buli-empty-note">暂无课堂笔记。可点击“提纲 / 闻思 / 温习 / 法本”新建一页。</p>`}
+        </div>
+      `;
+    } else if (isBoardMode) {
+      const cols = (typeof PPT_NOTE_STATUS_OPTIONS !== "undefined" && PPT_NOTE_STATUS_OPTIONS.length)
+        ? PPT_NOTE_STATUS_OPTIONS
+        : [{ id: "capture", label: "速记" }, { id: "organizing", label: "整理中" }, { id: "review", label: "待复习" }, { id: "done", label: "已完成" }];
+      const colIds = new Set(cols.map((c) => c.id));
+      const buckets = {};
+      cols.forEach((c) => { buckets[c.id] = []; });
+      allNotes.forEach((note) => { buckets[colIds.has(note.status) ? note.status : cols[0].id].push(note); });
+      index.innerHTML = `
+        <div class="buli-board" aria-label="课堂笔记状态看板">
+          ${cols.map((col) => `
+            <section class="buli-board-col" data-status="${col.id}">
+              <h4>${col.label}<span>${buckets[col.id].length}</span></h4>
+              <div class="buli-board-cards">
+                ${buckets[col.id].length ? buckets[col.id].map((note) => `
+                  <article class="buli-board-card" data-buli-ppt-open="${note.id}">
+                    <strong>${safeText(note.title) || "未命名"}</strong>
+                    ${note.subtitle ? `<small>${safeText(note.subtitle)}</small>` : ""}
+                    ${note.status === "review" && note.reviewDate ? `<time>复习 ${safeText(note.reviewDate)}</time>` : ""}
+                    <button type="button" class="buli-board-advance" data-buli-ppt-advance="${note.id}" title="${typeof getPptStatusOption === "function" ? safeText(getPptStatusOption(note.status).action) : "推进"}">${col.id === "done" ? "↺" : "→"}</button>
+                  </article>`).join("") : `<p class="buli-board-empty">—</p>`}
+              </div>
+            </section>`).join("")}
+        </div>
+      `;
+    } else {
+      const tpl = CLASSROOM_TEMPLATES_MATURE[mode] || CLASSROOM_TEMPLATES_MATURE.outline;
+      const hint = mode === "outline" ? "听闻开示时抓主旨、脉络、主要教言和待请教的问题。"
+        : mode === "cornell" ? "康奈尔式：左栏记线索关键词，右栏记闻法内容，底部做思维总结与落实。"
+        : mode === "review" ? "适合背诵、温习、查漏补缺与修持落实。"
+        : "适合整理法本资料、共修分享、开示摘录与回向发愿。";
+      const escapeHtml = (text) => String(text || "")
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      current.innerHTML = `
+        <div class="buli-current-template-panel">
+          <div class="buli-current-template-head"><span>${tpl.label}</span><strong>${tpl.title}</strong></div>
+          <p>${hint}</p>
+          <pre class="buli-current-template-preview">${escapeHtml(tpl.body)}</pre>
+          <div class="buli-current-template-actions">
+            <button type="button" class="primary" data-buli-template-insert="${mode}">插入此模板到表单</button>
+            <small>已保存 ${allNotes.length} 篇课堂笔记</small>
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  // patchOfferingControls 已移除：该补丁会注入重复“添加佛像”按钮并造成图片被加两次，
+  // 现由 bindEvents 中的 addOfferingBuddhaImages / changeOfferingBuddhaWall 直接处理。
+
+  function patchNoteTemplateButtons() {
+    if (typeof NOTE_BODY_TEMPLATES !== "undefined") {
+      NOTE_BODY_TEMPLATES.daily = { label: "日课日记", body: NOTE_TEMPLATES_MATURE.diary.body };
+      NOTE_BODY_TEMPLATES.reading = { label: "法本读书笔记", body: NOTE_TEMPLATES_MATURE.reading.body };
+      NOTE_BODY_TEMPLATES.teaching = { label: "教言摘录", body: NOTE_TEMPLATES_MATURE.timeline.body };
+    }
+  }
+
+  function renderAllEnhanced() {
+    try {
+      renderEnhancedOrdinaryPanels();
+      renderUnifiedIndex();
+      renderClassroomPanels();
+    } catch (error) {
+      console.warn("Buli enhanced render failed", error);
+    }
+  }
+
+  function initEnhancements() {
+    patchNoteTemplateButtons();
+    enhanceOrdinaryEditor();
+    enhanceUnifiedIndex();
+    enhanceClassroom();
+    // patchOfferingControls() 已停用：它会注入重复的“添加佛像”按钮、给文件输入挂第二个 change
+    // 监听导致图片被添加两次，并以捕获阶段劫持“更改图像”。供灯按钮已由 bindEvents 正确绑定
+    //（addOfferingBuddhaImages / changeOfferingBuddhaWall → saveOfferingBuddhaFiles → IndexedDB）。
+    renderAllEnhanced();
+  }
+
+  // 增强渲染钩子：由核心 render / renderList / renderPptNotes 在各自开头调用，
+  // 取代过去“重新包裹核心函数”(monkey-patch) 的做法。行为一致：增强渲染仍在核心
+  // 渲染完成后通过 0 延时异步执行。
+  window.BuliEnhance = {
+    afterRender: function () { setTimeout(renderAllEnhanced, 0); },
+    afterList: function () { setTimeout(renderUnifiedIndex, 0); },
+    afterPpt: function () { setTimeout(renderClassroomPanels, 0); }
+  };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initEnhancements, { once: true });
+  } else {
+    setTimeout(initEnhancements, 0);
+  }
+})();
+
+/* ========================================================================== */
+/* 功课·一生账本:记录 / 总览(各功课分开) / 合并时间线 / 加行预设 / 导入恢复  */
+/* 在原有计数系统上扩展;count(一生累计)独立保留，无上限，圆满后仍可增长。      */
+/* ========================================================================== */
+
+function ensurePracticeLedgerFields(item) {
+  if (!item) return item;
+  if (!Array.isArray(item.sessions)) item.sessions = [];
+  if (typeof item.unit !== "string" || !item.unit) item.unit = "遍";
+  return item;
+}
+
+function logPracticeSession(item, delta) {
+  ensurePracticeLedgerFields(item);
+  item.sessions.push({ t: Date.now(), n: Math.trunc(delta) });
+  if (item.sessions.length > 2000) item.sessions = item.sessions.slice(-2000);
+}
+
+function practiceDayKey(ts) {
+  const d = new Date(ts);
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+}
+
+function practiceTodayTotal(item) {
+  ensurePracticeLedgerFields(item);
+  const today = practiceDayKey(Date.now());
+  return item.sessions.reduce((sum, s) => sum + (practiceDayKey(s.t) === today ? (Number(s.n) || 0) : 0), 0);
+}
+
+function buildPracticeOverview() {
+  const section = document.createElement("section");
+  section.className = "buli-practice-overview";
+
+  const banner = document.createElement("div");
+  banner.className = "buli-practice-banner";
+  const bannerTitle = document.createElement("div");
+  bannerTitle.className = "buli-practice-banner-title";
+  const strongEl = document.createElement("strong");
+  strongEl.textContent = "功课计数";
+  bannerTitle.append(document.createTextNode("ཉམས་ལེན། "), strongEl);
+  const bannerSub = document.createElement("div");
+  bannerSub.className = "buli-practice-banner-sub";
+  bannerSub.textContent = "一生功课总览 · 各自累计";
+  banner.append(bannerTitle, bannerSub);
+  section.append(banner);
+
+  const tools = document.createElement("div");
+  tools.className = "buli-practice-ledger-controls";
+  const presetBtn = document.createElement("button");
+  presetBtn.type = "button";
+  presetBtn.className = "buli-ledger-button";
+  presetBtn.textContent = "加行·五十万预设";
+  presetBtn.addEventListener("click", addNgondroPresets);
+  const exportBtn = document.createElement("button");
+  exportBtn.type = "button";
+  exportBtn.className = "buli-ledger-button ghost";
+  exportBtn.textContent = "导出账本备份";
+  exportBtn.addEventListener("click", () => { try { exportNotes(); } catch (e) { console.warn(e); } });
+  const importBtn = document.createElement("button");
+  importBtn.type = "button";
+  importBtn.className = "buli-ledger-button ghost";
+  importBtn.textContent = "导入备份";
+  const fileInput = document.createElement("input");
+  fileInput.type = "file";
+  fileInput.accept = "application/json,.json";
+  fileInput.style.display = "none";
+  fileInput.addEventListener("change", () => {
+    const file = fileInput.files && fileInput.files[0];
+    if (file) importBackupFromFile(file);
+    fileInput.value = "";
+  });
+  importBtn.addEventListener("click", () => fileInput.click());
+  tools.append(presetBtn, exportBtn, importBtn, fileInput);
+  section.append(tools);
+
+  const counters = state.modules.practiceCounters;
+  if (!counters.length) return section;
+
+  const list = document.createElement("div");
+  list.className = "buli-practice-overview-list";
+  counters.forEach((item) => {
+    ensurePracticeLedgerFields(item);
+    const row = document.createElement("div");
+    row.className = "buli-practice-overview-row";
+    const name = document.createElement("span");
+    name.className = "buli-practice-overview-name";
+    name.textContent = item.title || "未命名功课";
+    const right = document.createElement("span");
+    right.className = "buli-practice-overview-right";
+    const total = document.createElement("b");
+    total.textContent = formatNumber(item.count);
+    const unit = document.createElement("small");
+    unit.textContent = item.unit || "遍";
+    const numericCount = Number(item.count) || 0;
+    const numericTarget = Number(item.target) || 0;
+    const complete = numericTarget > 0 && numericCount >= numericTarget;
+    const chip = document.createElement("em");
+    if (complete) {
+      chip.className = "buli-practice-chip is-complete";
+      chip.textContent = "圆满 ✓";
+    } else {
+      const percent = numericTarget ? Math.min(100, Math.round((numericCount / numericTarget) * 100)) : 0;
+      chip.className = "buli-practice-chip";
+      chip.textContent = percent + "%";
+    }
+    right.append(total, unit, chip);
+    row.append(name, right);
+    list.append(row);
+  });
+  section.append(list);
+  return section;
+}
+
+function buildPracticeRecords(item) {
+  ensurePracticeLedgerFields(item);
+  const wrap = document.createElement("div");
+  wrap.className = "buli-practice-records";
+  if (!item.sessions.length) {
+    const none = document.createElement("p");
+    none.className = "buli-practice-records-empty";
+    none.textContent = "暂无记录，点 + 或「记一笔」即可开始记录。";
+    wrap.append(none);
+    return wrap;
+  }
+  const ordered = item.sessions.slice().reverse();
+  const shortFmt = (s) => {
+    const d = new Date(s.t);
+    const sign = (Number(s.n) || 0) >= 0 ? "+" : "−";
+    return (d.getMonth() + 1) + "/" + d.getDate() + " " + sign + formatNumber(Math.abs(Number(s.n) || 0));
+  };
+  const recent = document.createElement("p");
+  recent.className = "buli-practice-records-recent";
+  recent.textContent = "近期 " + ordered.slice(0, 3).map(shortFmt).join(" · ");
+  wrap.append(recent);
+
+  if (ordered.length > 3) {
+    const details = document.createElement("details");
+    details.className = "buli-practice-records-all";
+    const summary = document.createElement("summary");
+    summary.textContent = "全部记录（" + ordered.length + " 次）";
+    details.append(summary);
+    const ul = document.createElement("ul");
+    ordered.forEach((s) => {
+      const li = document.createElement("li");
+      const sign = (Number(s.n) || 0) >= 0 ? "+" : "−";
+      li.textContent = practiceDayKey(s.t) + "　" + sign + formatNumber(Math.abs(Number(s.n) || 0)) + " " + (item.unit || "遍");
+      ul.append(li);
+    });
+    details.append(ul);
+    wrap.append(details);
+  }
+  return wrap;
+}
+
+function buildPracticeTimeline() {
+  const all = [];
+  state.modules.practiceCounters.forEach((item) => {
+    ensurePracticeLedgerFields(item);
+    item.sessions.forEach((s) => all.push({ t: s.t, n: s.n, title: item.title, unit: item.unit || "遍" }));
+  });
+  const details = document.createElement("details");
+  details.className = "buli-practice-timeline";
+  const summary = document.createElement("summary");
+  summary.textContent = "修行记录 · 全部（合并时间线）";
+  details.append(summary);
+
+  if (!all.length) {
+    const none = document.createElement("p");
+    none.className = "buli-practice-records-empty";
+    none.textContent = "还没有记录。每次完成功课点 +，这里会按时间汇总各门功课。";
+    details.append(none);
+    return details;
+  }
+  all.sort((a, b) => b.t - a.t);
+  const cap = 80;
+  const list = document.createElement("ul");
+  list.className = "buli-practice-timeline-list";
+  all.slice(0, cap).forEach((s) => {
+    const li = document.createElement("li");
+    const dateEl = document.createElement("span");
+    dateEl.className = "buli-tl-date";
+    dateEl.textContent = practiceDayKey(s.t);
+    const nameEl = document.createElement("span");
+    nameEl.className = "buli-tl-name";
+    nameEl.textContent = s.title || "";
+    const amtEl = document.createElement("span");
+    amtEl.className = "buli-tl-amt";
+    const sign = (Number(s.n) || 0) >= 0 ? "+" : "−";
+    amtEl.textContent = sign + formatNumber(Math.abs(Number(s.n) || 0)) + " " + s.unit;
+    li.append(dateEl, nameEl, amtEl);
+    list.append(li);
+  });
+  details.append(list);
+  if (all.length > cap) {
+    const more = document.createElement("p");
+    more.className = "buli-practice-records-empty";
+    more.textContent = "仅显示最近 " + cap + " 条；更早记录已保存，可用「导出账本备份」查看。";
+    details.append(more);
+  }
+  return details;
+}
+
+function addNgondroPresets() {
+  const presets = [
+    { title: "皈依·大礼拜", subtitle: "སྐྱབས་འགྲོ།", unit: "个", step: 108, target: 100000 },
+    { title: "金刚萨埵心咒", subtitle: "རྡོ་རྗེ་སེམས་དཔའ།", unit: "遍", step: 108, target: 100000 },
+    { title: "曼茶罗供", subtitle: "མཎྜལ།", unit: "座", step: 108, target: 100000 },
+    { title: "上师瑜伽·祈祷", subtitle: "བླ་མའི་རྣལ་འབྱོར།", unit: "遍", step: 108, target: 100000 }
+  ];
+  const existing = new Set(state.modules.practiceCounters.map((it) => it.title));
+  const toAdd = presets.filter((p) => !existing.has(p.title));
+  if (!toAdd.length) {
+    alert("四加行功课已存在，无需重复添加。");
+    return;
+  }
+  const ok = confirm("将添加 " + toAdd.length + " 门加行功课（各以十万为一圆满，可继续增长）：\n" + toAdd.map((p) => "· " + p.title).join("\n"));
+  if (!ok) return;
+  toAdd.forEach((p) => {
+    state.modules.practiceCounters.push({
+      id: crypto.randomUUID(),
+      title: p.title,
+      subtitle: p.subtitle,
+      unit: p.unit,
+      count: 0,
+      target: p.target,
+      step: p.step,
+      sessions: [],
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    });
+  });
+  if (saveModules()) renderPracticeCounters();
+}
+
+/* [优化·死代码删除 2026-06-11] setupPracticeLedgerControls 已删除:它定义但从未被调用
+   (0 处调用),且它要加的「加行预设 / 导出账本备份 / 导入备份」三个按钮,实际已由
+   buildPracticeOverview(已接线、渲染中)提供——若再接线只会产生重复按钮。删除是纯收益。 */
+
+function getBackupItemMergeKeys(item) {
+  if (!item) return [];
+  const keys = [];
+  if (item.id) keys.push(`id:${item.id}`);
+  if (typeof item === "string") {
+    const text = item.trim();
+    if (text) keys.push(`text:${text}`);
+    return keys;
+  }
+  if (typeof item === "object") {
+    const fingerprint = [
+      item.title || "",
+      item.date || "",
+      item.body || item.text || "",
+      item.source || item.teacher || ""
+    ].map((value) => String(value).trim()).join("|");
+    if (fingerprint.replace(/\|/g, "")) keys.push(`fp:${fingerprint}`);
+  }
+  return keys;
+}
+
+function normalizeBackupPayload(data) {
+  if (Array.isArray(data)) {
+    return { appName: "legacy-array", notes: data };
+  }
+  return data;
+}
+
+function normalizeImportedNote(note) {
+  if (!note || typeof note !== "object") return null;
+  const date = String(note.date || new Date().toISOString().slice(0, 10)).slice(0, 10);
+  const parsedDate = Date.parse(`${date}T00:00:00`);
+  const createdAt = Number(note.createdAt) || (Number.isFinite(parsedDate) ? parsedDate : Date.now());
+  const tags = Array.isArray(note.tags)
+    ? note.tags.map(String).map((tag) => tag.trim()).filter(Boolean)
+    : String(note.tags || "").split(/[,，、\s]+/).map((tag) => tag.trim()).filter(Boolean);
+  return {
+    id: note.id || crypto.randomUUID(),
+    type: note.type || "diary",
+    title: String(note.title || "").trim(),
+    person: sanitizePersonName(note.person),
+    date,
+    source: String(note.source || "").trim(),
+    tags,
+    body: String(note.body || ""),
+    images: Array.isArray(note.images) ? note.images : [],
+    pageTheme: normalizePageTheme(note.pageTheme),
+    calendarMode: note.calendarMode || "gregorian",
+    pinned: Boolean(note.pinned),
+    createdAt,
+    updatedAt: Number(note.updatedAt) || createdAt
+  };
+}
+
+function normalizeImportedTeachingQuote(quote) {
+  if (typeof quote === "string") {
+    const text = quote.trim();
+    return text ? { id: crypto.randomUUID(), text, teacher: TEACHING_DEFAULT_TEACHER, createdAt: Date.now() } : null;
+  }
+  if (!quote || typeof quote !== "object") return null;
+  const text = String(quote.text || quote.body || "").trim();
+  if (!text) return null;
+  return {
+    id: quote.id || crypto.randomUUID(),
+    text,
+    teacher: normalizeTeacherLabel(quote.teacher || quote.person || TEACHING_DEFAULT_TEACHER),
+    createdAt: quote.createdAt || Date.now()
+  };
+}
+
+function mergeBackupArrayById(targetArr, incomingArr) {
+  // 一生安全合并：按 id 对齐；若双方都有 updatedAt，保留较新的一方，
+  // 这样导入一份旧备份永远不会把后来写的内容“倒退”回旧版。
+  const stats = { added: 0, updated: 0, kept: 0 };
+  if (!Array.isArray(targetArr) || !Array.isArray(incomingArr)) return stats;
+  const indexById = new Map();
+  targetArr.forEach((x, i) => {
+    getBackupItemMergeKeys(x).forEach((key) => indexById.set(key, i));
+  });
+  incomingArr.forEach((inc) => {
+    if (!inc) return;
+    const keys = getBackupItemMergeKeys(inc);
+    const matchedKey = keys.find((key) => indexById.has(key));
+    if (matchedKey) {
+      const at = indexById.get(matchedKey);
+      const cur = targetArr[at];
+      const curTime = Number(cur?.updatedAt ?? cur?.createdAt ?? 0);
+      const incTime = Number(inc?.updatedAt ?? inc?.createdAt ?? 0);
+      if (curTime && incTime && curTime >= incTime) {
+        stats.kept++;
+      } else {
+        targetArr[at] = inc;
+        stats.updated++;
+      }
+    } else {
+      keys.forEach((key) => indexById.set(key, targetArr.length));
+      targetArr.push(inc);
+      stats.added++;
+    }
+  });
+  return stats;
+}
+
+function importBackupFromFile(file) {
+  if (!file) return Promise.resolve({ ok: false, reason: "missing-file" });
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      let data;
+      try {
+        data = normalizeBackupPayload(JSON.parse(String(reader.result || "")));
+      } catch (e) {
+        alert("读取失败：这不是有效的备份文件。");
+        resolve({ ok: false, reason: "invalid-json" });
+        return;
+      }
+      if (!data || typeof data !== "object" || (!data.modules && !data.notes)) {
+        alert("这个文件看起来不是「不离手账」的备份。");
+        resolve({ ok: false, reason: "invalid-backup" });
+        return;
+      }
+      if (!confirm("导入会把备份里的功课、笔记等按条目合并进当前数据（不会删除你现有的内容）。继续吗？")) {
+        resolve({ ok: false, reason: "cancelled" });
+        return;
+      }
+      try {
+        const total = { added: 0, updated: 0, kept: 0 };
+        const tally = (s) => { total.added += s.added; total.updated += s.updated; total.kept += s.kept; };
+        if (data.modules && typeof data.modules === "object") {
+          Object.keys(data.modules).forEach((key) => {
+            if (!Array.isArray(data.modules[key])) return;
+            if (!Array.isArray(state.modules[key])) state.modules[key] = [];
+            tally(mergeBackupArrayById(state.modules[key], data.modules[key]));
+          });
+          if (Array.isArray(state.modules.practiceCounters)) state.modules.practiceCounters.forEach(ensurePracticeLedgerFields);
+          state.modules = normalizeModules(state.modules);
+        }
+        if (Array.isArray(data.notes)) {
+          tally(mergeBackupArrayById(state.notes, data.notes.map(normalizeImportedNote).filter(Boolean)));
+        }
+        if (Array.isArray(data.teachingQuotes)) {
+          tally(mergeBackupArrayById(state.teachingQuotes, data.teachingQuotes.map(normalizeImportedTeachingQuote).filter(Boolean)));
+        }
+
+        saveModules();
+        scheduleSave();
+        if (typeof saveTeachingQuotes === "function") { try { saveTeachingQuotes(); } catch (e) {} }
+        if (typeof render === "function") { try { render(); } catch (e) {} }
+        if (typeof renderList === "function") { try { renderList(); } catch (e) {} }
+        renderPracticeCounters();
+        try { renderDataSteward(); } catch (e) {}
+        alert(`导入完成：新增 ${total.added} 条 · 更新 ${total.updated} 条 · 保留更新版 ${total.kept} 条。\n（合并按时间取新，旧备份不会覆盖你后来写的内容。）`);
+        resolve({ ok: true, total });
+      } catch (e) {
+        console.warn("import failed", e);
+        alert("导入过程中出错，已尽量保留原有数据。");
+        resolve({ ok: false, reason: "import-error" });
+      }
+    };
+    reader.onerror = () => {
+      alert("读取文件失败。");
+      resolve({ ok: false, reason: "read-error" });
+    };
+    reader.readAsText(file);
+  });
+}
+
+/* ============================================================
+   一生维度 · 手账长期使用增强
+   1) 年份筛选器：几十年的笔记可按年快速跳转
+   2) 一生数据管家：数据量 / 存储占用 / 持久保存 / 备份提醒
+   ============================================================ */
+
+let noteYearOptionsSignature = "";
+
+function setupNoteYearFilter() {
+  if (document.querySelector("#noteYearSelect")) return;
+  const panel = document.querySelector(".index-command-panel");
+  if (!panel) return;
+  const select = document.createElement("select");
+  select.id = "noteYearSelect";
+  select.title = "按年份查看";
+  select.setAttribute("aria-label", "按年份查看笔记");
+  select.addEventListener("change", () => {
+    state.yearFilter = select.value;
+    scheduleIndexRender();
+  });
+  const anchor = els.indexOpenEditorButton && els.indexOpenEditorButton.parentElement === panel
+    ? els.indexOpenEditorButton
+    : null;
+  if (anchor) panel.insertBefore(select, anchor);
+  else panel.append(select);
+  refreshNoteYearOptions();
+}
+
+function refreshNoteYearOptions() {
+  const select = document.querySelector("#noteYearSelect");
+  if (!select) return;
+  const counts = new Map();
+  state.notes.forEach((note) => {
+    const year = String(note.date || "").slice(0, 4);
+    if (/^\d{4}$/.test(year)) counts.set(year, (counts.get(year) || 0) + 1);
+  });
+  const years = [...counts.keys()].sort((a, b) => b.localeCompare(a));
+  const signature = years.map((year) => `${year}:${counts.get(year)}`).join(",");
+  const current = state.yearFilter || "all";
+  if (signature === noteYearOptionsSignature && select.value === current) return;
+  noteYearOptionsSignature = signature;
+
+  select.replaceChildren();
+  const allOption = document.createElement("option");
+  allOption.value = "all";
+  allOption.textContent = "全部年份";
+  select.append(allOption);
+  years.forEach((year) => {
+    const option = document.createElement("option");
+    option.value = year;
+    option.textContent = `${year} 年（${counts.get(year)} 篇）`;
+    select.append(option);
+  });
+  if (current !== "all" && !counts.has(current)) {
+    state.yearFilter = "all";
+  }
+  select.value = state.yearFilter || "all";
+}
+
+async function refreshStoragePersistStatus(button = document.querySelector("#stewardPersistBtn"), status = document.querySelector("#stewardPersistStatus")) {
+  if (!button) return;
+  const storage = navigator.storage;
+  if (!storage?.persisted) {
+    button.textContent = "本机保护不可用";
+    button.disabled = true;
+    if (status) status.textContent = "此浏览器不提供本机保存保护；手账仍会正常保存，请以完整备份作为长期迁移保险。";
+    return;
+  }
+  try {
+    const persisted = await storage.persisted();
+    if (persisted) {
+      button.textContent = "本机保存已保护 ✓";
+      button.disabled = true;
+      if (status) status.textContent = "浏览器已承诺尽量保留此设备上的手账数据；跨设备、换版本仍请使用完整备份。";
+      return;
+    }
+    button.textContent = storage.persist ? "检查本机保存保护" : "本机保护不可申请";
+    button.disabled = !storage.persist;
+    if (status) status.textContent = "未获得浏览器保护也不影响当前保存；长期使用请定期下载完整备份。";
+  } catch (e) {
+    button.textContent = "本机保护状态未知";
+    button.disabled = true;
+    if (status) status.textContent = "此浏览器无法报告本机保存保护状态；请以完整备份和恢复备份迁移旧版本内容。";
+  }
+}
+
+async function requestStoragePersistence(button = document.querySelector("#stewardPersistBtn"), status = document.querySelector("#stewardPersistStatus")) {
+  if (!button) return;
+  const storage = navigator.storage;
+  if (!storage?.persist) {
+    await refreshStoragePersistStatus(button, status);
+    return;
+  }
+  button.disabled = true;
+  button.textContent = "正在检查...";
+  try {
+    const already = await storage.persisted?.();
+    const granted = already || await storage.persist();
+    if (granted) {
+      button.textContent = "本机保存已保护 ✓";
+      button.disabled = true;
+      if (status) status.textContent = "已获得浏览器本机保存保护；这不是备份，换手机或更新版本前仍要做完整备份。";
+    } else {
+      button.textContent = "浏览器未授予保护";
+      button.disabled = false;
+      if (status) status.textContent = "这是手机浏览器的常见限制，不代表手账保存失败；完整备份/恢复备份才是长期保管与迁移入口。";
+    }
+  } catch (e) {
+    button.textContent = "本机保护不可用";
+    button.disabled = true;
+    if (status) status.textContent = "此环境不支持本机保存保护；请使用完整备份保存一份 JSON 文件。";
+  }
+}
+
+function setupDataSteward() {
+  if (document.querySelector("#buliDataSteward")) return;
+  const insights = document.querySelector(".notebook-index-page .index-insights");
+  if (!insights) return;
+
+  const panel = document.createElement("section");
+  panel.id = "buliDataSteward";
+  panel.className = "buli-data-steward";
+  panel.setAttribute("aria-label", "一生数据管家");
+
+  const head = document.createElement("div");
+  head.className = "steward-head";
+  const title = document.createElement("strong");
+  title.textContent = "一生数据管家";
+  const hint = document.createElement("span");
+  hint.id = "stewardHint";
+  head.append(title, hint);
+
+  const stats = document.createElement("p");
+  stats.id = "stewardStats";
+
+  const storageLine = document.createElement("p");
+  storageLine.id = "stewardStorage";
+
+  const persistStatus = document.createElement("p");
+  persistStatus.id = "stewardPersistStatus";
+  persistStatus.className = "steward-note";
+
+  const actions = document.createElement("div");
+  actions.className = "steward-actions";
+
+  const backupBtn = document.createElement("button");
+  backupBtn.type = "button";
+  backupBtn.className = "buli-ledger-button";
+  backupBtn.textContent = "完整备份（含图片）";
+  backupBtn.addEventListener("click", () => { try { exportNotes(); } catch (e) { console.warn(e); } });
+
+  const restoreBtn = document.createElement("button");
+  restoreBtn.type = "button";
+  restoreBtn.className = "buli-ledger-button ghost";
+  restoreBtn.textContent = "恢复备份";
+  const fileInput = document.createElement("input");
+  fileInput.type = "file";
+  fileInput.accept = "application/json,.json";
+  fileInput.style.display = "none";
+  fileInput.addEventListener("change", () => {
+    const file = fileInput.files && fileInput.files[0];
+    if (file) importBackupFromFile(file);
+    fileInput.value = "";
+  });
+  restoreBtn.addEventListener("click", () => fileInput.click());
+
+  const persistBtn = document.createElement("button");
+  persistBtn.type = "button";
+  persistBtn.id = "stewardPersistBtn";
+  persistBtn.className = "buli-ledger-button ghost";
+  persistBtn.textContent = "检查本机保存保护";
+  persistBtn.title = "这是浏览器本机缓存保护，不等于完整备份。";
+  persistBtn.addEventListener("click", () => requestStoragePersistence(persistBtn, persistStatus));
+
+  actions.append(backupBtn, restoreBtn, persistBtn, fileInput);
+  panel.append(head, stats, storageLine, persistStatus, actions);
+  insights.insertAdjacentElement("afterend", panel);
+
+  refreshStoragePersistStatus(persistBtn, persistStatus);
+
+  renderDataSteward();
+}
+
+function renderDataSteward() {
+  const stats = document.querySelector("#stewardStats");
+  const hint = document.querySelector("#stewardHint");
+  const storageLine = document.querySelector("#stewardStorage");
+  if (!stats || !hint) return;
+
+  const noteCount = state.notes.length;
+  const imageCount = state.notes.reduce((sum, note) => sum + (note.images?.length || 0), 0);
+  const pptCount = state.modules.pptNotes?.length || 0;
+  const practiceCount = state.modules.practiceCounters?.length || 0;
+  const teachingCount = state.teachingQuotes?.length || 0;
+  stats.textContent = `笔记 ${noteCount} 篇 · 图片 ${imageCount} 张 · 课堂 ${pptCount} 课 · 功课 ${practiceCount} 项 · 教言 ${teachingCount} 条`;
+
+  let stamp = "";
+  try { stamp = localStorage.getItem(BACKUP_STAMP_KEY) || ""; } catch (e) { /* ignore */ }
+  if (!stamp) {
+    hint.textContent = "还没备份过 · 建议现在做一次完整备份";
+    hint.dataset.tone = "warn";
+  } else {
+    const days = Math.floor((Date.now() - new Date(stamp).getTime()) / 86400000);
+    if (Number.isFinite(days) && days > 30) {
+      hint.textContent = `距上次备份已 ${days} 天 · 建议本月再备份一次`;
+      hint.dataset.tone = "warn";
+    } else if (Number.isFinite(days)) {
+      hint.textContent = days <= 0 ? "今天已备份 ✓" : `上次备份：${days} 天前 ✓`;
+      hint.dataset.tone = "ok";
+    } else {
+      hint.textContent = "";
+      hint.dataset.tone = "ok";
+    }
+  }
+
+  if (storageLine && navigator.storage?.estimate) {
+    if (Date.now() - stewardEstimateCache.at > 60000) {
+      stewardEstimateCache.at = Date.now();
+      navigator.storage.estimate().then((est) => {
+        const usedMb = est?.usage ? (est.usage / 1048576).toFixed(1) : null;
+        const quotaMb = est?.quota ? Math.round(est.quota / 1048576) : null;
+        stewardEstimateCache.text = usedMb
+          ? `本机已用约 ${usedMb} MB${quotaMb ? ` / 可用约 ${quotaMb} MB` : ""}`
+          : "";
+        const line = document.querySelector("#stewardStorage");
+        if (line) line.textContent = stewardEstimateCache.text;
+      }).catch(() => {});
+    } else {
+      storageLine.textContent = stewardEstimateCache.text;
+    }
+  }
 }

@@ -1,34 +1,16 @@
 {
   "name": "不离手账",
-  "short_name": "不离手账",
-  "description": "用于记录晋美彭措法王传记阅读、日记、备忘和人物年表的手机笔记应用。",
-  "lang": "zh-CN",
-  "id": "./",
+  "short_name": "不离",
   "start_url": "./index.html",
-  "scope": "./",
   "display": "standalone",
-  "display_override": ["standalone", "minimal-ui"],
-  "orientation": "portrait",
-  "background_color": "#fffdf7",
-  "theme_color": "#f4a000",
+  "background_color": "#041b18",
+  "theme_color": "#0b3a31",
   "icons": [
     {
-      "src": "assets/app-icon-192.png",
+      "src": "assets/mandala-emblem.jpg",
       "sizes": "192x192",
-      "type": "image/png",
+      "type": "image/jpeg",
       "purpose": "any"
-    },
-    {
-      "src": "assets/app-icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "assets/app-icon-maskable-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
     }
   ]
 }

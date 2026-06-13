@@ -48,6 +48,7 @@ const OFFERING_BUDDHA_WALL_STORAGE_KEY = "buliOfferingBuddhaWall.v1";
 const BLOOM_GARDEN_PHOTOS_STORAGE_KEY = "buliBloomGardenPhotos.v1";
 const PAGE_WALLPAPER_STORAGE_KEY = "buliPageWallpapers.v2";
 const PPT_DEFAULT_PROJECT_ID = "ppt-project-default";
+var stewardEstimateCache = { at: 0, text: "" };
 const TEACHING_DEFAULT_TEACHER = "晋美彭措法王";
 const PPT_NOTE_STATUS_OPTIONS = [
   { id: "capture", label: "速记", action: "标为整理中" },
@@ -155,20 +156,20 @@ const defaultModules = {
   focusGallery: [
     {
       id: "focus-gallery-1",
-      image: "assets/larung-real-panorama.jpg",
+      image: "assets/flyleaf-teaching-2026.jpg",
       title: "夜色山谷",
       subtitle: "喇荣",
       feature: true
     },
     {
       id: "focus-gallery-2",
-      image: "assets/larung-real-lights.jpg",
+      image: "assets/flyleaf-teaching-2026.jpg",
       title: "灯火红屋",
       subtitle: "灯火"
     },
     {
       id: "focus-gallery-3",
-      image: "assets/larung-real-snow.jpg",
+      image: "assets/flyleaf-teaching-2026.jpg",
       title: "雪落山坡",
       subtitle: "雪景"
     }
@@ -176,20 +177,20 @@ const defaultModules = {
   portraits: [
     {
       id: "portrait-1",
-      image: "assets/fawang-portrait-seat.jpg",
+      image: "assets/flyleaf-teaching-2026.jpg",
       title: "ཡིད་བཞིན་ནོར་བུ། 法王如意宝",
       subtitle: "如意宝",
       feature: true
     },
     {
       id: "portrait-2",
-      image: "assets/fawang-langlang-mountain.jpg",
+      image: "assets/flyleaf-teaching-2026.jpg",
       title: "ལྷ་རི། 朗朗神山",
       subtitle: "朗朗神山"
     },
     {
       id: "portrait-3",
-      image: "assets/fawang-radiance.jpg",
+      image: "assets/flyleaf-teaching-2026.jpg",
       title: "འོད་གསལ། 光明留影",
       subtitle: "加持"
     }
@@ -197,26 +198,26 @@ const defaultModules = {
   academy: [
     {
       id: "academy-1",
-      image: "assets/larung-real-stairs-night.jpg",
+      image: "assets/flyleaf-teaching-2026.jpg",
       title: "བླ་རུང་། 夜色阶梯",
       subtitle: "喇荣",
       layout: "tall"
     },
     {
       id: "academy-2",
-      image: "assets/larung-real-temple-mist.jpg",
+      image: "assets/flyleaf-teaching-2026.jpg",
       title: "སྨུག་པ། 晨雾寺院",
       subtitle: "晨雾"
     },
     {
       id: "academy-3",
-      image: "assets/larung-real-red-valley.jpg",
+      image: "assets/flyleaf-teaching-2026.jpg",
       title: "རི་ཁྲོད། 红色山谷",
       subtitle: "山谷"
     },
     {
       id: "academy-4",
-      image: "assets/larung-real-snow.jpg",
+      image: "assets/flyleaf-teaching-2026.jpg",
       title: "ཁ་བ། 雪景红屋",
       subtitle: "雪景",
       layout: "wide"
@@ -255,31 +256,31 @@ const defaultModules = {
   colorPages: [
     {
       id: "color-1",
-      image: "assets/color-page-boulder.jpg",
+      image: "assets/flyleaf-teaching-2026.jpg",
       title: "ན་བཟའ། 红衣",
       subtitle: "红衣"
     },
     {
       id: "color-2",
-      image: "assets/color-page-yogurt.jpg",
+      image: "assets/flyleaf-teaching-2026.jpg",
       title: "ཞོ། 酸奶",
       subtitle: "酸奶"
     },
     {
       id: "color-3",
-      image: "assets/color-page-bodhisattva.jpg",
+      image: "assets/flyleaf-teaching-2026.jpg",
       title: "འཇམ་དཔལ། 文殊静修",
       subtitle: "文殊静修"
     },
     {
       id: "color-4",
-      image: "assets/color-page-new-york.jpg",
+      image: "assets/flyleaf-teaching-2026.jpg",
       title: "དབང་བསྐུར། 灌顶",
       subtitle: "灌顶"
     },
     {
       id: "color-5",
-      image: "assets/color-page-confidence.jpg",
+      image: "assets/flyleaf-teaching-2026.jpg",
       title: "དད་པ། 信心所依",
       subtitle: "信心所依"
     }
@@ -392,61 +393,61 @@ const pageThemes = new Set(pageThemeClassNames.map((className) => className.repl
 
 const pageDecorations = [
   {
-    image: "assets/decor-crystal-point.jpg",
+    image: "assets/mandala-emblem.jpg",
     kind: "crystal",
     position: "center 36%",
     size: "148%"
   },
   {
-    image: "assets/decor-crystal-stupa.jpg",
+    image: "assets/mandala-emblem.jpg",
     kind: "crystal",
     position: "center 48%",
     size: "118%"
   },
   {
-    image: "assets/decor-flower-meadow.jpg",
+    image: "assets/buli-meadow-before.png",
     kind: "flower",
     position: "center bottom",
     size: "cover"
   },
   {
-    image: "assets/decor-flower-rock.jpg",
+    image: "assets/buli-real-garden.png",
     kind: "flower",
     position: "left bottom",
     size: "cover"
   },
   {
-    image: "assets/decor-flower-white.jpg",
+    image: "assets/notebook-decor-flower-horizontal.png",
     kind: "flower",
     position: "center bottom",
     size: "cover"
   },
   {
-    image: "assets/decor-flower-yellow.jpg",
+    image: "assets/notebook-decor-flower-horizontal.png",
     kind: "flower",
     position: "center bottom",
     size: "cover"
   },
   {
-    image: "assets/decor-star-butterflies.jpg",
+    image: "assets/mandala-emblem.jpg",
     kind: "star",
     position: "center 22%",
     size: "cover"
   },
   {
-    image: "assets/decor-star-hanging.jpg",
+    image: "assets/mandala-emblem.jpg",
     kind: "star",
     position: "center 16%",
     size: "cover"
   },
   {
-    image: "assets/decor-flower-scroll.jpg",
+    image: "assets/notebook-decor-flower-horizontal.png",
     kind: "flower",
     position: "center 42%",
     size: "cover"
   },
   {
-    image: "assets/decor-flower-garden.jpg",
+    image: "assets/buli-real-garden.png",
     kind: "flower",
     position: "center bottom",
     size: "cover"
@@ -2060,7 +2061,7 @@ function renderNoteImages(note) {
   });
 }
 
-function readImageFile(file) {
+function readImageFile(file, options = {}) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.addEventListener("load", () => {
@@ -2068,7 +2069,8 @@ function readImageFile(file) {
       image.addEventListener("load", () => {
         const width = image.naturalWidth || image.width;
         const height = image.naturalHeight || image.height;
-        const maxSide = 1400;
+        const maxSide = options.maxSide || 1400;
+        const quality = options.quality || 0.82;
         const scale = Math.min(1, maxSide / Math.max(width, height));
         const canvas = document.createElement("canvas");
         canvas.width = Math.max(1, Math.round(width * scale));
@@ -2080,7 +2082,7 @@ function readImageFile(file) {
         }
 
         context.drawImage(image, 0, 0, canvas.width, canvas.height);
-        resolve(canvas.toDataURL("image/jpeg", 0.82));
+        resolve(canvas.toDataURL("image/jpeg", quality));
       });
       image.addEventListener("error", () => resolve(String(reader.result)));
       image.src = String(reader.result);
@@ -3116,7 +3118,7 @@ function changeOfferingBuddhaWall() {
     },
     { once: true }
   );
-  window.setTimeout(() => input.remove(), 10000);
+  input.addEventListener("cancel", () => input.remove(), { once: true });
   input.click();
 }
 
@@ -3127,11 +3129,11 @@ async function saveOfferingBuddhaFiles(fileList, options = {}) {
     const current = options.replace ? [] : loadOfferingBuddhaImages();
     const added = [];
     for (const file of files.slice(0, 8)) {
-      added.push(await readImageFile(file));
+      added.push(await readImageFile(file, { maxSide: 900, quality: 0.72 }));
     }
-    if (saveOfferingBuddhaImages([...current, ...added].slice(-12))) {
-      renderOfferingBuddhaWall();
+    if (saveOfferingBuddhaImages([...current, ...added].slice(-8))) {
       try { await BuliImageLayer.flush(); } catch (e) { /* ignore */ }
+      renderOfferingBuddhaWall();
     }
   } catch (error) {
     console.warn("Failed to add offering Buddha images", error);
@@ -5819,6 +5821,13 @@ async function addPageWallpapers(event) {
     actionBar.querySelector("[data-buli-note-save]")?.addEventListener("click", saveCurrentOrdinaryNote);
     actionBar.querySelector("[data-buli-note-edit]")?.addEventListener("click", () => $("#noteBody")?.focus());
     actionBar.querySelector("[data-buli-note-delete]")?.addEventListener("click", deleteCurrentOrdinaryNote);
+    ["#editorNewNoteButton", "#deleteButton"].forEach((selector) => {
+      const duplicate = $(selector);
+      if (!duplicate) return;
+      duplicate.hidden = true;
+      duplicate.setAttribute("aria-hidden", "true");
+      duplicate.tabIndex = -1;
+    });
 
     const typeTabs = document.createElement("nav");
     typeTabs.className = "buli-note-type-tabs";
@@ -6511,17 +6520,91 @@ function addNgondroPresets() {
    (0 处调用),且它要加的「加行预设 / 导出账本备份 / 导入备份」三个按钮,实际已由
    buildPracticeOverview(已接线、渲染中)提供——若再接线只会产生重复按钮。删除是纯收益。 */
 
+function getBackupItemMergeKeys(item) {
+  if (!item) return [];
+  const keys = [];
+  if (item.id) keys.push(`id:${item.id}`);
+  if (typeof item === "string") {
+    const text = item.trim();
+    if (text) keys.push(`text:${text}`);
+    return keys;
+  }
+  if (typeof item === "object") {
+    const fingerprint = [
+      item.title || "",
+      item.date || "",
+      item.body || item.text || "",
+      item.source || item.teacher || ""
+    ].map((value) => String(value).trim()).join("|");
+    if (fingerprint.replace(/\|/g, "")) keys.push(`fp:${fingerprint}`);
+  }
+  return keys;
+}
+
+function normalizeBackupPayload(data) {
+  if (Array.isArray(data)) {
+    return { appName: "legacy-array", notes: data };
+  }
+  return data;
+}
+
+function normalizeImportedNote(note) {
+  if (!note || typeof note !== "object") return null;
+  const date = String(note.date || new Date().toISOString().slice(0, 10)).slice(0, 10);
+  const parsedDate = Date.parse(`${date}T00:00:00`);
+  const createdAt = Number(note.createdAt) || (Number.isFinite(parsedDate) ? parsedDate : Date.now());
+  const tags = Array.isArray(note.tags)
+    ? note.tags.map(String).map((tag) => tag.trim()).filter(Boolean)
+    : String(note.tags || "").split(/[,，、\s]+/).map((tag) => tag.trim()).filter(Boolean);
+  return {
+    id: note.id || crypto.randomUUID(),
+    type: note.type || "diary",
+    title: String(note.title || "").trim(),
+    person: sanitizePersonName(note.person),
+    date,
+    source: String(note.source || "").trim(),
+    tags,
+    body: String(note.body || ""),
+    images: Array.isArray(note.images) ? note.images : [],
+    pageTheme: normalizePageTheme(note.pageTheme),
+    calendarMode: note.calendarMode || "gregorian",
+    pinned: Boolean(note.pinned),
+    createdAt,
+    updatedAt: Number(note.updatedAt) || createdAt
+  };
+}
+
+function normalizeImportedTeachingQuote(quote) {
+  if (typeof quote === "string") {
+    const text = quote.trim();
+    return text ? { id: crypto.randomUUID(), text, teacher: TEACHING_DEFAULT_TEACHER, createdAt: Date.now() } : null;
+  }
+  if (!quote || typeof quote !== "object") return null;
+  const text = String(quote.text || quote.body || "").trim();
+  if (!text) return null;
+  return {
+    id: quote.id || crypto.randomUUID(),
+    text,
+    teacher: normalizeTeacherLabel(quote.teacher || quote.person || TEACHING_DEFAULT_TEACHER),
+    createdAt: quote.createdAt || Date.now()
+  };
+}
+
 function mergeBackupArrayById(targetArr, incomingArr) {
   // 一生安全合并：按 id 对齐；若双方都有 updatedAt，保留较新的一方，
   // 这样导入一份旧备份永远不会把后来写的内容“倒退”回旧版。
   const stats = { added: 0, updated: 0, kept: 0 };
   if (!Array.isArray(targetArr) || !Array.isArray(incomingArr)) return stats;
   const indexById = new Map();
-  targetArr.forEach((x, i) => { if (x && x.id) indexById.set(x.id, i); });
+  targetArr.forEach((x, i) => {
+    getBackupItemMergeKeys(x).forEach((key) => indexById.set(key, i));
+  });
   incomingArr.forEach((inc) => {
     if (!inc) return;
-    if (inc.id && indexById.has(inc.id)) {
-      const at = indexById.get(inc.id);
+    const keys = getBackupItemMergeKeys(inc);
+    const matchedKey = keys.find((key) => indexById.has(key));
+    if (matchedKey) {
+      const at = indexById.get(matchedKey);
       const cur = targetArr[at];
       const curTime = Number(cur?.updatedAt ?? cur?.createdAt ?? 0);
       const incTime = Number(inc?.updatedAt ?? inc?.createdAt ?? 0);
@@ -6532,7 +6615,7 @@ function mergeBackupArrayById(targetArr, incomingArr) {
         stats.updated++;
       }
     } else {
-      if (inc.id) indexById.set(inc.id, targetArr.length);
+      keys.forEach((key) => indexById.set(key, targetArr.length));
       targetArr.push(inc);
       stats.added++;
     }
@@ -6541,50 +6624,67 @@ function mergeBackupArrayById(targetArr, incomingArr) {
 }
 
 function importBackupFromFile(file) {
-  const reader = new FileReader();
-  reader.onload = () => {
-    let data;
-    try {
-      data = JSON.parse(String(reader.result || ""));
-    } catch (e) {
-      alert("读取失败：这不是有效的备份文件。");
-      return;
-    }
-    if (!data || typeof data !== "object" || (!data.modules && !data.notes)) {
-      alert("这个文件看起来不是「不离手账」的备份。");
-      return;
-    }
-    if (!confirm("导入会把备份里的功课、笔记等按条目合并进当前数据（不会删除你现有的内容）。继续吗？")) return;
-    try {
-      const total = { added: 0, updated: 0, kept: 0 };
-      const tally = (s) => { total.added += s.added; total.updated += s.updated; total.kept += s.kept; };
-      if (data.modules && typeof data.modules === "object") {
-        Object.keys(data.modules).forEach((key) => {
-          if (!Array.isArray(data.modules[key])) return;
-          if (!Array.isArray(state.modules[key])) state.modules[key] = [];
-          tally(mergeBackupArrayById(state.modules[key], data.modules[key]));
-        });
-        if (Array.isArray(state.modules.practiceCounters)) state.modules.practiceCounters.forEach(ensurePracticeLedgerFields);
-        state.modules = normalizeModules(state.modules);
+  if (!file) return Promise.resolve({ ok: false, reason: "missing-file" });
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      let data;
+      try {
+        data = normalizeBackupPayload(JSON.parse(String(reader.result || "")));
+      } catch (e) {
+        alert("读取失败：这不是有效的备份文件。");
+        resolve({ ok: false, reason: "invalid-json" });
+        return;
       }
-      if (Array.isArray(data.notes)) tally(mergeBackupArrayById(state.notes, data.notes));
-      if (Array.isArray(data.teachingQuotes)) tally(mergeBackupArrayById(state.teachingQuotes, data.teachingQuotes));
+      if (!data || typeof data !== "object" || (!data.modules && !data.notes)) {
+        alert("这个文件看起来不是「不离手账」的备份。");
+        resolve({ ok: false, reason: "invalid-backup" });
+        return;
+      }
+      if (!confirm("导入会把备份里的功课、笔记等按条目合并进当前数据（不会删除你现有的内容）。继续吗？")) {
+        resolve({ ok: false, reason: "cancelled" });
+        return;
+      }
+      try {
+        const total = { added: 0, updated: 0, kept: 0 };
+        const tally = (s) => { total.added += s.added; total.updated += s.updated; total.kept += s.kept; };
+        if (data.modules && typeof data.modules === "object") {
+          Object.keys(data.modules).forEach((key) => {
+            if (!Array.isArray(data.modules[key])) return;
+            if (!Array.isArray(state.modules[key])) state.modules[key] = [];
+            tally(mergeBackupArrayById(state.modules[key], data.modules[key]));
+          });
+          if (Array.isArray(state.modules.practiceCounters)) state.modules.practiceCounters.forEach(ensurePracticeLedgerFields);
+          state.modules = normalizeModules(state.modules);
+        }
+        if (Array.isArray(data.notes)) {
+          tally(mergeBackupArrayById(state.notes, data.notes.map(normalizeImportedNote).filter(Boolean)));
+        }
+        if (Array.isArray(data.teachingQuotes)) {
+          tally(mergeBackupArrayById(state.teachingQuotes, data.teachingQuotes.map(normalizeImportedTeachingQuote).filter(Boolean)));
+        }
 
-      saveModules();
-      scheduleSave();
-      if (typeof saveTeachingQuotes === "function") { try { saveTeachingQuotes(); } catch (e) {} }
-      if (typeof render === "function") { try { render(); } catch (e) {} }
-      if (typeof renderList === "function") { try { renderList(); } catch (e) {} }
-      renderPracticeCounters();
-      try { renderDataSteward(); } catch (e) {}
-      alert(`导入完成：新增 ${total.added} 条 · 更新 ${total.updated} 条 · 保留更新版 ${total.kept} 条。\n（合并按时间取新，旧备份不会覆盖你后来写的内容。）`);
-    } catch (e) {
-      console.warn("import failed", e);
-      alert("导入过程中出错，已尽量保留原有数据。");
-    }
-  };
-  reader.onerror = () => alert("读取文件失败。");
-  reader.readAsText(file);
+        saveModules();
+        scheduleSave();
+        if (typeof saveTeachingQuotes === "function") { try { saveTeachingQuotes(); } catch (e) {} }
+        if (typeof render === "function") { try { render(); } catch (e) {} }
+        if (typeof renderList === "function") { try { renderList(); } catch (e) {} }
+        renderPracticeCounters();
+        try { renderDataSteward(); } catch (e) {}
+        alert(`导入完成：新增 ${total.added} 条 · 更新 ${total.updated} 条 · 保留更新版 ${total.kept} 条。\n（合并按时间取新，旧备份不会覆盖你后来写的内容。）`);
+        resolve({ ok: true, total });
+      } catch (e) {
+        console.warn("import failed", e);
+        alert("导入过程中出错，已尽量保留原有数据。");
+        resolve({ ok: false, reason: "import-error" });
+      }
+    };
+    reader.onerror = () => {
+      alert("读取文件失败。");
+      resolve({ ok: false, reason: "read-error" });
+    };
+    reader.readAsText(file);
+  });
 }
 
 /* ============================================================
@@ -6646,7 +6746,60 @@ function refreshNoteYearOptions() {
   select.value = state.yearFilter || "all";
 }
 
-let stewardEstimateCache = { at: 0, text: "" };
+async function refreshStoragePersistStatus(button = document.querySelector("#stewardPersistBtn"), status = document.querySelector("#stewardPersistStatus")) {
+  if (!button) return;
+  const storage = navigator.storage;
+  if (!storage?.persisted) {
+    button.textContent = "本机保护不可用";
+    button.disabled = true;
+    if (status) status.textContent = "此浏览器不提供本机保存保护；手账仍会正常保存，请以完整备份作为长期迁移保险。";
+    return;
+  }
+  try {
+    const persisted = await storage.persisted();
+    if (persisted) {
+      button.textContent = "本机保存已保护 ✓";
+      button.disabled = true;
+      if (status) status.textContent = "浏览器已承诺尽量保留此设备上的手账数据；跨设备、换版本仍请使用完整备份。";
+      return;
+    }
+    button.textContent = storage.persist ? "检查本机保存保护" : "本机保护不可申请";
+    button.disabled = !storage.persist;
+    if (status) status.textContent = "未获得浏览器保护也不影响当前保存；长期使用请定期下载完整备份。";
+  } catch (e) {
+    button.textContent = "本机保护状态未知";
+    button.disabled = true;
+    if (status) status.textContent = "此浏览器无法报告本机保存保护状态；请以完整备份和恢复备份迁移旧版本内容。";
+  }
+}
+
+async function requestStoragePersistence(button = document.querySelector("#stewardPersistBtn"), status = document.querySelector("#stewardPersistStatus")) {
+  if (!button) return;
+  const storage = navigator.storage;
+  if (!storage?.persist) {
+    await refreshStoragePersistStatus(button, status);
+    return;
+  }
+  button.disabled = true;
+  button.textContent = "正在检查...";
+  try {
+    const already = await storage.persisted?.();
+    const granted = already || await storage.persist();
+    if (granted) {
+      button.textContent = "本机保存已保护 ✓";
+      button.disabled = true;
+      if (status) status.textContent = "已获得浏览器本机保存保护；这不是备份，换手机或更新版本前仍要做完整备份。";
+    } else {
+      button.textContent = "浏览器未授予保护";
+      button.disabled = false;
+      if (status) status.textContent = "这是手机浏览器的常见限制，不代表手账保存失败；完整备份/恢复备份才是长期保管与迁移入口。";
+    }
+  } catch (e) {
+    button.textContent = "本机保护不可用";
+    button.disabled = true;
+    if (status) status.textContent = "此环境不支持本机保存保护；请使用完整备份保存一份 JSON 文件。";
+  }
+}
 
 function setupDataSteward() {
   if (document.querySelector("#buliDataSteward")) return;
@@ -6671,6 +6824,10 @@ function setupDataSteward() {
 
   const storageLine = document.createElement("p");
   storageLine.id = "stewardStorage";
+
+  const persistStatus = document.createElement("p");
+  persistStatus.id = "stewardPersistStatus";
+  persistStatus.className = "steward-note";
 
   const actions = document.createElement("div");
   actions.className = "steward-actions";
@@ -6700,37 +6857,15 @@ function setupDataSteward() {
   persistBtn.type = "button";
   persistBtn.id = "stewardPersistBtn";
   persistBtn.className = "buli-ledger-button ghost";
-  persistBtn.textContent = "开启持久保存";
-  persistBtn.addEventListener("click", async () => {
-    try {
-      const granted = await navigator.storage?.persist?.();
-      persistBtn.textContent = granted ? "已开启持久保存 ✓" : "持久保存未获允许";
-      persistBtn.disabled = Boolean(granted);
-    } catch (e) {
-      persistBtn.textContent = "此设备不支持持久保存";
-    }
-  });
+  persistBtn.textContent = "检查本机保存保护";
+  persistBtn.title = "这是浏览器本机缓存保护，不等于完整备份。";
+  persistBtn.addEventListener("click", () => requestStoragePersistence(persistBtn, persistStatus));
 
   actions.append(backupBtn, restoreBtn, persistBtn, fileInput);
-  panel.append(head, stats, storageLine, actions);
+  panel.append(head, stats, storageLine, persistStatus, actions);
   insights.insertAdjacentElement("afterend", panel);
 
-  // 启动时悄悄申请持久保存（已安装到主屏幕的应用多半直接获批）
-  try {
-    navigator.storage?.persisted?.().then((persisted) => {
-      if (persisted) {
-        persistBtn.textContent = "已开启持久保存 ✓";
-        persistBtn.disabled = true;
-      } else {
-        navigator.storage?.persist?.().then((granted) => {
-          if (granted) {
-            persistBtn.textContent = "已开启持久保存 ✓";
-            persistBtn.disabled = true;
-          }
-        }).catch(() => {});
-      }
-    }).catch(() => {});
-  } catch (e) { /* ignore */ }
+  refreshStoragePersistStatus(persistBtn, persistStatus);
 
   renderDataSteward();
 }
